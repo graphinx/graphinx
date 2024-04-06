@@ -1,5 +1,9 @@
 # Narasimha
 
+****
+*WARNING*: This project is in a very early stage and not yet ready for production use. I'm in the process of extracting code from [Churros' API documentation package](https://github.com/inp-net/churros/tree/main/packages/docs) and turning it into a library.
+****
+
 A collection of functions and Svelte components to easily build a documentation site for a GraphQL API.
 
 ## Getting Started
