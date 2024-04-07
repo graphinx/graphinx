@@ -1,9 +1,8 @@
 #!/usr/bin/env node
+import * as p from '@clack/prompts';
+import { bold } from 'kleur/colors';
 import fs from 'node:fs';
 const { version } = JSON.parse(fs.readFileSync(new URL('package.json', import.meta.url), 'utf-8'));
-import * as p from '@clack/prompts';
-import { isCancel } from '@clack/prompts';
-import { bold } from 'kleur/colors';
 
 /**
  *

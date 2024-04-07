@@ -4,8 +4,11 @@ import remarkFrontmatter from 'remark-frontmatter';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import { unified } from 'unified';
-import { camelToKebab } from './casing';
+import { camelToKebab } from './casing.js';
 import { matter } from 'vfile-matter';
+import { z } from 'zod';
+import type { SchemaClass } from './schema.js';
+import { allIncludableItems } from './utils.js';
 
 export type ResolverFromFilesystem = {
 	name: string;
@@ -13,8 +16,8 @@ export type ResolverFromFilesystem = {
 	type: 'query' | 'mutation' | 'subscription';
 };
 
-export async function getFrontmatter(markdown: string) {
-	return await unified()
+export async function getFrontmatter(schema: SchemaClass, markdown: string) {
+	const frontmatter = await unified()
 		.use(remarkParse)
 		.use(remarkRehype)
 		.use(rehypeStringify)
@@ -23,7 +26,23 @@ export async function getFrontmatter(markdown: string) {
 			matter(file);
 		})
 		.process(markdown)
-		.then((file) => (file.data.matter ?? {}) as Record<string, unknown>);
+		.then(file => (file.data.matter ?? {}) as Record<string, unknown>);
+
+	return z
+		.object({
+			manually_include: z
+				.array(
+					z
+						.string()
+						.refine(
+							arg => allIncludableItems(schema).has(arg),
+							'Unknown type or query/mutation/subscription field'
+						)
+				)
+				.optional()
+		})
+		.strict()
+		.parse(frontmatter);
 }
 
 export async function markdownToHtml(
@@ -46,17 +65,17 @@ export async function markdownToHtml(
 		.use(remarkFrontmatter)
 		.process(markdown)
 		.then(String)
-		.then((html) =>
+		.then(html =>
 			html
 				// auto-link "query foo", "mutation bar", and "subscription baz"
 				.replaceAll(/(query|mutation|subscription) ([a-zA-Z0-9]+)/g, (match, type, name) => {
-					const r = allResolvers.find((r) => r.name === name && r.type === type);
+					const r = allResolvers.find(r => r.name === name && r.type === type);
 					return r ? `<a href="/${r.moduleName}#${r.type}/${r.name}">${r.name}</a>` : match;
 				})
 				// auto-link "registerApp" but not "user"
 				.split(' ')
-				.map((word) => {
-					const r = allResolvers.find((r) => r.name === word && camelToKebab(r.name).includes('-'));
+				.map(word => {
+					const r = allResolvers.find(r => r.name === word && camelToKebab(r.name).includes('-'));
 					return r ? `<a href="/${r.moduleName}#${r.type}/${r.name}">${word}</a>` : word;
 				})
 				.join(' ')

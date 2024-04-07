@@ -1,7 +1,7 @@
 <script lang="ts">
 	import ModuleCard from '$lib/ModuleCard.svelte';
 
-	import type { Module } from './modules.js';
+	import type { Module } from './utils.js';
 
 	export let modules: Module[];
 </script>
