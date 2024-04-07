@@ -55,7 +55,10 @@ export default {
 		});
 
 		return new Module(schema, new Set(items.map(i => i.name)), {
-			sourceMap: new Map(items.map(i => [i.name, i.filepath ? { filepath: i.filepath } : null])),
+			sourceMapResolver: (_, { name }) => {
+				const filepath = items.find(i => i.name === name)?.filepath;
+				return filepath ? { filepath } : null;
+			},
 			metadata: {
 				...info,
 				name,
@@ -87,7 +90,7 @@ async function graphql<ResponseSchema extends Zod.Schema>({
 		method: 'post',
 		headers: {
 			'Content-Type': 'application/json',
-			Authorization: authToken ? `Bearer ${authToken}` : undefined
+			...(authToken ? { Authorization: `Bearer ${authToken}` } : {})
 		},
 		body: JSON.stringify({
 			query,

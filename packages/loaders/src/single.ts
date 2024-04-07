@@ -1,13 +1,23 @@
 import {
 	allIncludableItems,
 	Module,
+	type CodeLocation,
+	type ItemReference,
 	type ModuleLoader,
-	type ModuleMetadata
+	type ModuleMetadata,
+	type SchemaClass
 } from '@narasimha/core';
 
-export const single: ModuleLoader<{ metadata: ModuleMetadata }> = {
+type ConstructorOptions = ConstructorParameters<typeof Module>[2];
+
+export const single: ModuleLoader<
+	ConstructorOptions & {
+		sourceMapResolver: (schema: SchemaClass, ref: ItemReference) => CodeLocation | null;
+	}
+> = {
 	index: () => ['all'],
-	load: (_, schema, { metadata }) => new Module(schema,  allIncludableItems(schema),{ metadata })
+	load: (_, schema, { sourceMapResolver, ...constructorOptions }) =>
+		new Module(schema, allIncludableItems(schema), constructorOptions)
 };
 
 /**

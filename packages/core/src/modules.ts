@@ -1,6 +1,15 @@
 import { firstSentence } from './utils.js';
-import { Kind, type Field, type SchemaClass, type SchemaType } from './schema.js';
+import {
+	Kind,
+	type Field,
+	type InterfaceElement,
+	type SchemaClass,
+	type SchemaType
+} from './schema.js';
 import { markdownToHtml } from './markdown.js';
+import type { AugmentedField, AugmentedSchemaType } from './augmented-schema.js';
+import { bold, cyan, red } from 'kleur/colors';
+import { buildDisplayType, drillToTypename } from './schema-utils.js';
 
 export class NotFoundError extends Error {
 	constructor(name: string) {
@@ -41,6 +50,8 @@ export type ItemReference = {
 
 export type ItemReferencePathResolver = (schema: SchemaClass, ref: ItemReference) => string;
 
+export type SourceMapResolver = (schema: SchemaClass, ref: ItemReference) => CodeLocation | null;
+
 export type ModuleMetadata = {
 	name: string;
 	displayName?: string | null | typeof FromDocs;
@@ -49,41 +60,52 @@ export type ModuleMetadata = {
 	color?: string | null;
 };
 
+export type SerializedModule = Awaited<ReturnType<InstanceType<typeof Module>['serialize']>>;
+
 export class Module {
-	name: string;
-	displayName: string;
-	rawDocs: string;
-	_renderedDocs: string = '';
-	referencePathResolver?: ItemReferencePathResolver;
-	shortDescription: string;
-	queries: Field[];
-	mutations: Field[];
-	subscriptions: Field[];
-	types: SchemaType[];
-	sourceMap: Map<string, CodeLocation | null>;
-	icon?: string;
-	color?: string;
-	schema: SchemaClass;
+	public name: string;
+	public displayName: string;
+	public rawDocs: string;
+	public renderedDocs: string = '';
+	public referencePathResolver?: ItemReferencePathResolver;
+	public sourceMapResolver?: SourceMapResolver;
+	public shortDescription: string;
+	public queries: AugmentedField[];
+	public mutations: AugmentedField[];
+	public subscriptions: AugmentedField[];
+	public types: AugmentedSchemaType[];
+	public icon?: string;
+	public color?: string;
+	public schema: SchemaClass;
+	public includedItems: Set<string>;
+	public _initialized = false;
+
+	public static CONNECTION_TYPE_PATTERN = /^(?<type>\w+)Connection$/;
+	public static RESULT_TYPE_PATTERN = /^(?<kind>Query|Mutation|Subscription)(?<type>\w+)Result$/;
+	public static SUCCESS_TYPE_DATA_FIELD_NAME = 'data';
+	public static RESULT_TO_SUCCESS_TYPE = (typename: string) =>
+		typename.replace(/Result$/, 'Success');
+	public static RESULT_TO_ERROR_TYPE = (typename: string) => typename.replace(/Result$/, 'Error');
 
 	constructor(
 		schema: SchemaClass,
 		includedItems: Set<string>,
 		{
 			metadata,
-			sourceMap = new Map(),
+			sourceMapResolver,
 			referencePathResolver
 		}: {
 			metadata: ModuleMetadata;
-			sourceMap?: Map<string, CodeLocation | null>;
+			sourceMapResolver?: SourceMapResolver;
 			referencePathResolver?: ItemReferencePathResolver;
 		}
 	) {
 		this.schema = schema;
-		this.sourceMap = sourceMap;
 		this.name = metadata.name;
 		this.icon = metadata.icon ?? undefined;
 		this.color = metadata.color ?? undefined;
 		this.referencePathResolver = referencePathResolver;
+		this.sourceMapResolver = sourceMapResolver;
 
 		if (metadata.displayName === FromDocs) {
 			// TODO
@@ -93,86 +115,229 @@ export class Module {
 		}
 
 		this.rawDocs = metadata.docs;
-		// Eagerly render docs so that subsequent calls are instantaneous
-		void this.docs();
 
 		// TODO compute from metadata.docs('p').first().text()
 		this.shortDescription = firstSentence(metadata.docs);
 
-		const maybeQueryType = schema.types.find(t => t.name === schema.queryType.name);
+		this.queries = [];
+		this.mutations = [];
+		this.subscriptions = [];
+		this.types = [];
+		this.includedItems = includedItems;
+	}
+
+	async _augment<T extends Field | SchemaType>(
+		f: T,
+		t: 'query' | 'mutation' | 'subscription' | 'type' | 'field'
+	) {
+		return {
+			...f,
+			descriptionRaw: f.description,
+			description: f.description
+				? await markdownToHtml(this.schema, f.description, [], {
+						referencePath: this.referencePathResolver
+					})
+				: null,
+			referencePath:
+				t !== 'field'
+					? this.referencePathResolver?.(this.schema, {
+							module: this.name,
+							name: f.name,
+							type: t
+						})
+					: undefined,
+			sourceLocation:
+				t !== 'field' && this.sourceMapResolver
+					? this.sourceMapResolver(this.schema, {
+							module: this.name,
+							name: f.name,
+							type: t
+						}) ?? undefined
+					: undefined,
+			displayType: 'type' in f ? buildDisplayType(f.type) : ''
+		};
+	}
+
+	async augmentFields<T extends Field | SchemaType>(
+		fields: T[],
+		t: 'query' | 'subscription' | 'mutation' | 'type'
+	) {
+		const augmented = await Promise.all(
+			fields.filter(f => this.includedItems.has(f.name)).map(async f => this._augment(f, t))
+		);
+		this.log(`Augmented ${bold(augmented.length)} ${t}s`);
+		return augmented;
+	}
+
+	log(msg: string) {
+		console.log(`${cyan(`[${this.name}]`)} ${msg}`);
+	}
+
+	async initialize() {
+		if (this._initialized) return;
+		this.log('Initializing module');
+
+		if (!this.renderedDocs) {
+			this.renderedDocs = await markdownToHtml(this.schema, this.rawDocs, [], {
+				referencePath: this.referencePathResolver
+			});
+			this.log("Rendered module's documentation");
+		} else {
+			this.log("Module's documentation already rendered");
+		}
+
+		const maybeQueryType = this.schema.types.find(t => t.name === this.schema.queryType.name);
 		if (!maybeQueryType) throw new InvalidSchemaError('Missing query root type');
 		if (!maybeQueryType.fields) throw new InvalidSchemaError('Empty query root type');
 
-		this.queries = maybeQueryType.fields.filter(f => includedItems.has(f.name));
-		this.mutations =
-			schema.types
-				.find(t => t.name === schema.mutationType.name)
-				?.fields?.filter(f => includedItems.has(f.name)) ?? [];
-		this.subscriptions =
-			schema.types
-				.find(t => t.name === schema.subscriptionType.name)
-				?.fields?.filter(f => includedItems.has(f.name)) ?? [];
-		this.types = schema.types.filter(
-			t =>
-				![schema.queryType.name, schema.mutationType.name, schema.subscriptionType.name].includes(
-					t.name
-				) && includedItems.has(t.name)
+		this.queries = await this.augmentFields(maybeQueryType.fields, 'query');
+		this.mutations = await this.augmentFields(
+			this.schema.types.find(t => t.name === this.schema.mutationType.name)?.fields ?? [],
+			'mutation'
 		);
+		this.subscriptions = await this.augmentFields(
+			this.schema.types.find(t => t.name === this.schema.subscriptionType.name)?.fields ?? [],
+			'subscription'
+		);
+
+		// this.types = await this.augmentFields(
+		// 	this.schema.types.filter(t => !this.specialTypes.includes(t.name)),
+		// 	'type'
+		// ).then(types => types.map(t => ({ ...t, fields: t.fields ?? [] }));
+
+		this.types = await Promise.all(
+			this.schema.types
+				.filter(t => !this.specialTypes.includes(t.name))
+				.map(async t => ({
+					...t,
+					...(await this._augment(t, 'type')),
+					fields: t.fields
+						? await Promise.all(
+								t.fields.map(async f => ({
+									...f,
+									...(await this._augment(f, 'field'))
+								}))
+							)
+						: null
+				}))
+		);
+
+		this._initialized = true;
+		this.log('Module initialized');
 	}
 
-	async docs(): Promise<string> {
-		if (!this._renderedDocs) this._renderedDocs = await markdownToHtml(this.schema, this.rawDocs);
-		return this._renderedDocs;
+	get specialTypes(): string[] {
+		return [
+			this.schema.queryType.name,
+			this.schema.mutationType.name,
+			this.schema.subscriptionType.name
+		];
+	}
+
+	async serialize() {
+		await this.initialize();
+		return {
+			name: this.name,
+			displayName: this.displayName,
+			docsRaw: this.rawDocs,
+			docs: this.renderedDocs,
+			shortDescription: this.shortDescription,
+			queries: this.queries,
+			mutations: this.mutations,
+			subscriptions: this.subscriptions,
+			types: this.types,
+			icon: this.icon,
+			color: this.color
+		};
+	}
+
+	static async fromSerialized(schema: SchemaClass, data: SerializedModule): Promise<Module> {
+		const module = new Module(
+			schema,
+			new Set([
+				...data.types.map(t => t.name),
+				...[...data.queries, ...data.mutations, ...data.subscriptions].map(t => t.name)
+			]),
+			{
+				metadata: { ...data },
+				referencePathResolver: undefined,
+				sourceMapResolver: undefined
+			}
+		);
+
+		module.renderedDocs = data.docs;
+		module.queries = data.queries;
+		module.mutations = data.mutations;
+		module.subscriptions = data.subscriptions;
+		module.types = data.types;
+
+		module._initialized = true;
+		return module;
 	}
 
 	enum(name: string) {
-		const typ = this.types.find(t => t.name === name && t.kind === Kind.Enum);
+		const typ = this.types.find(
+			t => t.name.toLowerCase() === name.toLowerCase() && t.kind === Kind.Enum
+		);
 		if (!typ) throw new NotFoundError(name);
 
-		return typ as SchemaType & {
+		return typ as typeof typ & {
 			enumValues: NonNullable<SchemaType['enumValues']>;
 			kind: Kind.Enum;
 		};
 	}
 
 	scalar(name: string) {
-		const typ = this.types.find(t => t.name === name && t.kind === Kind.Scalar);
+		const typ = this.types.find(
+			t => t.name.toLowerCase() === name.toLowerCase() && t.kind === Kind.Scalar
+		);
 		if (!typ) throw new NotFoundError(name);
 
-		return typ as SchemaType & {
+		return typ as typeof typ & {
 			kind: Kind.Scalar;
 		};
 	}
 
 	inputObject(name: string) {
-		const typ = this.types.find(t => t.name === name && t.kind === Kind.InputObject);
+		const typ = this.types.find(
+			t => t.name.toLowerCase() === name.toLowerCase() && t.kind === Kind.InputObject
+		);
 		if (!typ) throw new NotFoundError(name);
 
-		return typ as SchemaType & {
+		return typ as typeof typ & {
 			inputFields: NonNullable<SchemaType['inputFields']>;
 			kind: Kind.InputObject;
 		};
 	}
 
-	query(name: string): Field {
-		const q = this.queries.find(q => q.name === name);
+	query(name: string) {
+		const q = this.queries.find(q => q.name.toLowerCase() === name.toLowerCase());
 		if (!q) throw new NotFoundError(name);
 
 		return q;
 	}
 
-	mutation(name: string): Field {
-		const m = this.mutations.find(m => m.name === name);
+	mutation(name: string) {
+		const m = this.mutations.find(m => m.name.toLowerCase() === name.toLowerCase());
 		if (!m) throw new NotFoundError(name);
 
 		return m;
 	}
 
-	subscription(name: string): Field {
-		const s = this.subscriptions.find(s => s.name === name);
+	subscription(name: string) {
+		const s = this.subscriptions.find(s => s.name.toLowerCase() === name.toLowerCase());
 		if (!s) throw new NotFoundError(name);
 
 		return s;
+	}
+
+	type(ref: string | InterfaceElement) {
+		const name = typeof ref === 'string' ? ref : drillToTypename(ref);
+
+		let t = this.types.find(t => t.name.toLowerCase() === name.toLowerCase());
+		if (!t) throw new NotFoundError(name);
+
+		return t;
 	}
 
 	/**
@@ -185,26 +350,87 @@ export class Module {
 		return this.subscriptions.some(t => t.name === name);
 	}
 
-	/**
-	 * Get all types or queries that reference this field or type
-	 */
-	// references(name: string): string[] {}
+	connectionType(ref: string | InterfaceElement) {
+		const type = this.type(ref);
 
-	sourceLocation(name: string): CodeLocation {
-		const loc = this.sourceMap.get(name);
-		if (!loc) throw new NotFoundError(name);
-		return loc;
+		const match = type.name.match(Module.CONNECTION_TYPE_PATTERN);
+		if (!match?.groups?.type) {
+			return null;
+		}
+
+		const edgesTyperef = type.fields?.find(f => f.name === 'edges')?.type;
+		if (!edgesTyperef) return null;
+
+		const nodeTyperef = this.type(edgesTyperef).fields?.find(f => f.name === 'node')?.type;
+		if (!nodeTyperef) return null;
+
+		return {
+			nodeType: this.type(nodeTyperef)
+		};
+	}
+
+	resultType(name: string) {
+		const type = this.type(name);
+
+		const match = type.name.match(Module.RESULT_TYPE_PATTERN);
+		if (!match?.groups?.type || !match?.groups?.kind) {
+			return null;
+		}
+
+		const successType = this.type(Module.RESULT_TO_SUCCESS_TYPE(name));
+		if (successType.fields?.length !== 1) return null;
+
+		const successTypeDataField = successType.fields?.find(
+			n => n.name === Module.SUCCESS_TYPE_DATA_FIELD_NAME
+		);
+		if (!successTypeDataField) return null;
+
+		if (!type.possibleTypes) return null;
+
+		return {
+			dataType: this.type(successTypeDataField.type),
+			errorTypes: type.possibleTypes
+				.filter(t => t.name && t.name !== successType.name)
+				.map(t => this.type(t)),
+			kind: match.groups.kind as 'Query' | 'Mutation' | 'Subscription'
+		};
 	}
 }
 
 export async function loadAllModules<ModuleLoaderOptions>(
+	loader: ModuleLoader<ModuleLoaderOptions>,
 	schema: SchemaClass,
-	options: ModuleLoaderOptions,
-	loader: ModuleLoader<ModuleLoaderOptions>
+	options: (moduleName: string | undefined) => NoInfer<ModuleLoaderOptions>
 ): Promise<Module[]> {
-	await loader.before?.('load-all', schema, options);
-	const names = await loader.index(schema, options);
-	const modules = await Promise.all(names.map(name => loader.load(name, schema, options)));
-	await loader.after?.('load-all', modules, schema, options);
+	await loader.before?.('load-all', schema, options(undefined));
+	const names = await loader.index(schema, options(undefined));
+	const modules = await Promise.all(
+		names.map(async name => {
+			const m = await loader.load(name, schema, options(name));
+			await m.initialize();
+			return m;
+		})
+	);
+	await loader.after?.('load-all', modules, schema, options(undefined));
 	return modules;
+}
+
+export async function loadAndSerializeAllModules<ModuleLoaderOptions>(
+	loader: ModuleLoader<ModuleLoaderOptions>,
+	schema: SchemaClass,
+	options: (moduleName: string | undefined) => NoInfer<ModuleLoaderOptions>
+): Promise<SerializedModule[]> {
+	const names = await loader.index(schema, options(undefined));
+	const modules = await Promise.all(
+		names.map(async name => {
+			try {
+				const m = await loader.load(name, schema, options(name));
+				return m.serialize();
+			} catch (error) {
+				console.error(`${bold(red(`[${name}]`))} Could not load module: ${error}`);
+				return null;
+			}
+		})
+	).then(modules => modules.filter(Boolean));
+	return modules as Array<NonNullable<(typeof modules)[number]>>;
 }

@@ -33,8 +33,14 @@ export function pascalToKebab(str: string) {
 	return camelToKebab(str).toLowerCase().replace(/^-/, '');
 }
 
+export const FRONTMATTER_SEPARATOR = /^\s*-{3,}\s*$/m;
+
 export async function getFrontmatter(schema: SchemaClass, markdown: string) {
-	const [frontmatter, _] = markdown.split(/^\s*-{3,}\s*$/m, 2);
+	if (!FRONTMATTER_SEPARATOR.test(markdown)) {
+		return {};
+	}
+
+	const [frontmatter, _] = markdown.split(FRONTMATTER_SEPARATOR, 2);
 	return z
 		.object({
 			manually_include: z

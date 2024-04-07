@@ -1,24 +1,21 @@
-import { single as loader } from '@narasimha/loaders';
-import { loadAllModules, type SchemaClass } from '@narasimha/core';
-import { readFileSync } from 'node:fs';
+import { loadAndSerializeAllModules } from '@narasimha/core';
+import { filesystem as loader } from '@narasimha/loaders';
 
-export async function load() {
-	console.log(process.cwd());
-	const schema = JSON.parse(readFileSync('./static/schema.json', 'utf-8')) as SchemaClass;
+export async function load({ parent }) {
+	const { schema } = await parent();
+
 	return {
-		modules: JSON.parse(
-			JSON.stringify(
-				await loadAllModules(
-					schema,
-					{
-						metadata: {
-							name: 'API',
-							docs: 'test'
-						}
-					},
-					loader
-				)
-			)
-		)
+		schema,
+		modules: await loadAndSerializeAllModules(loader, schema, module => ({
+			directory: `/home/uwun/projects/churros/packages/api/src/modules`
+			// metadata: { name: 'API', docs: 'test' },
+			// referencePathResolver: (_, { name, module, type }) => {
+			// 	// console.log(`Resolving reference to ${type} ${name} in module ${module}`)
+			// 	return `/${module}#${type}/${name}`;
+			// },
+			// sourceMapResolver: (_, { name, module, type }) => ({
+			// 	filepath: `/packages/api/src/modules/${module}/${type === 'type' ? `types/${name}.ts` : `resolvers/${type}.${name}.ts`}`
+			// })
+		}))
 	};
 }

@@ -50,8 +50,11 @@ export default {
 			referencePathResolver: referencePathTemplate
 				? (_, ref) => referencePathTemplate(ref)
 				: undefined,
-			sourceMap: module_.sources
-				? new Map(Object.entries(module_.sources).map(([k, v]) => [k, { filepath: v }]))
+			sourceMapResolver: module_.sources
+				? (_, { name }) => {
+						const filepath = module_.sources?.[name];
+						return filepath ? { filepath } : null;
+					}
 				: undefined
 		});
 	}

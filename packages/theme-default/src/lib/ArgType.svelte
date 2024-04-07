@@ -5,7 +5,7 @@
 		type EnumValue,
 		type InterfaceElement,
 		type SchemaType
-	} from './schema.js';
+	} from '@narasimha/core';
 
 	export let typ: Arg['type'];
 	export let inline = false;
@@ -73,7 +73,7 @@
 <!-- Need to avoid extraneous whitespace, so the code is ugly like that. Sowwy ._. -->
 {#if !typ}(none){:else}{#if typ.kind === 'ENUM'}{#if !enumValues || !willExpandEnum(typ)}<a
 				href="#{typ.name}"
-				title={(enumValues || []).map((v) => v.name).join(' | ')}
+				title={(enumValues || []).map(v => v.name).join(' | ')}
 				class="type enum">{typ.name}</a
 			>{:else}{#if nullable}({/if}{#each Object.entries(enumValues) as [i, value]}<span
 					class="type enum enum-value"

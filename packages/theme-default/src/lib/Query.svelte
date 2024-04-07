@@ -1,9 +1,7 @@
 <script lang="ts">
 	import HashLink from '$lib/HashLink.svelte';
 	import LiveIndicator from '$lib/LiveIndicator.svelte';
-	import { pascalToKebab } from './casing.js';
-	import { markdownToHtml } from './markdown.js';
-	import type { Arg, EnumValue, Field, InterfaceElement, SchemaType } from './schema.js';
+	import type { Arg, EnumValue, Field, InterfaceElement, SchemaType } from '@narasimha/core';
 	import { onMount } from 'svelte';
 	import ArgType from './ArgType.svelte';
 
@@ -98,7 +96,7 @@
 								inline
 								typ={type}
 							></ArgType>{/if}{#if defaultValue !== null}&nbsp;=&nbsp;<span
-								class="literal {pascalToKebab(syntaxHighlightTypeName(type))}">{defaultValue}</span
+								class="literal {syntaxHighlightTypeName(type)}">{defaultValue}</span
 							>{/if}{#if Number(i) < query.args.length - 1},&#x20;&#8203;{/if}{/each}{/if})</code
 			>&#x20;&rarr;&nbsp;<code class="no-color"
 				><ArgType
@@ -116,12 +114,7 @@
 	</HashLink>
 	{#if query.description}
 		<section class="doc">
-			{#await markdownToHtml(query.description, allResolvers) then doc}
-				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-				{@html doc}
-			{:catch error}
-				<p>Impossible de rendre la documentation pour {query.name}: {error}</p>
-			{/await}
+			{@html query.description}
 		</section>
 	{/if}
 

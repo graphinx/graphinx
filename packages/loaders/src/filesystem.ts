@@ -6,7 +6,7 @@ import { FromDocs, Module, type CodeLocation, type ModuleLoader } from '@narasim
 export const filesystem: ModuleLoader<{ directory: string }> = {
 	async index(_, options) {
 		// TODO filter out files that are not directories, and add an excludeDirectories option
-		return readdirNotExistOk(options.directory);
+		return (await readdirNotExistOk(options.directory)).map(f => path.basename(f));
 	},
 	async load(name, schema, options) {
 		const directory = path.join(options.directory, name);
@@ -62,11 +62,11 @@ export const filesystem: ModuleLoader<{ directory: string }> = {
 
 		return new Module(schema, new Set(includedItems.keys()), {
 			metadata: {
-				name: directory,
+				name: path.basename(directory),
 				displayName: FromDocs,
 				docs
 			},
-			sourceMap: includedItems
+			sourceMapResolver: (_, ref) => includedItems.get(ref.name) ?? null
 		});
 	}
 };
