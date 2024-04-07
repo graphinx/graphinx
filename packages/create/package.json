@@ -1,0 +1,17 @@
+{
+  "name": "@narasimha/create",
+  "module": "index.ts",
+  "type": "module",
+  "bin": "./create.js",
+  "files": ["create.js", "index.js"],
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@clack/prompts": "^0.7.0",
+    "kleur": "^4.1.5"
+  }
+}

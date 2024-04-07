@@ -19,10 +19,10 @@ yarn create narasimha my-docs-site
 You can, in the e.g. load function of a SvelteKit page, use the utility functions to get schema information:
 
 ```javascript
-import { filesystem as loader } from '@narasimha/loaders';
+import { schemaUtils } from 'narasimha';
 import { schema } from '$lib/schema';
 export async function load({ params }) {
-	return { query: await loader.load(params.name, { directory: '.' }, schema) };
+	return { query: schemaUtils.findQueryInSchema(schema, params.query) };
 }
 ```
 

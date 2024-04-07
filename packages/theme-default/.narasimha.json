@@ -1,0 +1,10 @@
+{
+    "modules": [
+        {
+            "name": "forms",
+            "display": "Formulaires",
+            "docs": "Test **ici**",
+            "items": ["allForms"]
+        }
+    ]
+}
