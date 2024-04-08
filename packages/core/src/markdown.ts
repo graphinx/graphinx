@@ -3,12 +3,11 @@ import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import { unified } from 'unified';
 import type { SchemaClass } from './schema.js';
-import type { ItemReference, ItemReferencePathResolver } from './modules.js';
+import type { ItemReference, ItemReferencePathResolver } from './pantry.js';
 
 export type ResolverFromFilesystem = {
 	name: string;
 	moduleName: string;
-	type: 'query' | 'mutation' | 'subscription';
 };
 
 export async function markdownToHtml(
@@ -17,8 +16,7 @@ export async function markdownToHtml(
 	items: ItemReference[],
 	{
 		downlevelHeadings = true,
-		referencePath = ((_, ref) =>
-			`/${ref.module}/#${ref.type}/${ref.name}`) as ItemReferencePathResolver
+		referencePath = ((_, ref) => `/${ref.module}/${ref.name}`) as ItemReferencePathResolver
 	} = {}
 ) {
 	return await unified()
@@ -39,7 +37,7 @@ export async function markdownToHtml(
 			html
 				// auto-link "query foo", "mutation bar", and "subscription baz"
 				.replaceAll(/(query|mutation|subscription) ([a-zA-Z0-9]+)/g, (match, type, name) => {
-					const r = items.find(r => r.name === name && r.type === type);
+					const r = items.find(r => r.name === name);
 					return r ? `<a href="/${referencePath(schema, r)}">${r.name}</a>` : match;
 				})
 				// auto-link "registerApp" but not "user"

@@ -1,23 +1,24 @@
 import {
 	allIncludableItems,
-	Module,
+	Pantry,
 	type CodeLocation,
 	type ItemReference,
-	type ModuleLoader,
-	type ModuleMetadata,
+	type Module,
+	type PantryLoader,
 	type SchemaClass
 } from '@narasimha/core';
 
-type ConstructorOptions = ConstructorParameters<typeof Module>[2];
+type ConstructorOptions = ConstructorParameters<typeof Pantry>[2];
 
-export const single: ModuleLoader<
-	ConstructorOptions & {
+export const single: PantryLoader<{
+	options: ConstructorOptions & {
 		sourceMapResolver: (schema: SchemaClass, ref: ItemReference) => CodeLocation | null;
-	}
-> = {
-	index: () => ['all'],
-	load: (_, schema, { sourceMapResolver, ...constructorOptions }) =>
-		new Module(schema, allIncludableItems(schema), constructorOptions)
+	};
+	module: Omit<Module, 'includedItems'>;
+}> = {
+	name: 'single',
+	load: (schema, { options, module }) =>
+		new Pantry(schema, [{ ...module, includedItems: allIncludableItems(schema) }], options)
 };
 
 /**

@@ -1,72 +1,106 @@
 import { readFile, readdir, stat } from 'node:fs/promises';
 import * as path from 'node:path';
 import { kebabToCamel, kebabToPascal, getFrontmatter } from './utils.js';
-import { FromDocs, Module, type CodeLocation, type ModuleLoader } from '@narasimha/core';
+import {
+	FromDocs,
+	Pantry,
+	type CodeLocation,
+	type ItemReferencePathResolver,
+	type Module,
+	type PantryLoader
+} from '@narasimha/core';
 
-export const filesystem: ModuleLoader<{ directory: string }> = {
-	async index(_, options) {
+export const filesystem: PantryLoader<{
+	directory: string;
+	referencePathResolver: ItemReferencePathResolver;
+}> = {
+	name: 'filesystem',
+	async load(schema, options) {
 		// TODO filter out files that are not directories, and add an excludeDirectories option
-		return (await readdirNotExistOk(options.directory)).map(f => path.basename(f));
-	},
-	async load(name, schema, options) {
-		const directory = path.join(options.directory, name);
-		if (!(await stat(directory).catch(() => false)))
-			throw new Error(`Module does not exist: ${directory} not found.`);
+		const index = (await readdirNotExistOk(options.directory)).map(f => path.basename(f));
 
-		const docs = await readFile(path.join(directory, 'README.md'), 'utf-8');
-		const metadata = await getFrontmatter(schema, docs);
+		const sourcemap: Map<string, CodeLocation> = new Map();
+		const modules: Module[] = [];
 
-		const typeFiles = await typescriptFilesWithoutBarrels(path.join(directory, 'types'));
-		let includedItems: Map<string, CodeLocation | null> = new Map(
-			typeFiles.map(file => [kebabToPascal(path.basename(file, '.ts')), { filepath: file }])
-		);
+		for (const name of index) {
+			console.log(`[${name}] Loading module`);
+			const directory = path.join(options.directory, name);
+			if (!(await stat(directory).catch(() => false)))
+				throw new Error(`Module does not exist: ${directory} not found.`);
 
-		metadata.manually_include?.forEach(item => includedItems.set(item, null));
+			const docs = await readFile(path.join(directory, 'README.md'), 'utf-8');
+			const metadata = await getFrontmatter(schema, docs).catch(e => {
+				console.error(`Could not load metadata for module ${name}: ${e}`);
+				return {};
+			});
 
-		for (const filepath of await typescriptFilesWithoutBarrels(path.join(directory, 'resolvers'))) {
-			const filename = path.basename(filepath);
-			if (filename.startsWith('query')) {
-				includedItems.set(kebabToCamel(filename.replace(/^query\./, '').replace(/\.ts$/, '')), {
-					filepath
-				});
+			const typeFiles = await typescriptFilesWithoutBarrels(path.join(directory, 'types'));
+			let includedItems = new Set(typeFiles.map(file => kebabToPascal(path.basename(file, '.ts'))));
+
+			typeFiles.forEach(file => {
+				sourcemap.set(kebabToPascal(path.basename(file, '.ts')), { filepath: file });
+			});
+
+			metadata.manually_include?.forEach(item => includedItems.add(item));
+
+			for (const filepath of await typescriptFilesWithoutBarrels(
+				path.join(directory, 'resolvers')
+			)) {
+				const filename = path.basename(filepath);
+				if (filename.startsWith('query')) {
+					let fieldname = kebabToCamel(filename.replace(/^query\./, '').replace(/\.ts$/, ''));
+					includedItems.add(fieldname);
+					sourcemap.set(fieldname, {
+						filepath
+					});
+				}
+
+				if (filename.startsWith('mutation')) {
+					let fieldname = kebabToCamel(filename.replace(/^mutation\./, '').replace(/\.ts$/, ''));
+					includedItems.add(fieldname);
+					sourcemap.set(fieldname, {
+						filepath
+					});
+				}
+
+				if (filename.startsWith('subscription')) {
+					let fieldname = kebabToCamel(
+						filename.replace(/^subscription\./, '').replace(/\.ts$/, '')
+					);
+					includedItems.add(fieldname);
+					sourcemap.set(fieldname, { filepath });
+				}
 			}
 
-			if (filename.startsWith('mutation')) {
-				includedItems.set(kebabToCamel(filename.replace(/^mutation\./, '').replace(/\.ts$/, '')), {
-					filepath
-				});
-			}
-
-			if (filename.startsWith('subscription')) {
-				includedItems.set(
-					kebabToCamel(filename.replace(/^subscription\./, '').replace(/\.ts$/, '')),
-					{ filepath }
+			if (includedItems.size === 0) {
+				console.warn(
+					`WARN: ${directory} has no types nor resolvers. Files found...\n\tIn ${path.join(
+						directory,
+						'types'
+					)}: ${(await typescriptFilesWithoutBarrels(path.join(directory, 'types')))
+						.map(f => path.basename(f))
+						.join(', ')}\n\tIn ${path.join(directory, 'resolvers')}: ${(
+						await typescriptFilesWithoutBarrels(path.join(directory, 'resolvers'))
+					)
+						.map(f => path.basename(f))
+						.join(', ')}`
 				);
 			}
+
+			modules.push({
+				name,
+				displayName: name, // TODO
+				includedItems: new Set([...includedItems.keys()]),
+				rawDocumentation: docs,
+				documentation: '',
+				shortDescription: '' // TODO
+			});
 		}
 
-		if (includedItems.size === 0) {
-			console.warn(
-				`WARN: ${directory} has no types nor resolvers. Files found...\n\tIn ${path.join(
-					directory,
-					'types'
-				)}: ${(await typescriptFilesWithoutBarrels(path.join(directory, 'types')))
-					.map(f => path.basename(f))
-					.join(', ')}\n\tIn ${path.join(directory, 'resolvers')}: ${(
-					await typescriptFilesWithoutBarrels(path.join(directory, 'resolvers'))
-				)
-					.map(f => path.basename(f))
-					.join(', ')}`
-			);
-		}
-
-		return new Module(schema, new Set(includedItems.keys()), {
-			metadata: {
-				name: path.basename(directory),
-				displayName: FromDocs,
-				docs
-			},
-			sourceMapResolver: (_, ref) => includedItems.get(ref.name) ?? null
+		return new Pantry(schema, modules, {
+			loaderName: `fs:${options.directory}`,
+			sourceMapResolver: (_, ref) => sourcemap.get(ref.name) ?? null,
+			referencePathResolver: options.referencePathResolver
 		});
 	}
 };

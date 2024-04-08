@@ -1,4 +1,4 @@
-import type { ModuleLoader, CodeLocation, ModuleMetadata } from './src/modules';
+import type { PantryLoader, CodeLocation, ModuleMetadata } from './src/pantry';
 import type {
 	SchemaClass,
 	Arg,
@@ -8,12 +8,12 @@ import type {
 	Field
 } from './src/schema';
 import { Kind } from './src/schema';
-import { Module, FromDocs, NotFoundError } from './src/modules';
-import { loadAllModules, loadAndSerializeAllModules } from './src/modules';
+import { Pantry, FromDocs, NotFoundError } from './src/pantry';
+import { loadAllModules, loadAndSerializeAllModules } from './src/pantry';
 import { allIncludableItems } from './src/utils';
 
 export type {
-	ModuleLoader,
+	PantryLoader,
 	CodeLocation,
 	ModuleMetadata,
 	SchemaClass,
@@ -24,7 +24,7 @@ export type {
 	Field
 };
 export {
-	Module,
+	Pantry,
 	FromDocs,
 	NotFoundError,
 	loadAllModules,
