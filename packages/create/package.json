@@ -5,15 +5,22 @@
   "type": "module",
   "bin": "./create.js",
   "files": ["create.js", "index.js"],
+  "repository": {
+    "url": "https://github.com/ewen-lbh/narasimha/tree/main/packages/create"
+  },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "ast-types": "^0.14.2"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@babel/parser": "^7.24.4",
     "@clack/prompts": "^0.7.0",
+    "create-svelte": "^6.0.10",
     "kleur": "^4.1.5",
-    "narasimha": "workspace:*"
+    "narasimha": "workspace:*",
+    "recast": "^0.23.6"
   }
 }

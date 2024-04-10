@@ -15,7 +15,7 @@
     "format": "prettier --write ."
   },
   "repository": {
-    "url": "https://github.com/ewen-lbh/narasimha"
+    "url": "https://github.com/ewen-lbh/narasimha/tree/main/packages/narasimha"
   },
   "exports": {
     ".": {
