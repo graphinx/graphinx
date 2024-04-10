@@ -61,6 +61,7 @@ if (useIntrospection) {
 		})
 	});
 
+	/** @type {import('narasimha').SchemaClass} */
 	const schema = await response.json().then(r => r['data']['__schema']);
 
 	fs.writeFileSync('schema.json', JSON.stringify(schema, undefined, 2));
