@@ -19,7 +19,6 @@ import { create as createSvelteKit } from 'create-svelte';
 import path from 'node:path';
 import * as recast from 'recast';
 import typescriptParser from 'recast/parsers/typescript.js';
-import { $ } from 'bun';
 
 const here = new URL('.', import.meta.url).pathname;
 

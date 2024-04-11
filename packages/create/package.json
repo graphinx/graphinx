@@ -1,15 +1,14 @@
 {
   "name": "create-narasimha",
-  "version": "0.0.1",
+  "version": "0.0.6",
   "module": "index.ts",
   "type": "module",
   "bin": "./create.js",
-  "files": ["create.js", "index.js"],
+  "files": ["create.js", "index.js", "files/"],
   "repository": {
     "url": "https://github.com/ewen-lbh/narasimha/tree/main/packages/create"
   },
   "devDependencies": {
-    "@types/bun": "latest",
     "ast-types": "^0.14.2"
   },
   "peerDependencies": {
@@ -20,7 +19,7 @@
     "@clack/prompts": "^0.7.0",
     "create-svelte": "^6.0.10",
     "kleur": "^4.1.5",
-    "narasimha": "workspace:*",
+    "narasimha": "^0.0.2",
     "recast": "^0.23.6"
   }
 }
