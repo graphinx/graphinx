@@ -1,1 +1,0 @@
-export declare const MODULES_ORDER: readonly [".global", "users", "groups", "posts", "events", "ticketing", "forms", "documents", "notifications", "services", "bar-weeks", "student-associations", "schools", "curriculum", "comments", "reactions", "links", "oauth", "announcements", "payments", "gitlab", "changelogs", "logs", "health-checks"];
