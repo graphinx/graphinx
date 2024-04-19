@@ -1,8 +1,8 @@
 <script lang="ts">
-	import type { Module } from '$lib/pantry.js';
-	import { MODULES_COLORS } from '$lib/colors.js';
+import { MODULES_COLORS } from "$lib/colors.js";
+import type { Module } from "$lib/pantry.js";
 
-	export let module: Module;
+export let module: Module;
 </script>
 
 <a

@@ -1,5 +1,5 @@
-import { Pantry, type Module, type PantryLoader } from '../pantry.js';
-import { z } from 'zod';
+import { z } from "zod";
+import { type Module, Pantry, type PantryLoader } from "../pantry.js";
 
 /**
  * Determine which fields and types are in the module by a GraphQL query named `loadModuleQuery` that takes a single argument `name`, which will be given the module\'s name as a value. The query must return an object that has the following fields:
@@ -13,12 +13,12 @@ import { z } from 'zod';
  * The API also has to have a query named `indexQuery` that takes no arguments and returns a list of strings, each of which is the name of a module that can be loaded with the `loadModuleQuery`.
  */
 export default {
-	name: 'query',
+	name: "query",
 	async load(schema, options) {
 		const { index: names } = await graphql({
 			...options,
 			query: `{ index: ${options.indexQuery} }`,
-			schema: z.object({ index: z.array(z.string()) })
+			schema: z.object({ index: z.array(z.string()) }),
 		});
 
 		const modules: Module[] = [];
@@ -28,8 +28,8 @@ export default {
 		const { loadModuleQuery: queryName, endpoint, authToken } = options;
 
 		for (const name of names) {
-			let {
-				module: { items, ...info }
+			const {
+				module: { items, ...info },
 			} = await graphql({
 				endpoint,
 				authToken,
@@ -37,10 +37,12 @@ export default {
 					module: z.object({
 						displayName: z.string().nullable(),
 						docs: z.string(),
-						items: z.array(z.object({ name: z.string(), filepath: z.string().nullable() })),
+						items: z.array(
+							z.object({ name: z.string(), filepath: z.string().nullable() }),
+						),
 						color: z.string().nullable(),
-						icon: z.string().nullable()
-					})
+						icon: z.string().nullable(),
+					}),
 				}),
 				query: `query GetModuleInfo($name: String!) {
 					module: ${queryName}(name: $name) {
@@ -51,7 +53,7 @@ export default {
 						icon
 					}
 				}`,
-				variables: { name }
+				variables: { name },
 			});
 
 			allItems = [...allItems, ...items];
@@ -59,21 +61,21 @@ export default {
 			modules.push({
 				name,
 				displayName: info.displayName ?? name,
-				includedItems: new Set(items.map(i => i.name)),
-				shortDescription: '',
+				includedItems: new Set(items.map((i) => i.name)),
+				shortDescription: "",
 				rawDocumentation: info.docs,
-				documentation: ''
+				documentation: "",
 			});
 		}
 
 		return new Pantry(schema, modules, {
 			loaderName: `query:${queryName}`,
 			sourceMapResolver: (_, { name }) => {
-				const filepath = allItems.find(i => i.name === name)?.filepath;
+				const filepath = allItems.find((i) => i.name === name)?.filepath;
 				return filepath ? { filepath } : null;
-			}
+			},
 		});
-	}
+	},
 } satisfies PantryLoader<{
 	indexQuery: string;
 	loadModuleQuery: string;
@@ -86,7 +88,7 @@ async function graphql<ResponseSchema extends Zod.Schema>({
 	authToken,
 	schema,
 	query,
-	variables = {}
+	variables = {},
 }: {
 	endpoint: URL;
 	schema: ResponseSchema;
@@ -95,16 +97,16 @@ async function graphql<ResponseSchema extends Zod.Schema>({
 	authToken?: string;
 }): Promise<Zod.infer<ResponseSchema>> {
 	const response = await fetch(endpoint, {
-		method: 'post',
+		method: "post",
 		headers: {
-			'Content-Type': 'application/json',
-			...(authToken ? { Authorization: `Bearer ${authToken}` } : {})
+			"Content-Type": "application/json",
+			...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
 		},
 		body: JSON.stringify({
 			query,
-			variables
-		})
-	}).then(r => r.json());
+			variables,
+		}),
+	}).then((r) => r.json());
 
 	return schema.parse(response.data);
 }

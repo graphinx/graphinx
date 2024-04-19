@@ -1,66 +1,66 @@
 <script lang="ts">
-	import { Kind, type Arg, Pantry } from '$lib/index.js';
+import { type Arg, Kind, type Pantry } from "$lib/index.js";
 
-	export let typ: Arg['type'];
-	export let pantry: Pantry;
-	export let inline = false;
-	export let nullable = true;
-	export let noExpandEnums = false;
-	export let invertNullabilitySign = true;
-	export let explicitNullabilitySign = false;
+export let typ: Arg["type"];
+export let pantry: Pantry;
+export const inline = false;
+export const nullable = true;
+export const noExpandEnums = false;
+export const invertNullabilitySign = true;
+export const explicitNullabilitySign = false;
 
-	let href: string | undefined = undefined;
-	$: {
-		try {
-			href = pantry.type(typ).referencePath;
-		} catch {}
-	}
+let href: string | undefined = undefined;
+{
+	try {
+		href = pantry.type(typ).referencePath;
+	} catch {}
+}
 
-	export let enumWasExpanded = false;
-	$: enumWasExpanded = willExpandEnum(typ);
+export let enumWasExpanded = false;
+$: enumWasExpanded = willExpandEnum(typ);
 
-	let connectionType: ReturnType<typeof pantry.connectionType> = null;
-	$: {
-		try {
-			connectionType = pantry.connectionType(typ);
-		} catch (error) {}
-	}
+let connectionType: ReturnType<typeof pantry.connectionType> = null;
+{
+	try {
+		connectionType = pantry.connectionType(typ);
+	} catch (error) {}
+}
 
-	let resultType: ReturnType<typeof pantry.resultType> = null;
-	$: {
-		try {
-			resultType = pantry.resultType(typ);
-		} catch (error) {}
-	}
+let resultType: ReturnType<typeof pantry.resultType> = null;
+{
+	try {
+		resultType = pantry.resultType(typ);
+	} catch (error) {}
+}
 
-	let unionType: null | ReturnType<typeof pantry.union> = null;
-	$: {
-		try {
-			unionType = pantry.union(typ);
-		} catch (error) {}
-	}
+let unionType: null | ReturnType<typeof pantry.union> = null;
+{
+	try {
+		unionType = pantry.union(typ);
+	} catch (error) {}
+}
 
-	let enumType: null | ReturnType<typeof pantry.enum> = null;
-	$: {
-		try {
-			enumType = pantry.enum(typ);
-		} catch (error) {}
-	}
+let enumType: null | ReturnType<typeof pantry.enum> = null;
+{
+	try {
+		enumType = pantry.enum(typ);
+	} catch (error) {}
+}
 
-	function willExpandEnum(t: Arg['type']) {
-		const valuesCount =
-			t.kind === Kind.Enum
-				? enumType?.enumValues.length
-				: t.kind === Kind.Union
-					? unionType?.possibleTypes.length
-					: 0;
-		return Boolean(
-			(t.kind === 'ENUM' || t.kind === 'UNION') &&
-				!noExpandEnums &&
-				(inline ? (valuesCount ?? 0) <= 3 : true) &&
-				(valuesCount ?? 0) <= 10
-		);
-	}
+function willExpandEnum(t: Arg["type"]) {
+	const valuesCount =
+		t.kind === Kind.Enum
+			? enumType?.enumValues.length
+			: t.kind === Kind.Union
+				? unionType?.possibleTypes.length
+				: 0;
+	return Boolean(
+		(t.kind === "ENUM" || t.kind === "UNION") &&
+			!noExpandEnums &&
+			(inline ? (valuesCount ?? 0) <= 3 : true) &&
+			(valuesCount ?? 0) <= 10,
+	);
+}
 </script>
 
 <!-- Need to avoid extraneous whitespace, so the code is ugly like that. Sowwy ._. -->

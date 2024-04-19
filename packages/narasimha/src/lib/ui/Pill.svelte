@@ -1,5 +1,5 @@
 <script lang="ts">
-	export let noInteractions = false;
+export const noInteractions = false;
 </script>
 
 <span class="pill" class:no-interactions={noInteractions}>

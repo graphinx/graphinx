@@ -1,5 +1,12 @@
 {
-    "name": "narasimha",
-    "version": "0.0.1",
-    "workspaces": ["packages/*"]
+	"name": "narasimha",
+	"version": "0.0.1",
+	"workspaces": ["packages/*"],
+	"scripts": {
+		"check": "biome check --apply ."
+	},
+	"devDependencies": {
+		"@biomejs/biome": "1.7.0",
+		"typedoc": "^0.25.13"
+	}
 }

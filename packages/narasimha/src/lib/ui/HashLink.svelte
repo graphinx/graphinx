@@ -1,8 +1,8 @@
 <script lang="ts">
-	import LinkIcon from './icons/LinkIcon.svelte';
+import LinkIcon from "./icons/LinkIcon.svelte";
 
-	export let hash: string | undefined;
-	export let element: string = 'h4';
+export let hash: string | undefined;
+export const element = "h4";
 </script>
 
 <svelte:element this={element} class="header" id={hash} {...$$restProps}>

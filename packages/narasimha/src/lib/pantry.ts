@@ -1,14 +1,18 @@
-import { bold, cyan } from 'kleur/colors';
-import type { AugmentedArg, AugmentedField, AugmentedSchemaType } from './augmented-schema.js';
-import { markdownToHtml } from './markdown.js';
-import { buildDisplayType, drillToTypename } from './schema-utils.js';
+import { bold, cyan } from "kleur/colors";
+import type {
+	AugmentedArg,
+	AugmentedField,
+	AugmentedSchemaType,
+} from "./augmented-schema.js";
+import { markdownToHtml } from "./markdown.js";
+import { buildDisplayType, drillToTypename } from "./schema-utils.js";
 import {
-	Kind,
 	type Field,
 	type InterfaceElement,
+	Kind,
 	type SchemaClass,
-	type SchemaType
-} from './schema.js';
+	type SchemaType,
+} from "./schema.js";
 
 export class NotFoundError extends Error {
 	constructor(name: string) {
@@ -27,7 +31,7 @@ export type PantryLoader<Options = {}> = {
 	load: (schema: SchemaClass, options: Options) => Pantry | Promise<Pantry>;
 };
 
-export const FromDocs = Symbol('FromDocs');
+export const FromDocs = Symbol("FromDocs");
 
 export type CodeLocation = {
 	filepath: string;
@@ -40,9 +44,15 @@ export type ItemReference = {
 	// type: 'query' | 'mutation' | 'subscription' | 'type';
 };
 
-export type ItemReferencePathResolver = (schema: SchemaClass, ref: ItemReference) => string;
+export type ItemReferencePathResolver = (
+	schema: SchemaClass,
+	ref: ItemReference,
+) => string;
 
-export type SourceMapResolver = (schema: SchemaClass, ref: ItemReference) => CodeLocation | null;
+export type SourceMapResolver = (
+	schema: SchemaClass,
+	ref: ItemReference,
+) => CodeLocation | null;
 
 export type ModuleMetadata = {
 	name: string;
@@ -52,7 +62,9 @@ export type ModuleMetadata = {
 	color?: string | null;
 };
 
-export type SerializedPantry = Awaited<ReturnType<InstanceType<typeof Pantry>['serialize']>>;
+export type SerializedPantry = Awaited<
+	ReturnType<InstanceType<typeof Pantry>["serialize"]>
+>;
 
 export type Module = {
 	name: string;
@@ -79,11 +91,13 @@ export class Pantry {
 	public _loaderName: string;
 
 	public static CONNECTION_TYPE_PATTERN = /^(?<type>\w+)Connection$/;
-	public static RESULT_TYPE_PATTERN = /^(?<kind>Query|Mutation|Subscription)(?<type>\w+)Result$/;
-	public static SUCCESS_TYPE_DATA_FIELD_NAME = 'data';
+	public static RESULT_TYPE_PATTERN =
+		/^(?<kind>Query|Mutation|Subscription)(?<type>\w+)Result$/;
+	public static SUCCESS_TYPE_DATA_FIELD_NAME = "data";
 	public static RESULT_TO_SUCCESS_TYPE = (typename: string) =>
-		typename.replace(/Result$/, 'Success');
-	public static RESULT_TO_ERROR_TYPE = (typename: string) => typename.replace(/Result$/, 'Error');
+		typename.replace(/Result$/, "Success");
+	public static RESULT_TO_ERROR_TYPE = (typename: string) =>
+		typename.replace(/Result$/, "Error");
 
 	constructor(
 		schema: SchemaClass,
@@ -91,12 +105,12 @@ export class Pantry {
 		{
 			loaderName,
 			sourceMapResolver,
-			referencePathResolver
+			referencePathResolver,
 		}: {
 			loaderName: string;
 			sourceMapResolver?: SourceMapResolver;
 			referencePathResolver?: ItemReferencePathResolver;
-		}
+		},
 	) {
 		this.schema = schema;
 		this.referencePathResolver = referencePathResolver;
@@ -109,62 +123,66 @@ export class Pantry {
 		this._types = [];
 		this.modules = modules;
 		this.modulesMapping = new Map(
-			modules.flatMap(m => [...m.includedItems].map(item => [item, m.name]))
+			modules.flatMap((m) =>
+				[...m.includedItems].map((item) => [item, m.name]),
+			),
 		);
 	}
 
 	async _augment<T extends Field | SchemaType>(
 		f: T,
-		t: 'query' | 'mutation' | 'subscription' | 'type' | 'field'
+		t: "query" | "mutation" | "subscription" | "type" | "field",
 	) {
 		return {
 			...f,
 			args:
-				'args' in f
+				"args" in f
 					? await Promise.all(
 							f.args.map(
-								async arg =>
+								async (arg) =>
 									({
 										...arg,
 										descriptionRaw: arg.description,
 										description: arg.description
 											? await markdownToHtml(this.schema, arg.description, [], {
-													referencePath: this.referencePathResolver
+													referencePath: this.referencePathResolver,
 												})
-											: null
-									}) satisfies AugmentedArg
-							)
+											: null,
+									}) satisfies AugmentedArg,
+							),
 						)
 					: undefined,
 			descriptionRaw: f.description,
 			description: f.description
 				? await markdownToHtml(this.schema, f.description, [], {
-						referencePath: this.referencePathResolver
+						referencePath: this.referencePathResolver,
 					})
 				: null,
 			referencePath:
-				t !== 'field'
+				t !== "field"
 					? this.referencePathResolver?.(this.schema, {
 							module: this.modulesMapping.get(f.name)!,
-							name: f.name
+							name: f.name,
 						})
 					: undefined,
 			sourceLocation:
-				t !== 'field' && this.sourceMapResolver
+				t !== "field" && this.sourceMapResolver
 					? this.sourceMapResolver(this.schema, {
 							module: this.modulesMapping.get(f.name)!,
-							name: f.name
+							name: f.name,
 						}) ?? undefined
 					: undefined,
-			displayType: 'type' in f ? buildDisplayType(f.type) : ''
+			displayType: "type" in f ? buildDisplayType(f.type) : "",
 		};
 	}
 
 	async augmentFields<T extends Field | SchemaType>(
 		fields: T[],
-		t: 'query' | 'subscription' | 'mutation' | 'type'
+		t: "query" | "subscription" | "mutation" | "type",
 	) {
-		const augmented = await Promise.all(fields.map(async f => this._augment(f, t)));
+		const augmented = await Promise.all(
+			fields.map(async (f) => this._augment(f, t)),
+		);
 		this.log(`Augmented ${bold(augmented.length)} ${t}s`);
 		return augmented;
 	}
@@ -175,67 +193,74 @@ export class Pantry {
 
 	async initialize() {
 		if (this._initialized) return;
-		this.log('Initializing module');
+		this.log("Initializing module");
 
-		const maybeQueryType = this.schema.types.find(t => t.name === this.schema.queryType.name);
-		if (!maybeQueryType) throw new InvalidSchemaError('Missing query root type');
-		if (!maybeQueryType.fields) throw new InvalidSchemaError('Empty query root type');
+		const maybeQueryType = this.schema.types.find(
+			(t) => t.name === this.schema.queryType.name,
+		);
+		if (!maybeQueryType)
+			throw new InvalidSchemaError("Missing query root type");
+		if (!maybeQueryType.fields)
+			throw new InvalidSchemaError("Empty query root type");
 
 		this.modules = await Promise.all(
-			this.modules.map(async module => {
+			this.modules.map(async (module) => {
 				return {
 					...module,
 					documentation: await markdownToHtml(
 						this.schema,
 						module.rawDocumentation,
-						[...module.includedItems].map(item => ({
+						[...module.includedItems].map((item) => ({
 							name: item,
-							module: module.name
+							module: module.name,
 						})),
 						{
-							referencePath: this.referencePathResolver
-						}
-					)
+							referencePath: this.referencePathResolver,
+						},
+					),
 				};
-			})
+			}),
 		);
 
-		this._queries = await this.augmentFields(maybeQueryType.fields, 'query');
+		this._queries = await this.augmentFields(maybeQueryType.fields, "query");
 		this._mutations = await this.augmentFields(
-			this.schema.types.find(t => t.name === this.schema.mutationType.name)?.fields ?? [],
-			'mutation'
+			this.schema.types.find((t) => t.name === this.schema.mutationType.name)
+				?.fields ?? [],
+			"mutation",
 		);
 		this._subscriptions = await this.augmentFields(
-			this.schema.types.find(t => t.name === this.schema.subscriptionType.name)?.fields ?? [],
-			'subscription'
+			this.schema.types.find(
+				(t) => t.name === this.schema.subscriptionType.name,
+			)?.fields ?? [],
+			"subscription",
 		);
 
 		this._types = await Promise.all(
 			this.schema.types
-				.filter(t => !this.specialTypes.includes(t.name))
-				.map(async t => ({
+				.filter((t) => !this.specialTypes.includes(t.name))
+				.map(async (t) => ({
 					...t,
-					...(await this._augment(t, 'type')),
+					...(await this._augment(t, "type")),
 					fields: t.fields
 						? await Promise.all(
-								t.fields.map(async f => ({
+								t.fields.map(async (f) => ({
 									...f,
-									...(await this._augment(f, 'field'))
-								}))
+									...(await this._augment(f, "field")),
+								})),
 							)
-						: null
-				}))
+						: null,
+				})),
 		);
 
 		this._initialized = true;
-		this.log('Module initialized');
+		this.log("Module initialized");
 	}
 
 	get specialTypes(): string[] {
 		return [
 			this.schema.queryType.name,
 			this.schema.mutationType.name,
-			this.schema.subscriptionType.name
+			this.schema.subscriptionType.name,
 		];
 	}
 
@@ -246,15 +271,18 @@ export class Pantry {
 			queries: this._queries,
 			mutations: this._mutations,
 			subscriptions: this._subscriptions,
-			types: this._types
+			types: this._types,
 		};
 	}
 
-	static async fromSerialized(schema: SchemaClass, data: SerializedPantry): Promise<Pantry> {
+	static async fromSerialized(
+		schema: SchemaClass,
+		data: SerializedPantry,
+	): Promise<Pantry> {
 		const pantry = new Pantry(schema, data.modules, {
-			loaderName: '#fromSerialized#',
+			loaderName: "#fromSerialized#",
 			referencePathResolver: undefined,
-			sourceMapResolver: undefined
+			sourceMapResolver: undefined,
 		});
 
 		pantry._queries = data.queries;
@@ -267,7 +295,7 @@ export class Pantry {
 	}
 
 	module(name: string) {
-		const mod = this.modules.find(m => m.name === name);
+		const mod = this.modules.find((m) => m.name === name);
 		if (!mod) throw new NotFoundError(name);
 		return mod;
 	}
@@ -275,56 +303,67 @@ export class Pantry {
 	queries(module?: string) {
 		if (!module) return this._queries;
 
-		return this._queries.filter(q => this.module(module).includedItems.has(q.name));
+		return this._queries.filter((q) =>
+			this.module(module).includedItems.has(q.name),
+		);
 	}
 
 	mutations(module?: string) {
 		if (!module) return this._mutations;
 
-		return this._mutations.filter(q => this.module(module).includedItems.has(q.name));
+		return this._mutations.filter((q) =>
+			this.module(module).includedItems.has(q.name),
+		);
 	}
 
 	subscriptions(module?: string) {
 		if (!module) return this._subscriptions;
 
-		return this._subscriptions.filter(q => this.module(module).includedItems.has(q.name));
+		return this._subscriptions.filter((q) =>
+			this.module(module).includedItems.has(q.name),
+		);
 	}
 
 	types(module?: string) {
 		if (!module) return this._types;
 
-		return this._types.filter(q => this.module(module).includedItems.has(q.name));
+		return this._types.filter((q) =>
+			this.module(module).includedItems.has(q.name),
+		);
 	}
 
 	enum(ref: string | InterfaceElement) {
-		const name = typeof ref === 'string' ? ref : drillToTypename(ref);
+		const name = typeof ref === "string" ? ref : drillToTypename(ref);
 		const typ = this._types.find(
-			t => t.name.toLowerCase() === name.toLowerCase() && t.kind === Kind.Enum
+			(t) =>
+				t.name.toLowerCase() === name.toLowerCase() && t.kind === Kind.Enum,
 		);
 		if (!typ) throw new NotFoundError(name);
 
 		return typ as typeof typ & {
-			enumValues: NonNullable<SchemaType['enumValues']>;
+			enumValues: NonNullable<SchemaType["enumValues"]>;
 			kind: Kind.Enum;
 		};
 	}
 
 	union(ref: string | InterfaceElement) {
-		const name = typeof ref === 'string' ? ref : drillToTypename(ref);
+		const name = typeof ref === "string" ? ref : drillToTypename(ref);
 		const typ = this._types.find(
-			t => t.name.toLowerCase() === name.toLowerCase() && t.kind === Kind.Union
+			(t) =>
+				t.name.toLowerCase() === name.toLowerCase() && t.kind === Kind.Union,
 		);
 		if (!typ) throw new NotFoundError(name);
 
 		return typ as typeof typ & {
-			possibleTypes: NonNullable<SchemaType['possibleTypes']>;
+			possibleTypes: NonNullable<SchemaType["possibleTypes"]>;
 			kind: Kind.Union;
 		};
 	}
 
 	scalar(name: string) {
 		const typ = this._types.find(
-			t => t.name.toLowerCase() === name.toLowerCase() && t.kind === Kind.Scalar
+			(t) =>
+				t.name.toLowerCase() === name.toLowerCase() && t.kind === Kind.Scalar,
 		);
 		if (!typ) throw new NotFoundError(name);
 
@@ -335,41 +374,51 @@ export class Pantry {
 
 	inputObject(name: string) {
 		const typ = this._types.find(
-			t => t.name.toLowerCase() === name.toLowerCase() && t.kind === Kind.InputObject
+			(t) =>
+				t.name.toLowerCase() === name.toLowerCase() &&
+				t.kind === Kind.InputObject,
 		);
 		if (!typ) throw new NotFoundError(name);
 
 		return typ as typeof typ & {
-			inputFields: NonNullable<SchemaType['inputFields']>;
+			inputFields: NonNullable<SchemaType["inputFields"]>;
 			kind: Kind.InputObject;
 		};
 	}
 
 	query(name: string) {
-		const q = this._queries.find(q => q.name.toLowerCase() === name.toLowerCase());
+		const q = this._queries.find(
+			(q) => q.name.toLowerCase() === name.toLowerCase(),
+		);
 		if (!q) throw new NotFoundError(name);
 
 		return q;
 	}
 
 	mutation(name: string) {
-		const m = this._mutations.find(m => m.name.toLowerCase() === name.toLowerCase());
+		const m = this._mutations.find(
+			(m) => m.name.toLowerCase() === name.toLowerCase(),
+		);
 		if (!m) throw new NotFoundError(name);
 
 		return m;
 	}
 
 	subscription(name: string) {
-		const s = this._subscriptions.find(s => s.name.toLowerCase() === name.toLowerCase());
+		const s = this._subscriptions.find(
+			(s) => s.name.toLowerCase() === name.toLowerCase(),
+		);
 		if (!s) throw new NotFoundError(name);
 
 		return s;
 	}
 
 	type(ref: string | InterfaceElement) {
-		const name = typeof ref === 'string' ? ref : drillToTypename(ref);
+		const name = typeof ref === "string" ? ref : drillToTypename(ref);
 
-		let t = this._types.find(t => t.name.toLowerCase() === name.toLowerCase());
+		const t = this._types.find(
+			(t) => t.name.toLowerCase() === name.toLowerCase(),
+		);
 		if (!t) throw new NotFoundError(name);
 
 		return t;
@@ -381,9 +430,12 @@ export class Pantry {
 	 * @returns true if the query also has a subscription
 	 */
 	isLive(name: string): boolean {
-		if (!this._queries.some(t => t.name === name) && !this._mutations.some(t => t.name === name))
+		if (
+			!this._queries.some((t) => t.name === name) &&
+			!this._mutations.some((t) => t.name === name)
+		)
 			throw new NotFoundError(name);
-		return this._subscriptions.some(t => t.name === name);
+		return this._subscriptions.some((t) => t.name === name);
 	}
 
 	connectionType(ref: string | InterfaceElement) {
@@ -394,19 +446,21 @@ export class Pantry {
 			return null;
 		}
 
-		const edgesTyperef = type.fields?.find(f => f.name === 'edges')?.type;
+		const edgesTyperef = type.fields?.find((f) => f.name === "edges")?.type;
 		if (!edgesTyperef) return null;
 
-		const nodeTyperef = this.type(edgesTyperef).fields?.find(f => f.name === 'node')?.type;
+		const nodeTyperef = this.type(edgesTyperef).fields?.find(
+			(f) => f.name === "node",
+		)?.type;
 		if (!nodeTyperef) return null;
 
 		return {
-			nodeType: this.type(nodeTyperef)
+			nodeType: this.type(nodeTyperef),
 		};
 	}
 
 	resultType(ref: string | InterfaceElement) {
-		const name = typeof ref === 'string' ? ref : drillToTypename(ref);
+		const name = typeof ref === "string" ? ref : drillToTypename(ref);
 		const type = this.type(name);
 
 		const match = type.name.match(Pantry.RESULT_TYPE_PATTERN);
@@ -418,7 +472,7 @@ export class Pantry {
 		if (successType.fields?.length !== 1) return null;
 
 		const successTypeDataField = successType.fields?.find(
-			n => n.name === Pantry.SUCCESS_TYPE_DATA_FIELD_NAME
+			(n) => n.name === Pantry.SUCCESS_TYPE_DATA_FIELD_NAME,
 		);
 		if (!successTypeDataField) return null;
 
@@ -427,9 +481,9 @@ export class Pantry {
 		return {
 			dataType: this.type(successTypeDataField.type),
 			errorTypes: type.possibleTypes
-				.filter(t => t.name && t.name !== successType.name)
-				.map(t => this.type(t)),
-			kind: match.groups.kind as 'Query' | 'Mutation' | 'Subscription'
+				.filter((t) => t.name && t.name !== successType.name)
+				.map((t) => this.type(t)),
+			kind: match.groups.kind as "Query" | "Mutation" | "Subscription",
 		};
 	}
 }
@@ -437,7 +491,7 @@ export class Pantry {
 export async function loadAllModules<ModuleLoaderOptions>(
 	loader: PantryLoader<ModuleLoaderOptions>,
 	schema: SchemaClass,
-	options: NoInfer<ModuleLoaderOptions>
+	options: NoInfer<ModuleLoaderOptions>,
 ): Promise<Pantry> {
 	const pantry = await loader.load(schema, options);
 	pantry.initialize();
@@ -447,7 +501,7 @@ export async function loadAllModules<ModuleLoaderOptions>(
 export async function loadAndSerializeAllModules<ModuleLoaderOptions>(
 	loader: PantryLoader<ModuleLoaderOptions>,
 	schema: SchemaClass,
-	options: NoInfer<ModuleLoaderOptions>
+	options: NoInfer<ModuleLoaderOptions>,
 ): Promise<SerializedPantry> {
 	const pantry = await loader.load(schema, options);
 	pantry.initialize();

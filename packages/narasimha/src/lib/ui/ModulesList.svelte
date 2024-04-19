@@ -1,8 +1,8 @@
 <script lang="ts">
-	import type { Module } from '$lib/pantry.js';
-	import ModuleCard from '$lib/ui/ModuleCard.svelte';
+import type { Module } from "$lib/pantry.js";
+import ModuleCard from "$lib/ui/ModuleCard.svelte";
 
-	export let modules: Module[];
+export let modules: Module[];
 </script>
 
 <section class="modules-list">

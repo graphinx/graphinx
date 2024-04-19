@@ -1,4 +1,4 @@
-import { writeFileSync, readFileSync } from 'fs';
+import { readFileSync, writeFileSync } from "node:fs";
 
 export const INTROSPECTION_QUERY = `
 query IntrospectionQuery {
@@ -110,10 +110,16 @@ fragment TypeRef on __Type {
  * @param {string} name name of the package to add
  */
 export function addDevDependency(cwd, name, version) {
-	const pkg = JSON.parse(readFileSync(`${cwd}/package.json`, 'utf-8'));
-	const devDependencies = sortByKey({ ...pkg.devDependencies, [name]: `^${version}` });
+	const pkg = JSON.parse(readFileSync(`${cwd}/package.json`, "utf-8"));
+	const devDependencies = sortByKey({
+		...pkg.devDependencies,
+		[name]: `^${version}`,
+	});
 
-	writeFileSync(`${cwd}/package.json`, JSON.stringify({ ...pkg, devDependencies }, null, '\t'));
+	writeFileSync(
+		`${cwd}/package.json`,
+		JSON.stringify({ ...pkg, devDependencies }, null, "\t"),
+	);
 }
 
 function sortByKey(obj) {
@@ -135,10 +141,10 @@ export function getPackageManager() {
 		return undefined;
 	}
 	const user_agent = process.env.npm_config_user_agent;
-	const pm_spec = user_agent.split(' ')[0];
-	const separator_pos = pm_spec.lastIndexOf('/');
+	const pm_spec = user_agent.split(" ")[0];
+	const separator_pos = pm_spec.lastIndexOf("/");
 	const name = pm_spec.substring(0, separator_pos);
-	return name === 'npminstall' ? 'cnpm' : name;
+	return name === "npminstall" ? "cnpm" : name;
 }
 
 /**
@@ -151,6 +157,6 @@ export function getPackageManager() {
 export function importWithoutRename(b, name, source) {
 	return b.importDeclaration(
 		[b.importSpecifier(b.identifier(name), b.identifier(name))],
-		b.stringLiteral(source)
+		b.stringLiteral(source),
 	);
 }

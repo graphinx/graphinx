@@ -45,14 +45,14 @@ export interface InterfaceElement {
 }
 
 export enum Kind {
-	Enum = 'ENUM',
-	InputObject = 'INPUT_OBJECT',
-	Interface = 'INTERFACE',
-	List = 'LIST',
-	NonNull = 'NON_NULL',
-	Object = 'OBJECT',
-	Scalar = 'SCALAR',
-	Union = 'UNION'
+	Enum = "ENUM",
+	InputObject = "INPUT_OBJECT",
+	Interface = "INTERFACE",
+	List = "LIST",
+	NonNull = "NON_NULL",
+	Object = "OBJECT",
+	Scalar = "SCALAR",
+	Union = "UNION",
 }
 
 export interface Type {
@@ -95,16 +95,18 @@ export class Convert {
 	}
 
 	public static schemaToJson(value: Schema): string {
-		return JSON.stringify(uncast(value, r('Schema')), null, 2);
+		return JSON.stringify(uncast(value, r("Schema")), null, 2);
 	}
 }
 
-function invalidValue(typ: any, val: any, key: any, parent: any = ''): never {
+function invalidValue(typ: any, val: any, key: any, parent: any = ""): never {
 	const prettyTyp = prettyTypeName(typ);
-	const parentText = parent ? ` on ${parent}` : '';
-	const keyText = key ? ` for key "${key}"` : '';
+	const parentText = parent ? ` on ${parent}` : "";
+	const keyText = key ? ` for key "${key}"` : "";
 	throw Error(
-		`Invalid value${keyText}${parentText}. Expected ${prettyTyp} but got ${JSON.stringify(val)}`
+		`Invalid value${keyText}${parentText}. Expected ${prettyTyp} but got ${JSON.stringify(
+			val,
+		)}`,
 	);
 }
 
@@ -112,18 +114,17 @@ function prettyTypeName(typ: any): string {
 	if (Array.isArray(typ)) {
 		if (typ.length === 2 && typ[0] === undefined) {
 			return `an optional ${prettyTypeName(typ[1])}`;
-		} else {
-			return `one of [${typ
-				.map((a) => {
-					return prettyTypeName(a);
-				})
-				.join(', ')}]`;
 		}
-	} else if (typeof typ === 'object' && typ.literal !== undefined) {
-		return typ.literal;
-	} else {
-		return typeof typ;
+		return `one of [${typ
+			.map((a) => {
+				return prettyTypeName(a);
+			})
+			.join(", ")}]`;
 	}
+	if (typeof typ === "object" && typ.literal !== undefined) {
+		return typ.literal;
+	}
+	return typeof typ;
 }
 
 function jsonToJSProps(typ: any): any {
@@ -144,7 +145,13 @@ function jsToJSONProps(typ: any): any {
 	return typ.jsToJSON;
 }
 
-function transform(val: any, typ: any, getProps: any, key: any = '', parent: any = ''): any {
+function transform(
+	val: any,
+	typ: any,
+	getProps: any,
+	key: any = "",
+	parent: any = "",
+): any {
 	function transformPrimitive(typ: string, val: any): any {
 		if (typeof typ === typeof val) return val;
 		return invalidValue(typ, val, key, parent);
@@ -170,13 +177,13 @@ function transform(val: any, typ: any, getProps: any, key: any = '', parent: any
 			}),
 			val,
 			key,
-			parent
+			parent,
 		);
 	}
 
 	function transformArray(typ: any, val: any): any {
 		// val must be an array with no invalid elements
-		if (!Array.isArray(val)) return invalidValue(l('array'), val, key, parent);
+		if (!Array.isArray(val)) return invalidValue(l("array"), val, key, parent);
 		return val.map((el) => transform(el, typ, getProps));
 	}
 
@@ -185,20 +192,26 @@ function transform(val: any, typ: any, getProps: any, key: any = '', parent: any
 			return null;
 		}
 		const d = new Date(val);
-		if (isNaN(d.valueOf())) {
-			return invalidValue(l('Date'), val, key, parent);
+		if (Number.isNaN(d.valueOf())) {
+			return invalidValue(l("Date"), val, key, parent);
 		}
 		return d;
 	}
 
-	function transformObject(props: { [k: string]: any }, additional: any, val: any): any {
-		if (val === null || typeof val !== 'object' || Array.isArray(val)) {
-			return invalidValue(l(ref || 'object'), val, key, parent);
+	function transformObject(
+		props: { [k: string]: any },
+		additional: any,
+		val: any,
+	): any {
+		if (val === null || typeof val !== "object" || Array.isArray(val)) {
+			return invalidValue(l(ref || "object"), val, key, parent);
 		}
 		const result: any = {};
 		Object.getOwnPropertyNames(props).forEach((key) => {
 			const prop = props[key];
-			const v = Object.prototype.hasOwnProperty.call(val, key) ? val[key] : undefined;
+			const v = Object.prototype.hasOwnProperty.call(val, key)
+				? val[key]
+				: undefined;
 			result[prop.key] = transform(v, prop.typ, getProps, key, ref);
 		});
 		Object.getOwnPropertyNames(val).forEach((key) => {
@@ -209,29 +222,29 @@ function transform(val: any, typ: any, getProps: any, key: any = '', parent: any
 		return result;
 	}
 
-	if (typ === 'any') return val;
+	if (typ === "any") return val;
 	if (typ === null) {
 		if (val === null) return val;
 		return invalidValue(typ, val, key, parent);
 	}
 	if (typ === false) return invalidValue(typ, val, key, parent);
 	let ref: any = undefined;
-	while (typeof typ === 'object' && typ.ref !== undefined) {
+	while (typeof typ === "object" && typ.ref !== undefined) {
 		ref = typ.ref;
 		typ = typeMap[typ.ref];
 	}
 	if (Array.isArray(typ)) return transformEnum(typ, val);
-	if (typeof typ === 'object') {
-		return typ.hasOwnProperty('unionMembers')
+	if (typeof typ === "object") {
+		return typ.hasOwnProperty("unionMembers")
 			? transformUnion(typ.unionMembers, val)
-			: typ.hasOwnProperty('arrayItems')
+			: typ.hasOwnProperty("arrayItems")
 				? transformArray(typ.arrayItems, val)
-				: typ.hasOwnProperty('props')
+				: typ.hasOwnProperty("props")
 					? transformObject(getProps(typ), typ.additional, val)
 					: invalidValue(typ, val, key, parent);
 	}
 	// Numbers can be parsed by Date but shouldn't be.
-	if (typ === Date && typeof val !== 'number') return transformDate(val);
+	if (typ === Date && typeof val !== "number") return transformDate(val);
 	return transformPrimitive(typ, val);
 }
 
@@ -268,77 +281,94 @@ function r(name: string) {
 }
 
 const typeMap: any = {
-	Schema: o([{ json: 'data', js: 'data', typ: r('Data') }], false),
-	Data: o([{ json: '__schema', js: '__schema', typ: r('SchemaClass') }], false),
+	Schema: o([{ json: "data", js: "data", typ: r("Data") }], false),
+	Data: o([{ json: "__schema", js: "__schema", typ: r("SchemaClass") }], false),
 	SchemaClass: o(
 		[
-			{ json: 'queryType', js: 'queryType', typ: r('Type') },
-			{ json: 'mutationType', js: 'mutationType', typ: r('Type') },
-			{ json: 'subscriptionType', js: 'subscriptionType', typ: r('Type') },
-			{ json: 'types', js: 'types', typ: a(r('SchemaType')) },
-			{ json: 'directives', js: 'directives', typ: a(r('Directive')) }
+			{ json: "queryType", js: "queryType", typ: r("Type") },
+			{ json: "mutationType", js: "mutationType", typ: r("Type") },
+			{ json: "subscriptionType", js: "subscriptionType", typ: r("Type") },
+			{ json: "types", js: "types", typ: a(r("SchemaType")) },
+			{ json: "directives", js: "directives", typ: a(r("Directive")) },
 		],
-		false
+		false,
 	),
 	Directive: o(
 		[
-			{ json: 'name', js: 'name', typ: '' },
-			{ json: 'description', js: 'description', typ: '' },
-			{ json: 'locations', js: 'locations', typ: a('') },
-			{ json: 'args', js: 'args', typ: a(r('Arg')) }
+			{ json: "name", js: "name", typ: "" },
+			{ json: "description", js: "description", typ: "" },
+			{ json: "locations", js: "locations", typ: a("") },
+			{ json: "args", js: "args", typ: a(r("Arg")) },
 		],
-		false
+		false,
 	),
 	Arg: o(
 		[
-			{ json: 'name', js: 'name', typ: '' },
-			{ json: 'description', js: 'description', typ: u(null, '') },
-			{ json: 'type', js: 'type', typ: r('InterfaceElement') },
-			{ json: 'defaultValue', js: 'defaultValue', typ: u(null, '') }
+			{ json: "name", js: "name", typ: "" },
+			{ json: "description", js: "description", typ: u(null, "") },
+			{ json: "type", js: "type", typ: r("InterfaceElement") },
+			{ json: "defaultValue", js: "defaultValue", typ: u(null, "") },
 		],
-		false
+		false,
 	),
 	InterfaceElement: o(
 		[
-			{ json: 'kind', js: 'kind', typ: r('Kind') },
-			{ json: 'name', js: 'name', typ: u(null, '') },
-			{ json: 'ofType', js: 'ofType', typ: u(r('InterfaceElement'), null) }
+			{ json: "kind", js: "kind", typ: r("Kind") },
+			{ json: "name", js: "name", typ: u(null, "") },
+			{ json: "ofType", js: "ofType", typ: u(r("InterfaceElement"), null) },
 		],
-		false
+		false,
 	),
-	Type: o([{ json: 'name', js: 'name', typ: '' }], false),
+	Type: o([{ json: "name", js: "name", typ: "" }], false),
 	SchemaType: o(
 		[
-			{ json: 'kind', js: 'kind', typ: r('Kind') },
-			{ json: 'name', js: 'name', typ: '' },
-			{ json: 'description', js: 'description', typ: u(null, '') },
-			{ json: 'fields', js: 'fields', typ: u(a(r('Field')), null) },
-			{ json: 'inputFields', js: 'inputFields', typ: u(a(r('Arg')), null) },
-			{ json: 'interfaces', js: 'interfaces', typ: u(a(r('InterfaceElement')), null) },
-			{ json: 'enumValues', js: 'enumValues', typ: u(a(r('EnumValue')), null) },
-			{ json: 'possibleTypes', js: 'possibleTypes', typ: u(a(r('InterfaceElement')), null) }
+			{ json: "kind", js: "kind", typ: r("Kind") },
+			{ json: "name", js: "name", typ: "" },
+			{ json: "description", js: "description", typ: u(null, "") },
+			{ json: "fields", js: "fields", typ: u(a(r("Field")), null) },
+			{ json: "inputFields", js: "inputFields", typ: u(a(r("Arg")), null) },
+			{
+				json: "interfaces",
+				js: "interfaces",
+				typ: u(a(r("InterfaceElement")), null),
+			},
+			{ json: "enumValues", js: "enumValues", typ: u(a(r("EnumValue")), null) },
+			{
+				json: "possibleTypes",
+				js: "possibleTypes",
+				typ: u(a(r("InterfaceElement")), null),
+			},
 		],
-		false
+		false,
 	),
 	EnumValue: o(
 		[
-			{ json: 'name', js: 'name', typ: '' },
-			{ json: 'description', js: 'description', typ: u(null, '') },
-			{ json: 'isDeprecated', js: 'isDeprecated', typ: true },
-			{ json: 'deprecationReason', js: 'deprecationReason', typ: null }
+			{ json: "name", js: "name", typ: "" },
+			{ json: "description", js: "description", typ: u(null, "") },
+			{ json: "isDeprecated", js: "isDeprecated", typ: true },
+			{ json: "deprecationReason", js: "deprecationReason", typ: null },
 		],
-		false
+		false,
 	),
 	Field: o(
 		[
-			{ json: 'name', js: 'name', typ: '' },
-			{ json: 'description', js: 'description', typ: u(null, '') },
-			{ json: 'args', js: 'args', typ: a(r('Arg')) },
-			{ json: 'type', js: 'type', typ: r('InterfaceElement') },
-			{ json: 'isDeprecated', js: 'isDeprecated', typ: true },
-			{ json: 'deprecationReason', js: 'deprecationReason', typ: null }
+			{ json: "name", js: "name", typ: "" },
+			{ json: "description", js: "description", typ: u(null, "") },
+			{ json: "args", js: "args", typ: a(r("Arg")) },
+			{ json: "type", js: "type", typ: r("InterfaceElement") },
+			{ json: "isDeprecated", js: "isDeprecated", typ: true },
+			{ json: "deprecationReason", js: "deprecationReason", typ: null },
 		],
-		false
+		false,
 	),
-	Kind: ['ENUM', 'INPUT_OBJECT', 'INTERFACE', 'LIST', 'NON_NULL', 'OBJECT', 'SCALAR', 'UNION']
+	Kind: [
+		"ENUM",
+		"INPUT_OBJECT",
+		"INTERFACE",
+		"LIST",
+		"NON_NULL",
+		"OBJECT",
+		"SCALAR",
+		"UNION",
+	],
 };

@@ -1,10 +1,10 @@
 {
-    "modules": [
-        {
-            "name": "forms",
-            "display": "Formulaires",
-            "docs": "Test **ici**",
-            "items": ["allForms"]
-        }
-    ]
+	"modules": [
+		{
+			"name": "forms",
+			"display": "Formulaires",
+			"docs": "Test **ici**",
+			"items": ["allForms"]
+		}
+	]
 }

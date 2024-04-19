@@ -1,16 +1,21 @@
 <script lang="ts">
-	import HashLink from '$lib/ui/HashLink.svelte';
-	import TypeKindIndicator from '$lib/ui/TypeKindIndicator.svelte';
-	import { Kind, type AugmentedSchemaType, type Module, Pantry } from '$lib/index.js';
-	import ArgType from './ArgType.svelte';
-	import Field from './Field.svelte';
+import {
+	type AugmentedSchemaType,
+	Kind,
+	type Module,
+	type Pantry,
+} from "$lib/index.js";
+import HashLink from "$lib/ui/HashLink.svelte";
+import TypeKindIndicator from "$lib/ui/TypeKindIndicator.svelte";
+import ArgType from "./ArgType.svelte";
+import Field from "./Field.svelte";
 
-	export let pantry: Pantry;
-	export let type: AugmentedSchemaType;
-	export let renderTitle = false;
-	export let headingLevel: 'h3' | 'h4';
+export let pantry: Pantry;
+export let type: AugmentedSchemaType;
+export const renderTitle = false;
+export let headingLevel: "h3" | "h4";
 
-	$: fields = type.fields ?? [];
+$: fields = type.fields ?? [];
 </script>
 
 <article>

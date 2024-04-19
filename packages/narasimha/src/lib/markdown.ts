@@ -1,9 +1,9 @@
-import rehypeStringify from 'rehype-stringify';
-import remarkParse from 'remark-parse';
-import remarkRehype from 'remark-rehype';
-import { unified } from 'unified';
-import type { SchemaClass } from './schema.js';
-import type { ItemReference, ItemReferencePathResolver } from './pantry.js';
+import rehypeStringify from "rehype-stringify";
+import remarkParse from "remark-parse";
+import remarkRehype from "remark-rehype";
+import { unified } from "unified";
+import type { ItemReference, ItemReferencePathResolver } from "./pantry.js";
+import type { SchemaClass } from "./schema.js";
 
 export type ResolverFromFilesystem = {
 	name: string;
@@ -16,8 +16,9 @@ export async function markdownToHtml(
 	items: ItemReference[],
 	{
 		downlevelHeadings = true,
-		referencePath = ((_, ref) => `/${ref.module}/${ref.name}`) as ItemReferencePathResolver
-	} = {}
+		referencePath = ((_, ref) =>
+			`/${ref.module}/${ref.name}`) as ItemReferencePathResolver,
+	} = {},
 ) {
 	return await unified()
 		.use(remarkParse)
@@ -25,7 +26,7 @@ export async function markdownToHtml(
 		.use(() => ({ children }) => {
 			if (downlevelHeadings)
 				for (const child of children) {
-					if (child.type === 'heading')
+					if (child.type === "heading")
 						child.depth = Math.min(child.depth + 1, 6) as 2 | 3 | 4 | 5 | 6;
 				}
 		})
@@ -33,21 +34,26 @@ export async function markdownToHtml(
 		.use(rehypeStringify)
 		.process(markdown)
 		.then(String)
-		.then(html =>
+		.then((html) =>
 			html
 				// auto-link "query foo", "mutation bar", and "subscription baz"
-				.replaceAll(/(query|mutation|subscription) ([a-zA-Z0-9]+)/g, (match, type, name) => {
-					const r = items.find(r => r.name === name);
-					return r ? `<a href="/${referencePath(schema, r)}">${r.name}</a>` : match;
-				})
+				.replaceAll(
+					/(query|mutation|subscription) ([a-zA-Z0-9]+)/g,
+					(match, type, name) => {
+						const r = items.find((r) => r.name === name);
+						return r
+							? `<a href="/${referencePath(schema, r)}">${r.name}</a>`
+							: match;
+					},
+				)
 				// auto-link "registerApp" but not "user"
-				.split(' ')
-				.map(word => {
-					const r = items.find(r => r.name === word);
+				.split(" ")
+				.map((word) => {
+					const r = items.find((r) => r.name === word);
 					if (!r) return word;
 					const path = referencePath(schema, r);
 					return path ? `<a href="/${path}">${word}</a>` : word;
 				})
-				.join(' ')
+				.join(" "),
 		);
 }

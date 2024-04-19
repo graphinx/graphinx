@@ -1,11 +1,11 @@
 <script lang="ts">
-	import Field from '$lib/ui/Field.svelte';
-	import TypeDef from '$lib/ui/TypeDef.svelte';
-	import { Pantry } from '$lib/pantry.js';
-	import type { PageData } from './$types.js';
+import { Pantry } from "$lib/pantry.js";
+import Field from "$lib/ui/Field.svelte";
+import TypeDef from "$lib/ui/TypeDef.svelte";
+import type { PageData } from "./$types.js";
 
-	export let data: PageData;
-	$: ({ schema, module, pantry } = data);
+export let data: PageData;
+$: ({ schema, module, pantry } = data);
 </script>
 
 {#await Pantry.fromSerialized(schema, pantry) then pantry}

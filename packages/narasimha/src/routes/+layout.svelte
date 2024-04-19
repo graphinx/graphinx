@@ -1,20 +1,22 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
-	import { CURRENT_COMMIT, CURRENT_VERSION } from '$lib/buildinfo';
-	import { colorNames } from '$lib/colors';
-	import { onMount } from 'svelte';
+import { browser } from "$app/environment";
+import { CURRENT_COMMIT, CURRENT_VERSION } from "$lib/buildinfo";
+import { colorNames } from "$lib/colors";
+import { onMount } from "svelte";
 
-	onMount(() => {
-		if (!browser) return;
+onMount(() => {
+	if (!browser) return;
 
-		const colorsStylesheet = [...document.styleSheets].find(d => d.href?.endsWith('colors.css'));
+	const colorsStylesheet = [...document.styleSheets].find((d) =>
+		d.href?.endsWith("colors.css"),
+	);
 
-		const colorsRootCssRule = [...(colorsStylesheet?.cssRules ?? [])].find(
-			r => r instanceof CSSStyleRule && r.selectorText === ':root'
-		) as CSSStyleRule;
+	const colorsRootCssRule = [...(colorsStylesheet?.cssRules ?? [])].find(
+		(r) => r instanceof CSSStyleRule && r.selectorText === ":root",
+	) as CSSStyleRule;
 
-		$colorNames = [...colorsRootCssRule.style].map(n => n.replace(/^--/, ''));
-	});
+	$colorNames = [...colorsRootCssRule.style].map((n) => n.replace(/^--/, ""));
+});
 </script>
 
 <svelte:head>

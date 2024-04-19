@@ -1,8 +1,8 @@
 <script lang="ts">
-	import Pill from './Pill.svelte';
-	export let href: string;
-	export let noInteractions = false;
-	export let title = 'Also available as a subscription';
+import Pill from "./Pill.svelte";
+export let href: string;
+export const noInteractions = false;
+export const title = "Also available as a subscription";
 </script>
 
 <a {href} class="live-indicator" {title}>

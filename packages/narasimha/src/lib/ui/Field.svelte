@@ -1,42 +1,42 @@
 <script lang="ts">
-	import HashLink from '$lib/ui/HashLink.svelte';
-	import LiveIndicator from '$lib/ui/LiveIndicator.svelte';
-	import type { AugmentedField, Field, Pantry } from '$lib/index.js';
-	import { onMount } from 'svelte';
-	import ArgType from './ArgType.svelte';
-	import { liveIndicatorSettings } from '$lib/global.js';
+import { liveIndicatorSettings } from "$lib/global.js";
+import type { AugmentedField, Field, Pantry } from "$lib/index.js";
+import HashLink from "$lib/ui/HashLink.svelte";
+import LiveIndicator from "$lib/ui/LiveIndicator.svelte";
+import { onMount } from "svelte";
+import ArgType from "./ArgType.svelte";
 
-	export let field: AugmentedField;
-	export let pantry: Pantry;
-	export let kind: 'query' | 'mutation' | 'subscription' | 'field';
+export let field: AugmentedField;
+export let pantry: Pantry;
+export let kind: "query" | "mutation" | "subscription" | "field";
 
-	export let typeIsEnumAndWasExpanded = false;
+export const typeIsEnumAndWasExpanded = false;
 
-	let mobile = false;
-	onMount(() => {
-		mobile = window.innerWidth < 768;
-	});
+let mobile = false;
+onMount(() => {
+	mobile = window.innerWidth < 768;
+});
 
-	function syntaxHighlightTypeName(t: Field['type']): string {
-		if (t.kind === 'ENUM') return 'enum';
-		return (
-			t.name?.toLowerCase() ??
-			(t.ofType ? syntaxHighlightTypeName(t.ofType) : 'Unknown').toLowerCase()
-		);
-	}
+function syntaxHighlightTypeName(t: Field["type"]): string {
+	if (t.kind === "ENUM") return "enum";
+	return (
+		t.name?.toLowerCase() ??
+		(t.ofType ? syntaxHighlightTypeName(t.ofType) : "Unknown").toLowerCase()
+	);
+}
 
-	function expandTypedef(t: Field['type']): boolean {
-		const name = firstNonWrapperType(t)?.name ?? '';
-		return name.includes('Input') || name.includes('HealthCheck');
-	}
+function expandTypedef(t: Field["type"]): boolean {
+	const name = firstNonWrapperType(t)?.name ?? "";
+	return name.includes("Input") || name.includes("HealthCheck");
+}
 
-	function firstNonWrapperType(t: Field['type']): Field['type'] | null {
-		if (t.kind === 'NON_NULL' || t.kind === 'LIST')
-			return t.ofType ? firstNonWrapperType(t.ofType) : null;
-		return { ...t, ofType: null };
-	}
+function firstNonWrapperType(t: Field["type"]): Field["type"] | null {
+	if (t.kind === "NON_NULL" || t.kind === "LIST")
+		return t.ofType ? firstNonWrapperType(t.ofType) : null;
+	return { ...t, ofType: null };
+}
 
-	export let headingLevel: 'h3' | 'h4';
+export let headingLevel: "h3" | "h4";
 </script>
 
 <svelte:window
