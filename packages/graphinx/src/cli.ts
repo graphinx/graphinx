@@ -75,14 +75,22 @@ if (!existsSync(buildAreaDirectory)) {
   await emitter.clone(buildAreaDirectory)
 }
 
-const templateConfig = JSON.parse(
-  readFileSync(path.join(buildAreaDirectory, "package.json"), "utf-8")
-)
+const templateConfig = {
+  inject: null,
+  pages: null,
+  dotenv: {
+    path: null,
+    variables: [],
+  },
+  ...JSON.parse(
+    readFileSync(path.join(buildAreaDirectory, "package.json"), "utf-8")
+  )?.graphinx,
+}
 
 let injectionPath = "src/data.generated.ts"
 
-if ("graphinx" in templateConfig && templateConfig.graphinx?.inject) {
-  injectionPath = templateConfig.graphinx.inject
+if (templateConfig.inject) {
+  injectionPath = templateConfig.inject
 } else {
   console.warn(
     `Warning: No inject configuration found in template's package.json. If you're the template author, add a graphinx > inject field to your package.json. Set it to the file path you want Graphinx to inject built data into. Defaulting to ${injectionPath}`
@@ -121,22 +129,31 @@ writeFileSync(
 
 // Copy over pages from pages directory
 if (config.pages) {
+  if (!templateConfig.pages) {
+    console.error("The template does not support custom pages")
+    process.exit(1)
+  }
   // TODO destination configurable by template
   console.info(
-    `Copying pages from ${config.pages} into ${path.join(buildAreaDirectory, "src/routes")}`
+    `Copying pages from ${config.pages} into ${path.join(buildAreaDirectory, templateConfig.pages)}`
   )
-  cpSync(config.pages, path.join(buildAreaDirectory, "src/routes/"), {
+  cpSync(config.pages, path.join(buildAreaDirectory, templateConfig.pages), {
     recursive: true,
   })
 }
 
-// Dump PUBLIC_* env vars into a .env file
-const envVars = Object.entries(process.env)
-  .filter(([key]) => key.startsWith("PUBLIC_"))
-  .map(([key, value]) => `${key}=${value}`)
-  .join("\n")
+if (templateConfig.dotenv) {
+  // Dump PUBLIC_* env vars into a .env file
+  const envVars = Object.entries(process.env)
+    .filter(([key]) => templateConfig.dotenv.variables.include(key))
+    .map(([key, value]) => `${key}=${value}`)
+    .join("\n")
 
-writeFileSync(path.join(buildAreaDirectory, ".env"), envVars)
+  writeFileSync(
+    path.join(buildAreaDirectory, templateConfig.dotenv.path),
+    envVars
+  )
+}
 
 const packageManager = await detectPackageManager.detect({
   cwd: buildAreaDirectory,
@@ -157,5 +174,3 @@ await execa(packageManager, ["run", "build"], {
 })
 
 console.info("✅ Site built")
-
-if (!options.keep) rimrafSync(buildAreaDirectory)

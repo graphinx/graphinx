@@ -4,7 +4,6 @@
   "private": true,
   "scripts": {
     "dev": "vite dev",
-    "create-dotenv": "echo PUBLIC_API_WEBSOCKET_URL=\"$PUBLIC_API_WEBSOCKET_URL\" >> .env && echo PUBLIC_API_URL=\"$PUBLIC_API_URL\" >> .env",
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
@@ -42,7 +41,12 @@
   },
   "type": "module",
   "graphinx": {
-    "inject": "src/lib/data.generated.ts"
+    "inject": "src/lib/data.generated.ts",
+    "pages": "src/routes",
+    "dotenv": {
+      "path": ".env",
+      "variables": ["PUBLIC_API_WEBSOCKET_URL", "PUBLIC_API_URL"]
+    }
   },
   "dependencies": {
     "cheerio": "^1.0.0-rc.12",
