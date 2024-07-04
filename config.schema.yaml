@@ -102,6 +102,29 @@ properties:
           in here can use %module%, which will be replaced by the module we are currently
           checking.
         properties:
+          names:
+            description: How to get the modules' names?
+            oneOf:
+              - type: object
+                additionalProperties: false
+                properties:
+                  in:
+                    type: string
+                    description: |
+                      Directory to look for modules. The modules' names will be
+                      the name of all the sub-directories in this directory
+              - type: object
+                additionalProperties: false
+                properties:
+                  is:
+                    type: array
+                    description: Explicitly list the modules' names
+                    items:
+                      type: string
+                      not:
+                        oneOf:
+                          - type: string
+                            pattern: ^index$
           order:
             type: array
             items:

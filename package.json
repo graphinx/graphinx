@@ -1,10 +1,10 @@
 {
-  "name": "narasimha",
+  "name": "graphinx",
   "version": "0.0.1",
   "workspaces": ["packages/*"],
   "scripts": {
     "check": "biome check --apply .",
-    "build-config-types": "yq . < config.schema.yaml > config.schema.json && quicktype --src-lang schema config.schema.json -o packages/narasimha/src/config.ts",
+    "build-config-types": "yq . < config.schema.yaml > config.schema.json && quicktype --src-lang schema config.schema.json -o packages/graphinx/src/config.ts",
     "dev": "nodemon --watch config.schema.yaml --exec 'bun run build-config-types'"
   },
   "devDependencies": {

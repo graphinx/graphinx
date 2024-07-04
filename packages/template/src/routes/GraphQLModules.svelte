@@ -5,7 +5,7 @@
 	import { MODULES_COLORS } from '$lib/colors';
 	import EditIcon from '$lib/icons/EditIcon.svelte';
 	import ExternalLinkIcon from '$lib/icons/ExternalLinkIcon.svelte';
-	import type { SchemaClass, Module } from '@narasimha/cli';
+	import type { SchemaClass, Module } from 'graphinx';
 	import {
 		findMutationInSchema,
 		findQueryInSchema,

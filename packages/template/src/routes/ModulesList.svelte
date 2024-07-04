@@ -1,6 +1,6 @@
 <script lang="ts">
 	import ModuleCard from '$lib/ModuleCard.svelte';
-	import type { Module } from '@narasimha/cli';
+	import type { Module } from 'graphinx';
 
 	export let modules: Module[];
 </script>

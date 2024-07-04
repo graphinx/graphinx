@@ -1,4 +1,4 @@
-# Narasimha
+# Graphinx
 
 ****
 *WARNING*: This project is in a very early stage and not yet ready for production use. I'm in the process of extracting code from [Churros' API documentation package](https://github.com/inp-net/churros/tree/main/packages/docs) and turning it into a library.
@@ -11,7 +11,7 @@ A collection of functions and Svelte components to easily build a documentation 
 Create your website by using our template:
 
 ```bash
-yarn create narasimha my-docs-site
+yarn create graphinx my-docs-site
 ```
 
 ## Using the utility functions to get schema information
@@ -19,7 +19,7 @@ yarn create narasimha my-docs-site
 You can, in the e.g. load function of a SvelteKit page, use the utility functions to get schema information:
 
 ```javascript
-import { filesystem as loader } from '@narasimha/loaders';
+import { filesystem as loader } from '@graphinx/loaders';
 import { schema } from '$lib/schema';
 export async function load({ params }) {
 	return { query: await loader.load(params.name, { directory: '.' }, schema) };
@@ -32,7 +32,7 @@ You can also use the components directly in an existing Svelte(Kit) project:
 
 ```svelte
 <script>
-    import { Query } from 'narasimha';
+    import { Query } from 'graphinx';
     export let data: PageData;
 </script>
 

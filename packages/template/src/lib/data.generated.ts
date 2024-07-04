@@ -1,3 +1,3 @@
-import type { BuiltData } from '@narasimha/cli';
+import type { BuiltData } from 'graphinx';
 
 export const data = {} as BuiltData;

@@ -1,4 +1,4 @@
-import type { SchemaClass } from '@narasimha/cli';
+import type { SchemaClass } from 'graphinx';
 
 export function findQueryInSchema(schema: SchemaClass, name: string) {
 	const field = schema.types

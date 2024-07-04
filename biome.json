@@ -8,7 +8,7 @@
 		"rules": {
 			"recommended": true
 		},
-		"ignore": ["packages/narasimha/src/config.ts", "packages/narasimha/src/schema.ts"]
+		"ignore": ["packages/graphinx/src/config.ts", "packages/graphinx/src/schema.ts"]
 	},
 	"vcs": {
 		"enabled": true,
@@ -16,7 +16,7 @@
 		"clientKind": "git"
 	},
 	"files": {
-		"ignore": ["docs/", ".svelte-kit/", "lib/schema.ts", "packages/narasimha/dist/"]
+		"ignore": ["docs/", ".svelte-kit/", "lib/schema.ts", "packages/graphinx/dist/", "packages/example/.build/src/lib/data.generated.ts"]
 	},
 	"overrides": [
 		{

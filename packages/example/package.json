@@ -1,9 +1,10 @@
 {
   "name": "example",
+  "private": true,
   "module": "index.ts",
   "type": "module",
   "devDependencies": {
-    "@narasimha/cli": "workspace:*",
+    "graphinx": "workspace:*",
     "@types/bun": "latest"
   },
   "peerDependencies": {
