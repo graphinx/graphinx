@@ -3,7 +3,13 @@ import { program } from "commander"
 import { version } from "../package.json"
 import yaml from "yaml"
 import { Convert, type Config } from "./config.js"
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs"
+import {
+  readFileSync,
+  writeFileSync,
+  existsSync,
+  mkdirSync,
+  cpSync,
+} from "node:fs"
 import { execa } from "execa"
 import { transformStrings } from "./utils.js"
 import { replacePlaceholders } from "./placeholders.js"
@@ -112,6 +118,25 @@ writeFileSync(
     ? typescriptDecl
     : jsdocDecl
 )
+
+// Copy over pages from pages directory
+if (config.pages) {
+  // TODO destination configurable by template
+  console.info(
+    `Copying pages from ${config.pages} into ${path.join(buildAreaDirectory, "src/routes")}`
+  )
+  cpSync(config.pages, path.join(buildAreaDirectory, "src/routes/"), {
+    recursive: true,
+  })
+}
+
+// Dump PUBLIC_* env vars into a .env file
+const envVars = Object.entries(process.env)
+  .filter(([key]) => key.startsWith("PUBLIC_"))
+  .map(([key, value]) => `${key}=${value}`)
+  .join("\n")
+
+writeFileSync(path.join(buildAreaDirectory, ".env"), envVars)
 
 const packageManager = await detectPackageManager.detect({
   cwd: buildAreaDirectory,
