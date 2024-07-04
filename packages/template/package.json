@@ -15,7 +15,7 @@
   "devDependencies": {
     "@sveltejs/adapter-static": "^3.0.1",
     "@sveltejs/kit": "^2.5.5",
-    "@sveltejs/vite-plugin-svelte": "^3.0.2",
+    "@sveltejs/vite-plugin-svelte": "^3.1.1",
     "@types/eslint": "8.56.7",
     "@types/lodash.throttle": "^4.1.9",
     "@typescript-eslint/eslint-plugin": "^7.4.0",
@@ -41,20 +41,14 @@
     "vite": "^5.2.7"
   },
   "type": "module",
-  "volta": {
-    "extends": "../../package.json"
-  },
-  "release-it": {
-    "git": false,
-    "npm": false
-  },
   "graphinx": {
     "inject": "src/lib/data.generated.ts"
   },
   "dependencies": {
-    "graphinx": "^0.1.0",
     "cheerio": "^1.0.0-rc.12",
     "fuse.js": "^7.0.0",
+    "graphinx": "^0.1.0",
+    "linkifyjs": "^4.1.3",
     "svelte-param-store": "^0.0.4"
   }
 }
