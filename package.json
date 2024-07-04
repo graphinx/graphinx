@@ -1,12 +1,16 @@
 {
-	"name": "narasimha",
-	"version": "0.0.1",
-	"workspaces": ["packages/*"],
-	"scripts": {
-		"check": "biome check --apply ."
-	},
-	"devDependencies": {
-		"@biomejs/biome": "1.7.0",
-		"typedoc": "^0.25.13"
-	}
+  "name": "narasimha",
+  "version": "0.0.1",
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "check": "biome check --apply .",
+    "build-config-types": "yq . < config.schema.yaml > config.schema.json && quicktype --src-lang schema config.schema.json -o packages/narasimha/src/config.ts",
+    "dev": "nodemon --watch config.schema.yaml --exec 'bun run build-config-types'"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.7.0",
+    "nodemon": "^3.1.4",
+    "quicktype": "^23.0.170",
+    "typedoc": "^0.25.13"
+  }
 }

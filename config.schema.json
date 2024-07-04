@@ -1,83 +1,168 @@
 {
-	"type": "object",
-	"properties": {
-		"branding": {
-			"type": "object",
-			"properties": {
-				"logo": {
-					"type": "string"
-				},
-				"name": {
-					"type": "string"
-				}
-			},
-			"required": ["logo", "name"]
-		},
-		"modules": {
-			"type": "object",
-			"description": "Categorize your schema's items",
-			"properties": {
-				"filesystem": {
-					"type": "object",
-					"description": "Auto-categorize using your API's source code tree. Every value in here can use %module%, which will be replaced by the module we are currently checking.",
-					"properties": {
-						"intro": {
-							"type": "string",
-							"description": "Path to a markdown file describing the module. The first paragraph will serve as the short description, while the <h1>'s content will serve as the module's display name"
-						},
-						"items": {
-							"type": "array",
-							"description": "How to know that a given schema item (a type, a query, a mutation, etc.) should belong to that module?",
-							"items": {
-								"type": "object",
-								"properties": {
-									"files": {
-										"type": "string",
-										"description": "Glob pattern of file paths to search in"
-									},
-									"match": {
-										"type": "string",
-										"description": "Regular expressions that will be tried for every file found in `files`. The regexp must define a named capture group named `name`. A given GraphQL Schema item will be considered as part of that module if a line of any file as specified by `files` matches this regular expression, with the capture group named `name` having as value the GraphQL schema type's name."
-									}
-								},
-								"required": ["files", "match"]
-							}
-						}
-					},
-					"required": ["intro", "items"]
-				}
-			}
-		},
-		"schema": {
-			"oneOf": [
-				{
-					"type": "string",
-					"format": "uri"
-				},
-				{
-					"type": "object",
-					"properties": {
-						"introspection": {
-							"type": "object",
-							"properties": {
-								"url": {
-									"type": "string",
-									"description": "URL where to query the API to generate a schema via introspection",
-									"format": "uri"
-								},
-								"headers": {
-									"type": "object",
-									"description": "Define headers to use when doing the POST request. For example, an authorization header"
-								}
-							},
-							"required": ["url"]
-						}
-					},
-					"required": ["introspection"]
-				}
-			],
-			"description": "A path or URL to a graphl schema file, or configuration for introspection"
-		}
-	},
-	"required": ["branding", "modules"]
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "branding": {
+      "description": "Branding information for the API",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "logo": {
+          "type": "string",
+          "format": "uri",
+          "description": "Path or URL to the API's logo"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the API"
+        }
+      },
+      "required": [
+        "logo",
+        "name"
+      ]
+    },
+    "modules": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Categorize your schema's items. If not specified, all items will be displayed in a single module",
+      "properties": {
+        "static": {
+          "type": "array",
+          "description": "Manually declare modules.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "title",
+              "intro",
+              "items"
+            ],
+            "properties": {
+              "title": {
+                "type": "string",
+                "description": "Display name of the module"
+              },
+              "name": {
+                "type": "string",
+                "description": "URL-friendly name of the module"
+              },
+              "intro": {
+                "type": "string",
+                "description": "A Markdown-formatted text describing the module"
+              },
+              "icon": {
+                "type": "string",
+                "format": "uri",
+                "description": "Path or URL to an icon for the module"
+              },
+              "items": {
+                "type": "array",
+                "description": "List of schema item names that belong in that module",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "filesystem": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Auto-categorize using your API's source code tree. Every value in here can use %module%, which will be replaced by the module we are currently checking.",
+          "properties": {
+            "order": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Order in which to display the modules. If a module is not\nlisted here, it will be displayed at the end. If not specified, the order is alphabetical\n"
+            },
+            "intro": {
+              "type": "string",
+              "description": "Path to a markdown file describing the module. The first paragraph will serve as the short description, while the <h1>'s content will serve as the module's display name"
+            },
+            "icon": {
+              "type": "string",
+              "format": "uri",
+              "description": "Path or URL to an icon for the module"
+            },
+            "items": {
+              "type": "array",
+              "description": "How to know that a given schema item (a type, a query, a mutation, etc.) should belong to that module?",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "files": {
+                    "type": "string",
+                    "description": "Glob pattern of file paths to search in"
+                  },
+                  "match": {
+                    "type": "string",
+                    "description": "Regular expressions that will be tried for every file found in `files`. The regexp must define a named capture group named `name`. A given GraphQL Schema item will be considered as part of that module if a line of any file as specified by `files` matches this regular expression, with the capture group named `name` having as value the GraphQL schema type's name."
+                  },
+                  "contribution": {
+                    "type": "string",
+                    "description": "URL to use for the \"contribute\" button for that item. Available placeholders are:\n\n- %module%, \n- %name%, the item's name\n- %path%, the path to the file that matched\n\nIf the value is not specified, the \"contribute\" button will not be displayed\n"
+                  }
+                },
+                "required": [
+                  "files",
+                  "match"
+                ]
+              }
+            }
+          },
+          "required": [
+            "intro",
+            "items"
+          ]
+        }
+      }
+    },
+    "schema": {
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "uri"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "introspection": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "description": "URL where to query the API to generate a schema via introspection",
+                  "format": "uri"
+                },
+                "headers": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Define headers to use when doing the POST request. For example, an authorization header"
+                }
+              },
+              "required": [
+                "url"
+              ]
+            }
+          },
+          "required": [
+            "introspection"
+          ]
+        }
+      ],
+      "description": "A path or URL to a graphl schema file, or configuration for introspection"
+    }
+  },
+  "required": [
+    "branding"
+  ]
 }

@@ -7,7 +7,8 @@
 		"enabled": true,
 		"rules": {
 			"recommended": true
-		}
+		},
+		"ignore": ["packages/narasimha/src/config.ts"]
 	},
 	"vcs": {
 		"enabled": true,
