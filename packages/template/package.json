@@ -48,6 +48,9 @@
     "git": false,
     "npm": false
   },
+  "graphinx": {
+    "inject": "src/lib/data.generated.ts"
+  },
   "dependencies": {
     "graphinx": "workspace:*",
     "cheerio": "^1.0.0-rc.12",
