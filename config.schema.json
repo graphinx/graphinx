@@ -1,5 +1,8 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "config.graphinx.ewen.works",
+  "title": "Graphinx configuration",
+  "description": "Configuration file for Graphinx, a tool to generate a documentation website for a GraphQL API",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -11,7 +14,7 @@
   "properties": {
     "template": {
       "type": "string",
-      "description": "Degit repository specifier to use as the website template. Defaults to Graphinx's default template.\nSee [degit's documentation](https://www.npmjs.com/package/degit#basics) for more information. The only difference is that the default branch name is \"main\" instead of master (i.e. use  `...#master` to clone the master branch, and `...#main` is not needed)\n\nBasic syntax:\n\n- `owner/repo`: a GitHub repository\n- `owner/repo#branch`: a specific branch of a GitHub repository\n- `owner/repo#tag`: a specific tag of a GitHub repository\n- `owner/repo#commit`: a specific commit of a GitHub repository\n- `owner/repo/folder`: a subfolder of a GitHub repository. Also supports #branch, #tag, and #commit\n- `https://example.com/...`: same as above, but for any Git repository\n",
+      "description": "Degit repository specifier to use as the website template. Defaults to Graphinx's default template.  See [degit's documentation](https://www.npmjs.com/package/degit#basics) for more information.  Basic syntax is `owner/repo/path#branch` for github repositories, or `https://example.com/...` for any git repository.  The only difference is that the default branch name is \"main\" instead of master (i.e. use  `...#master` to clone the master branch, and `...#main` is not needed)\n",
       "examples": [
         "ewen-lbh/graphinx/packages/template#main"
       ]
@@ -48,7 +51,7 @@
       ]
     },
     "pages": {
-      "description": "Directory to look for additional documentation pages, as markdown or MDSveX files. The final URL will be the path to the markdown file relative to the value of `pages`, without the `.md` extension. For example, with `pages: ./docs`, a page defined in `./docs/foo/bar.md` will be available at `/foo/bar`. Files are copied at build time into the template code at `src/routes/(path to file without extension)/+page.mdsvex`. If the filename is prefix with a `+`, it'll be copied in src/routes directly (not in a subdirectory)\n",
+      "description": "Directory to look for additional documentation pages, as markdown or [MDSveX (.svx)](https://mdsvex.pngwn.io/) files. The final URL will be the path to the markdown file relative to the value of `pages`, without the `.md` extension. For example, with `pages: ./docs`, a page defined in `./docs/foo/bar.md` will be available at `/foo/bar`. Files are copied at build time into the template code at `src/routes/(path to file without extension)/+page.svx`. If the filename is prefix with a `+`, it'll be copied in src/routes directly (not in a subdirectory)\n",
       "type": "string"
     },
     "modules": {
