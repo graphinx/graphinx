@@ -11,3 +11,4 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 schema.json
 build
+packages/narasimha/dist/index.js

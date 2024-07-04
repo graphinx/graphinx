@@ -1,32 +1,30 @@
 <script lang="ts">
-import { dev } from "$app/environment";
-import { page } from "$app/stores";
-import ModuleIcon from "$lib/ModuleIcon.svelte";
-import { MODULES_COLORS } from "$lib/colors";
-import EditIcon from "$lib/icons/EditIcon.svelte";
-import ExternalLinkIcon from "$lib/icons/ExternalLinkIcon.svelte";
-import { type SchemaClass } from "$lib/schema";
-import {
-	findMutationInSchema,
-	findQueryInSchema,
-	findSubscriptionInSchema,
-	findTypeInSchema,
-} from "$lib/schema-utils";
-import type { Module } from "$lib/server/modules";
-import Query from "./Query.svelte";
-import TypeDef from "./TypeDef.svelte";
+	import { dev } from '$app/environment';
+	import { page } from '$app/stores';
+	import ModuleIcon from '$lib/ModuleIcon.svelte';
+	import { MODULES_COLORS } from '$lib/colors';
+	import EditIcon from '$lib/icons/EditIcon.svelte';
+	import ExternalLinkIcon from '$lib/icons/ExternalLinkIcon.svelte';
+	import type { SchemaClass, Module } from '@narasimha/cli';
+	import {
+		findMutationInSchema,
+		findQueryInSchema,
+		findSubscriptionInSchema,
+		findTypeInSchema
+	} from '$lib/schema-utils';
+	import Query from './Query.svelte';
+	import TypeDef from './TypeDef.svelte';
 
-export let schema: SchemaClass;
-export let modules: Module[];
-export let renderTitle: boolean = modules.length > 1;
+	export let schema: SchemaClass;
+	export let modules: Module[];
+	export let renderTitle: boolean = modules.length > 1;
 
-function isImplicitSubscription(queryName: string) {
-	return modules.some(
-		({ subscriptions }) =>
-			!subscriptions.includes(queryName) &&
-			findSubscriptionInSchema(schema, queryName),
-	);
-}
+	function isImplicitSubscription(queryName: string) {
+		return modules.some(
+			({ subscriptions }) =>
+				!subscriptions.includes(queryName) && findSubscriptionInSchema(schema, queryName)
+		);
+	}
 </script>
 
 {#each modules as { name, displayName, renderedDocs, types, queries, mutations, subscriptions }}

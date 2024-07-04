@@ -8,7 +8,7 @@
 		"rules": {
 			"recommended": true
 		},
-		"ignore": ["packages/narasimha/src/config.ts"]
+		"ignore": ["packages/narasimha/src/config.ts", "packages/narasimha/src/schema.ts"]
 	},
 	"vcs": {
 		"enabled": true,
@@ -16,13 +16,19 @@
 		"clientKind": "git"
 	},
 	"files": {
-		"ignore": ["docs/", ".svelte-kit/", "lib/schema.ts"]
+		"ignore": ["docs/", ".svelte-kit/", "lib/schema.ts", "packages/narasimha/dist/"]
 	},
 	"overrides": [
 		{
 			"include": ["*.svelte"],
 			"linter": {
 				"rules": {
+					"correctness": {
+						"noUnusedLabels": "off"
+					},
+					"style": {
+						"useConst": "off"
+					},
 					"suspicious": {
 						"noConfusingLabels": "off"
 					},

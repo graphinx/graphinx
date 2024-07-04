@@ -2,6 +2,11 @@
 $schema: http://json-schema.org/draft-07/schema#
 type: object
 additionalProperties: false
+required:
+  - branding
+  - schema
+  - static
+  - pages
 properties:
   branding:
     description: Branding information for the API
@@ -18,11 +23,43 @@ properties:
     required:
       - logo
       - name
+  footer:
+    description: |
+      HTML to insert at the bottom of every page
+    type: string
+  static:
+    description: |
+      Directory to look for additional static files that will be copied to the template's `static` directory, to be served at the root of the website
+    type: string
+    examples:
+      - ./static
+  pages:
+    description: |
+      Directory to look for additional documentation pages, as markdown or MDSveX files. The final URL will be the path to the markdown file relative to the value of `pages`, without the `.md` extension. For example, with `pages: ./docs`, a page defined in `./docs/foo/bar.md` will be available at `/foo/bar`. Files are copied at build time into the template code at `src/routes/(path to file without extension)/+page.mdsvex`. If the filename is prefix with a `+`, it'll be copied in src/routes directly (not in a subdirectory)
+    type: string
   modules:
     type: object
     additionalProperties: false
     description: Categorize your schema's items. If not specified, all items will be displayed in a single module
     properties:
+      index:
+        description: Configure the "index" module, that contains every schema item. Set this to false, or remove it, to disable the index module. Set to true to enable it, with default values
+        oneOf:
+          - type: boolean
+          - type: object
+            additionalProperties: false
+            properties:
+              title:
+                type: string
+                description: Display name of the index module
+                examples:
+                  - Index
+              description:
+                type: string
+                description: A Markdown-formatted text describing the index module
+                examples:
+                  - The entire GraphQL schema
+
       static:
         type: array
         description: Manually declare modules.
@@ -33,13 +70,18 @@ properties:
             - title
             - intro
             - items
+            - name
           properties:
             title:
               type: string
               description: Display name of the module
             name:
               type: string
-              description: URL-friendly name of the module
+              description: URL-friendly name of the module. Cannot be "index" (reserved for the index module)
+              not:
+                oneOf:
+                  - type: string
+                    pattern: ^index$
             intro:
               type: string
               description: A Markdown-formatted text describing the module
@@ -132,7 +174,7 @@ properties:
               headers:
                 type: object
                 additionalProperties:
-                  type: string 
+                  type: string
                 description:
                   Define headers to use when doing the POST request. For
                   example, an authorization header
@@ -141,5 +183,3 @@ properties:
         required:
           - introspection
     description: A path or URL to a graphl schema file, or configuration for introspection
-required:
-  - branding

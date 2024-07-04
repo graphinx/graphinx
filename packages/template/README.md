@@ -1,5 +1,7 @@
-# @churros/docs
+# @narasimha/template
 
-Auto-generated documentation for Churros' API.
+Narasimha's default template.
 
-To be moved into a separate project, see <https://github.com/ewen-lbh/narasimha>.
+It's a SvelteKit project made to be statically rendered.
+
+At build time, the narasimha CLI injects the needed data statically in `src/lib/data.generated.ts`. This data is then returned by the various load functions.

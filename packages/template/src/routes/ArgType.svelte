@@ -1,68 +1,62 @@
 <script lang="ts">
-import { page } from "$app/stores";
-import {
-	Kind,
-	type Arg,
-	type EnumValue,
-	type InterfaceElement,
-} from "$lib/schema";
+	import { page } from '$app/stores';
+	import { Kind, type Arg, type EnumValue, type InterfaceElement } from '$lib/schema';
 
-export let typ: Arg["type"];
-export let inline = false;
-export let nullable = true;
-export let noExpandEnums = false;
-export let invertNullabilitySign = true;
-export let explicitNullabilitySign = false;
-export let underlyingType: Arg["type"] | undefined = undefined;
+	export let typ: Arg['type'];
+	export let inline = false;
+	export let nullable = true;
+	export let noExpandEnums = false;
+	export let invertNullabilitySign = true;
+	export let explicitNullabilitySign = false;
+	export let underlyingType: Arg['type'] | undefined = undefined;
 
-export let enumWasExpanded = false;
-$: enumWasExpanded = willExpandEnum(typ);
+	export let enumWasExpanded = false;
+	$: enumWasExpanded = willExpandEnum(typ);
 
-$: ({ successTypes, edgeTypes, enumTypes } = $page.data);
-$: enumValues = getEnumValues(typ);
+	$: ({ successTypes, edgeTypes, enumTypes } = $page.data);
+	$: enumValues = getEnumValues(typ);
 
-$: {
-	if (typ && typ.kind === "UNION" && typ.name?.endsWith("Result")) {
-		underlyingType ??= successTypes[typ.name?.replace("Result", "Success")];
-	} else if (typ && typ.name?.endsWith("Connection")) {
-		underlyingType ??= edgeTypes[`${typ.name}Edge`];
+	$: {
+		if (typ && typ.kind === 'UNION' && typ.name?.endsWith('Result')) {
+			underlyingType ??= successTypes[typ.name?.replace('Result', 'Success')];
+		} else if (typ?.name?.endsWith('Connection')) {
+			underlyingType ??= edgeTypes[`${typ.name}Edge`];
+		}
 	}
-}
 
-function getEnumValues(t: Arg["type"]): EnumValue[] {
-	try {
-		if (t.kind === "ENUM") return enumTypes[t.name ?? ""] ?? [];
-	} catch {
+	function getEnumValues(t: Arg['type']): EnumValue[] {
+		try {
+			if (t.kind === 'ENUM') return enumTypes[t.name ?? ''] ?? [];
+		} catch {
+			return [];
+		}
 		return [];
 	}
-	return [];
-}
 
-function getUnionValues(t: Arg["type"]): InterfaceElement[] {
-	try {
-		if (t.kind === "UNION")
-			return $page.data.types[t.name ?? ""]?.possibleTypes ?? [];
-	} catch {
+	function getUnionValues(t: Arg['type']): InterfaceElement[] {
+		try {
+			if (t.kind === 'UNION') return $page.data.types[t.name ?? '']?.possibleTypes ?? [];
+		} catch {
+			return [];
+		}
 		return [];
 	}
-	return [];
-}
 
-function willExpandEnum(t: Arg["type"]) {
-	const valuesCount =
-		t.kind === Kind.Enum
-			? getEnumValues(t).length
-			: t.kind === Kind.Union
-				? getUnionValues(t).length
-				: 0;
-	return Boolean(
-		(t.kind === "ENUM" || t.kind === "UNION") &&
-			enumValues &&
-			!noExpandEnums &&
-			(inline ? valuesCount <= 3 : true) &&
-			valuesCount <= 10,
-	);
-}
+	function willExpandEnum(t: Arg['type']) {
+		const valuesCount =
+			t.kind === Kind.Enum
+				? getEnumValues(t).length
+				: t.kind === Kind.Union
+					? getUnionValues(t).length
+					: 0;
+		return Boolean(
+			(t.kind === 'ENUM' || t.kind === 'UNION') &&
+				enumValues &&
+				!noExpandEnums &&
+				(inline ? valuesCount <= 3 : true) &&
+				valuesCount <= 10
+		);
+	}
 </script>
 
 <!-- Need to avoid extraneous whitespace, so the code is ugly like that. Sowwy ._. -->

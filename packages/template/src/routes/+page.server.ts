@@ -1,9 +1,5 @@
-import { getAllModules } from "$lib/server/modules";
-import { loadSchema } from "$lib/server/schema-loader";
+import { data } from '$lib/data.generated';
 
 export async function load() {
-	return {
-		schema: await loadSchema(),
-		modules: await getAllModules(),
-	};
+	return data;
 }

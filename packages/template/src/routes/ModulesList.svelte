@@ -1,9 +1,8 @@
 <script lang="ts">
-import ModuleCard from "$lib/ModuleCard.svelte";
+	import ModuleCard from '$lib/ModuleCard.svelte';
+	import type { Module } from '@narasimha/cli';
 
-import type { Module } from "$lib/server/modules";
-
-export let modules: Module[];
+	export let modules: Module[];
 </script>
 
 <section class="modules-list">

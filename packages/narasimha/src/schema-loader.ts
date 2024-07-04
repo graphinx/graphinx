@@ -1,39 +1,34 @@
-import { PUBLIC_API_URL } from "$env/static/public";
-import { readFile } from "node:fs/promises";
-import { Convert } from "../../template/src/lib/schema.js";
+import { readFile } from "node:fs/promises"
+import { Convert } from "../../template/src/lib/schema.js"
+import type { Config } from "./config.js"
 
-const USE_LOCAL_SCHEMA = false;
-const INTROSPECTION_QUERY_BEARER_TOKEN = "";
-
-export async function loadSchema() {
-	if (USE_LOCAL_SCHEMA) {
-		return Convert.toSchema(
-			await readFile("src/lib/server/schema.json", "utf-8"),
-		).data.__schema;
-	}
-	return Convert.toSchema(
-		await fetch(PUBLIC_API_URL, {
-			method: "POST",
-			body: JSON.stringify({
-				query: await introspectionQuery(),
-			}),
-			headers: {
-				"Content-Type": "application/json",
-				Authorization: INTROSPECTION_QUERY_BEARER_TOKEN
-					? `Bearer ${INTROSPECTION_QUERY_BEARER_TOKEN}`
-					: "",
-			},
-		})
-			.catch((e) => {
-				console.error(e);
-				return new Response(JSON.stringify({ error: e?.toString() }));
-			})
-			.then((r) => r.text()),
-	).data.__schema;
+export async function loadSchema(config: Config) {
+  if (typeof config.schema === "string") {
+    // TODO parse .graphql files
+    return Convert.toSchema(await readFile(config.schema, "utf-8")).data
+      .__schema
+  }
+  return Convert.toSchema(
+    await fetch(config.schema.introspection.url, {
+      method: "POST",
+      body: JSON.stringify({
+        query: await introspectionQuery(),
+      }),
+      headers: {
+        "Content-Type": "application/json",
+        ...config.schema.introspection.headers,
+      },
+    })
+      .catch((e) => {
+        console.error(e)
+        return new Response(JSON.stringify({ error: e?.toString() }))
+      })
+      .then((r) => r.text())
+  ).data.__schema
 }
 
 async function introspectionQuery() {
-	return `#graphql
+  return `#graphql
 query IntrospectionQuery {
   __schema {
     queryType {
@@ -135,5 +130,5 @@ fragment TypeRef on __Type {
 }
 
 
-    `;
+    `
 }

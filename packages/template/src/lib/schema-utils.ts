@@ -1,4 +1,4 @@
-import type { SchemaClass } from "./schema";
+import type { SchemaClass } from '@narasimha/cli';
 
 export function findQueryInSchema(schema: SchemaClass, name: string) {
 	const field = schema.types
@@ -12,7 +12,7 @@ export function findQueryInSchema(schema: SchemaClass, name: string) {
 
 export function findMutationInSchema(schema: SchemaClass, name: string) {
 	const field = schema.types
-		.find((type) => type.name === (schema.mutationType ?? { name: "" }).name)
+		.find((type) => type.name === (schema.mutationType ?? { name: '' }).name)
 		?.fields?.find((field) => field.name === name);
 
 	if (!field) console.error(`Not found in schema: Mutation ${name}`);
@@ -22,9 +22,7 @@ export function findMutationInSchema(schema: SchemaClass, name: string) {
 
 export function findSubscriptionInSchema(schema: SchemaClass, name: string) {
 	const field = schema.types
-		.find(
-			(type) => type.name === (schema.subscriptionType ?? { name: "" }).name,
-		)
+		.find((type) => type.name === (schema.subscriptionType ?? { name: '' }).name)
 		?.fields?.find((field) => field.name === name);
 
 	// if (!field) console.error(`Subscription ${name} not found in schema.`);

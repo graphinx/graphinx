@@ -1,45 +1,45 @@
 <script lang="ts">
-import { page } from "$app/stores";
-import HashLink from "$lib/HashLink.svelte";
-import LiveIndicator from "$lib/LiveIndicator.svelte";
-import { pascalToKebab } from "$lib/casing";
-import { markdownToHtml } from "$lib/markdown";
-import type { Arg, Field } from "$lib/schema";
-import { onMount } from "svelte";
-import ArgType from "./ArgType.svelte";
+	import { page } from '$app/stores';
+	import HashLink from '$lib/HashLink.svelte';
+	import LiveIndicator from '$lib/LiveIndicator.svelte';
+	import { pascalToKebab } from '$lib/casing';
+	import { markdownToHtml } from '$lib/markdown';
+	import type { Arg, Field } from '$lib/schema';
+	import { onMount } from 'svelte';
+	import ArgType from './ArgType.svelte';
 
-export let query: Field | (Arg & { args: [] });
-export let kind: "query" | "mutation" | "subscription" | "field";
-export let hasAvailableSubscription = false;
-// export let showReturnType = false;
-export let typeIsEnumAndWasExpanded = false;
+	export let query: Field | (Arg & { args: [] });
+	export let kind: 'query' | 'mutation' | 'subscription' | 'field';
+	export let hasAvailableSubscription = false;
+	// export let showReturnType = false;
+	export let typeIsEnumAndWasExpanded = false;
 
-let mobile = false;
-onMount(() => {
-	mobile = window.innerWidth < 768;
-});
+	let mobile = false;
+	onMount(() => {
+		mobile = window.innerWidth < 768;
+	});
 
-function syntaxHighlightTypeName(t: Field["type"]): string {
-	if (t.kind === "ENUM") return "enum";
-	return t.name ?? (t.ofType ? syntaxHighlightTypeName(t.ofType) : "Unknown");
-}
+	function syntaxHighlightTypeName(t: Field['type']): string {
+		if (t.kind === 'ENUM') return 'enum';
+		return t.name ?? (t.ofType ? syntaxHighlightTypeName(t.ofType) : 'Unknown');
+	}
 
-function expandTypedef(t: Field["type"]): boolean {
-	const name = firstNonWrapperType(t)?.name ?? "";
-	return name.includes("Input") || name.includes("HealthCheck");
-}
+	function expandTypedef(t: Field['type']): boolean {
+		const name = firstNonWrapperType(t)?.name ?? '';
+		return name.includes('Input') || name.includes('HealthCheck');
+	}
 
-function firstNonWrapperType(t: Field["type"]): Field["type"] | null {
-	if (t.kind === "NON_NULL" || t.kind === "LIST")
-		return t.ofType ? firstNonWrapperType(t.ofType) : null;
-	return { ...t, ofType: null };
-}
+	function firstNonWrapperType(t: Field['type']): Field['type'] | null {
+		if (t.kind === 'NON_NULL' || t.kind === 'LIST')
+			return t.ofType ? firstNonWrapperType(t.ofType) : null;
+		return { ...t, ofType: null };
+	}
 
-$: ({ types } = $page.data);
+	$: ({ types } = $page.data);
 
-$: hash = kind !== "field" ? `${kind}/${query.name}` : undefined;
+	$: hash = kind !== 'field' ? `${kind}/${query.name}` : undefined;
 
-$: headingLevel = $page.url.pathname === "/" ? "h4" : "h3";
+	$: headingLevel = $page.url.pathname === '/' ? 'h4' : 'h3';
 </script>
 
 <svelte:window
@@ -87,7 +87,7 @@ $: headingLevel = $page.url.pathname === "/" ? "h4" : "h3";
 		</section>
 	{/if}
 
-	{#if query.isDeprecated}
+	{#if 'isDeprecated' in query && query.isDeprecated}
 		<section class="deprecated">
 			<p class="subtitle">Déprécié</p>
 			{#if query.deprecationReason}

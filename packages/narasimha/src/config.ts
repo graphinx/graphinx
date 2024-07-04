@@ -13,14 +13,33 @@ export interface Config {
      */
     branding: Branding;
     /**
+     * HTML to insert at the bottom of every page
+     */
+    footer?: string;
+    /**
      * Categorize your schema's items. If not specified, all items will be displayed in a single
      * module
      */
     modules?: Modules;
     /**
+     * Directory to look for additional documentation pages, as markdown or MDSveX files. The
+     * final URL will be the path to the markdown file relative to the value of `pages`, without
+     * the `.md` extension. For example, with `pages: ./docs`, a page defined in
+     * `./docs/foo/bar.md` will be available at `/foo/bar`. Files are copied at build time into
+     * the template code at `src/routes/(path to file without extension)/+page.mdsvex`. If the
+     * filename is prefix with a `+`, it'll be copied in src/routes directly (not in a
+     * subdirectory)
+     */
+    pages: string;
+    /**
      * A path or URL to a graphl schema file, or configuration for introspection
      */
-    schema?: SchemaClass | string;
+    schema: SchemaClass | string;
+    /**
+     * Directory to look for additional static files that will be copied to the template's
+     * `static` directory, to be served at the root of the website
+     */
+    static: string;
 }
 
 /**
@@ -47,6 +66,11 @@ export interface Modules {
      * which will be replaced by the module we are currently checking.
      */
     filesystem?: Filesystem;
+    /**
+     * Configure the "index" module, that contains every schema item. Set this to false, or
+     * remove it, to disable the index module. Set to true to enable it, with default values
+     */
+    index?: boolean | IndexClass;
     /**
      * Manually declare modules.
      */
@@ -104,6 +128,17 @@ export interface Item {
     match: string;
 }
 
+export interface IndexClass {
+    /**
+     * A Markdown-formatted text describing the index module
+     */
+    description?: string;
+    /**
+     * Display name of the index module
+     */
+    title?: string;
+}
+
 export interface Static {
     /**
      * Path or URL to an icon for the module
@@ -118,9 +153,9 @@ export interface Static {
      */
     items: string[];
     /**
-     * URL-friendly name of the module
+     * URL-friendly name of the module. Cannot be "index" (reserved for the index module)
      */
-    name?: string;
+    name: string;
     /**
      * Display name of the module
      */
@@ -309,8 +344,11 @@ function r(name: string) {
 const typeMap: any = {
     "Config": o([
         { json: "branding", js: "branding", typ: r("Branding") },
+        { json: "footer", js: "footer", typ: u(undefined, "") },
         { json: "modules", js: "modules", typ: u(undefined, r("Modules")) },
-        { json: "schema", js: "schema", typ: u(undefined, u(r("SchemaClass"), "")) },
+        { json: "pages", js: "pages", typ: "" },
+        { json: "schema", js: "schema", typ: u(r("SchemaClass"), "") },
+        { json: "static", js: "static", typ: "" },
     ], false),
     "Branding": o([
         { json: "logo", js: "logo", typ: "" },
@@ -318,6 +356,7 @@ const typeMap: any = {
     ], false),
     "Modules": o([
         { json: "filesystem", js: "filesystem", typ: u(undefined, r("Filesystem")) },
+        { json: "index", js: "index", typ: u(undefined, u(true, r("IndexClass"))) },
         { json: "static", js: "static", typ: u(undefined, a(r("Static"))) },
     ], false),
     "Filesystem": o([
@@ -331,11 +370,15 @@ const typeMap: any = {
         { json: "files", js: "files", typ: "" },
         { json: "match", js: "match", typ: "" },
     ], false),
+    "IndexClass": o([
+        { json: "description", js: "description", typ: u(undefined, "") },
+        { json: "title", js: "title", typ: u(undefined, "") },
+    ], false),
     "Static": o([
         { json: "icon", js: "icon", typ: u(undefined, "") },
         { json: "intro", js: "intro", typ: "" },
         { json: "items", js: "items", typ: a("") },
-        { json: "name", js: "name", typ: u(undefined, "") },
+        { json: "name", js: "name", typ: "" },
         { json: "title", js: "title", typ: "" },
     ], false),
     "SchemaClass": o([
