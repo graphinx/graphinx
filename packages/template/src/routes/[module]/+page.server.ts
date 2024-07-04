@@ -1,17 +1,22 @@
-import { getAllModules, getModule, indexModule } from "$lib/server/modules";
-import { loadSchema } from "$lib/server/schema-loader";
-import { error } from "@sveltejs/kit";
+import { data } from '$lib/data.generated.js';
+import { error } from '@sveltejs/kit';
 
 export async function load({ params }) {
+	const { schema, modules } = data;
+	if (
+		!['index', 'all'].includes(params.module) &&
+		!modules.some((module) => module.name === params.module)
+	)
+		error(404, { message: `Module ${params.module} inexistant` });
 	try {
 		return {
-			schema: await loadSchema(),
+			schema,
 			modules:
-				params.module === "all"
-					? await getAllModules()
-					: params.module === "index"
-						? [await indexModule()]
-						: [await getModule(params.module)],
+				params.module === 'all'
+					? modules
+					: params.module === 'index'
+						? [] // TODO
+						: [modules.find((module) => module.name === params.module)]
 		};
 	} catch (err) {
 		error(404, { message: `Module ${params.module} inexistant` });
