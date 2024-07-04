@@ -49,12 +49,13 @@ const config: Config = {
 }
 
 const BUILD_AREA_DIRECTORY = ".build"
+const DEFAULT_TEMPLATE = "ewen-lbh/graphinx/packages/template#main"
 
 if (!options.keep && existsSync(BUILD_AREA_DIRECTORY))
   rimrafSync(BUILD_AREA_DIRECTORY)
 
 if (!existsSync(BUILD_AREA_DIRECTORY)) {
-  const emitter = degit("ewen-lbh/graphinx/packages/template#main", {
+  const emitter = degit(config.template ?? DEFAULT_TEMPLATE, {
     cache: true,
     force: true,
     verbose: true,

@@ -40,6 +40,21 @@ export interface Config {
      * `static` directory, to be served at the root of the website
      */
     static: string;
+    /**
+     * Degit repository specifier to use as the website template. Defaults to Graphinx's default
+     * template.
+     * See [degit's documentation](https://www.npmjs.com/package/degit#basics) for more
+     * information. Basic syntax:
+     *
+     * - `owner/repo`: a GitHub repository
+     * - `owner/repo#branch`: a specific branch of a GitHub repository
+     * - `owner/repo#tag`: a specific tag of a GitHub repository
+     * - `owner/repo#commit`: a specific commit of a GitHub repository
+     * - `owner/repo/folder`: a subfolder of a GitHub repository. Also supports #branch, #tag,
+     * and #commit
+     * - `https://example.com/...`: same as above, but for any Git repository
+     */
+    template?: string;
 }
 
 /**
@@ -368,6 +383,7 @@ const typeMap: any = {
         { json: "pages", js: "pages", typ: "" },
         { json: "schema", js: "schema", typ: u(r("SchemaClass"), "") },
         { json: "static", js: "static", typ: "" },
+        { json: "template", js: "template", typ: u(undefined, "") },
     ], false),
     "Branding": o([
         { json: "logo", js: "logo", typ: "" },
