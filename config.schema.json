@@ -11,7 +11,7 @@
   "properties": {
     "template": {
       "type": "string",
-      "description": "Degit repository specifier to use as the website template. Defaults to Graphinx's default template.\nSee [degit's documentation](https://www.npmjs.com/package/degit#basics) for more information. Basic syntax:\n\n- `owner/repo`: a GitHub repository\n- `owner/repo#branch`: a specific branch of a GitHub repository\n- `owner/repo#tag`: a specific tag of a GitHub repository\n- `owner/repo#commit`: a specific commit of a GitHub repository\n- `owner/repo/folder`: a subfolder of a GitHub repository. Also supports #branch, #tag, and #commit\n- `https://example.com/...`: same as above, but for any Git repository\n",
+      "description": "Degit repository specifier to use as the website template. Defaults to Graphinx's default template.\nSee [degit's documentation](https://www.npmjs.com/package/degit#basics) for more information. The only difference is that the default branch name is \"main\" instead of master (i.e. use  `...#master` to clone the master branch, and `...#main` is not needed)\n\nBasic syntax:\n\n- `owner/repo`: a GitHub repository\n- `owner/repo#branch`: a specific branch of a GitHub repository\n- `owner/repo#tag`: a specific tag of a GitHub repository\n- `owner/repo#commit`: a specific commit of a GitHub repository\n- `owner/repo/folder`: a subfolder of a GitHub repository. Also supports #branch, #tag, and #commit\n- `https://example.com/...`: same as above, but for any Git repository\n",
       "examples": [
         "ewen-lbh/graphinx/packages/template#main"
       ]

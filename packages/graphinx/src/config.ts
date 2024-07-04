@@ -44,7 +44,10 @@ export interface Config {
      * Degit repository specifier to use as the website template. Defaults to Graphinx's default
      * template.
      * See [degit's documentation](https://www.npmjs.com/package/degit#basics) for more
-     * information. Basic syntax:
+     * information. The only difference is that the default branch name is "main" instead of
+     * master (i.e. use  `...#master` to clone the master branch, and `...#main` is not needed)
+     *
+     * Basic syntax:
      *
      * - `owner/repo`: a GitHub repository
      * - `owner/repo#branch`: a specific branch of a GitHub repository

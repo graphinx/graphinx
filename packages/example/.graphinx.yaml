@@ -1,5 +1,7 @@
 # yaml-language-server: $schema=../../config.schema.json
 
+template: ewen-lbh/graphinx/packages/template
+
 schema:
   introspection:
     url: https://churros.inpt.fr/graphql
@@ -22,6 +24,10 @@ modules:
       in: ./packages/api/src/modules
     intro: ./packages/api/src/modules/%module%/README.md
     icon: ./packages/api/src/modules/%module%/icon.svg
+    items:
+      - files: ./packages/api/src/modules/%module%/{resolvers,types}/*.ts
+        match: "builder.((query|mutation|subscription)Field|\\w+Type)\\('(?<name>[^']+)'"
+        contribution: https://git.inpt.fr/inp-net/churros/-/blob/main/packages/api/src/modules/%module%/
     order:
       - global
       - users
@@ -49,10 +55,6 @@ modules:
       - changelogs
       - logs
       - health-checks
-    items:
-      - files: ./packages/api/src/modules/%module%/{resolvers,types}/*.ts
-        match: "builder.((query|mutation|subscription)Field|\\w+Type)\\('(?<name>[^']+)'"
-        contribution: https://git.inpt.fr/inp-net/churros/-/blob/main/packages/api/src/modules/%module%/
 
 footer: |
   <p>

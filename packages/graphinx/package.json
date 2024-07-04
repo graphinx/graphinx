@@ -1,12 +1,14 @@
 {
   "name": "graphinx",
-  "version": "0.0.6",
+  "version": "0.1.0",
   "repository": {
     "url": "https://github.com/ewen-lbh/graphinx/tree/main/packages/graphinx"
   },
   "dependencies": {
     "commander": "^12.1.0",
     "degit": "^2.8.4",
+    "detect-package-manager": "^3.0.2",
+    "execa": "^9.3.0",
     "glob": "^10.4.2",
     "handlebars": "^4.7.8",
     "linkify-plugin-mention": "^4.1.3",
