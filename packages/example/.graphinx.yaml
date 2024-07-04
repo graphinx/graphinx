@@ -15,6 +15,13 @@ branding:
 pages: ./packages/api/docs/pages
 static: ./packages/api/docs/static
 
+environment:
+  PUBLIC_API_URL: https://churros.app/graphql
+  PUBLIC_API_WEBSOCKET_URL: https://churros.app/graphql
+  CURRENT_COMMIT: dev
+  CURRENT_VERSION: "0.1.0"
+  CURRENT_COMMIT_SHORT: dev
+
 modules:
   index:
     title: Index

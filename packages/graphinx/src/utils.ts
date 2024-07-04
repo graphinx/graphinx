@@ -1,4 +1,3 @@
-
 export function transformStrings<T>(
   obj: T,
   transformer: (v: string) => string
@@ -19,9 +18,7 @@ export function transformStrings<T>(
     return Object.fromEntries(
       Object.entries(obj).map(([key, value]) => [
         key,
-        typeof value === "string"
-          ? value.trim()
-          : transformStrings(value, transformer),
+        transformStrings(value, transformer),
       ])
     ) as unknown as T
   }

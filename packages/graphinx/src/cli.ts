@@ -39,9 +39,15 @@ if (!existsSync(options.config)) {
   process.exit(1)
 }
 
-const { modules, ...restOfConfig } = Convert.toConfig(
+const { modules, environment, ...restOfConfig } = Convert.toConfig(
   JSON.stringify(yaml.parse(readFileSync(options.config, "utf-8")))
 )
+
+if (environment) {
+  for (const [key, value] of Object.entries(environment)) {
+    process.env[key] = value
+  }
+}
 
 const config: Config = {
   ...transformStrings(restOfConfig, replacePlaceholders),
@@ -92,9 +98,10 @@ let injectionPath = "src/data.generated.ts"
 if (templateConfig.inject) {
   injectionPath = templateConfig.inject
 } else {
-  console.warn(
-    `Warning: No inject configuration found in template's package.json. If you're the template author, add a graphinx > inject field to your package.json. Set it to the file path you want Graphinx to inject built data into. Defaulting to ${injectionPath}`
+  console.error(
+    "Provided template is not a valid Graphinx template: missing graphinx.inject field in package.json"
   )
+  process.exit(1)
 }
 
 const schema = await loadSchema(config)
@@ -143,16 +150,18 @@ if (config.pages) {
 }
 
 if (templateConfig.dotenv) {
+  const { variables, path: dotenvPath } = templateConfig.dotenv as {
+    variables: string[]
+    path: string
+  }
   // Dump PUBLIC_* env vars into a .env file
-  const envVars = Object.entries(process.env)
-    .filter(([key]) => templateConfig.dotenv.variables.include(key))
-    .map(([key, value]) => `${key}=${value}`)
+  const envVars = variables
+    .map(
+      (key) => `${key}=${process.env[key] ?? config.environment?.[key] ?? ""}`
+    )
     .join("\n")
 
-  writeFileSync(
-    path.join(buildAreaDirectory, templateConfig.dotenv.path),
-    envVars
-  )
+  writeFileSync(path.join(buildAreaDirectory, dotenvPath), envVars)
 }
 
 const packageManager = await detectPackageManager.detect({

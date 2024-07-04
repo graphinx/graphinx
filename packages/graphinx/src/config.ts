@@ -17,6 +17,10 @@ export interface Config {
      */
     branding: Branding;
     /**
+     * Define environment variables that will be made available to the template.
+     */
+    environment?: { [key: string]: string };
+    /**
      * HTML to insert at the bottom of every page
      */
     footer?: string;
@@ -376,6 +380,7 @@ function r(name: string) {
 const typeMap: any = {
     "Config": o([
         { json: "branding", js: "branding", typ: r("Branding") },
+        { json: "environment", js: "environment", typ: u(undefined, m("")) },
         { json: "footer", js: "footer", typ: u(undefined, "") },
         { json: "modules", js: "modules", typ: u(undefined, r("Modules")) },
         { json: "pages", js: "pages", typ: "" },
