@@ -5,6 +5,7 @@ import {
   mkdirSync,
   readFileSync,
   writeFileSync,
+  mkdtempSync,
 } from "node:fs"
 import path from "node:path"
 import { program } from "commander"
@@ -21,8 +22,10 @@ import { getAllModules, getAllResolvers } from "./modules.js"
 import { replacePlaceholders } from "./placeholders.js"
 import { loadSchema } from "./schema-loader.js"
 import { transformStrings } from "./utils.js"
+import os from "node:os"
 
 const DEFAULT_CONFIG_PATH = ".graphinx.yaml"
+
 program
   .version(version)
   .option("--init", "Initialize a Graphinx config file and exit", false)
@@ -31,11 +34,13 @@ program
     "Path to the configuration file",
     DEFAULT_CONFIG_PATH
   )
-  .option("--build-area <path>", "Path to the build area", ".build")
+  .option("--build-area <path>", "Path to the build area")
   .option("-k, --keep", "Keep the build area after building", false)
   .parse(process.argv)
 
 const options = program.opts()
+
+options.buildArea ||= path.join(os.tmpdir(), mkdtempSync("graphinx-"))
 
 const INIT_CONFIG_FILE = `# yaml-language-server: $schema=https://raw.githubusercontent.com/ewen-lbh/graphinx/main/config.schema.json
 
@@ -132,7 +137,7 @@ if (!existsSync(buildAreaDirectory)) {
   mkdirSync(path.dirname(buildAreaDirectory), { recursive: true })
   if (templateSpecifier.startsWith("file://")) {
     const templatePath = templateSpecifier.replace("file://", "")
-    console.info(`⬇️️ Copying template from ${templatePath}`)
+    console.info(`⬇️️  Copying template from ${templatePath}`)
     cpSync(templatePath, buildAreaDirectory, { recursive: true })
   } else {
     if (!templateSpecifier.includes("#")) templateSpecifier += "#main"
@@ -235,7 +240,7 @@ const packageManager = await detectPackageManager.detect({
   cwd: buildAreaDirectory,
 })
 
-console.info("⬇️ Installing template's dependencies...\n")
+console.info("⬇️  Installing template's dependencies...\n")
 
 await execa(packageManager, ["install"], {
   cwd: buildAreaDirectory,
