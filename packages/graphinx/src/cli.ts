@@ -22,18 +22,77 @@ import { replacePlaceholders } from "./placeholders.js"
 import { loadSchema } from "./schema-loader.js"
 import { transformStrings } from "./utils.js"
 
+const DEFAULT_CONFIG_PATH = ".graphinx.yaml"
 program
   .version(version)
+  .option("--init", "Initialize a Graphinx config file and exit", false)
   .option(
     "-c, --config <path>",
     "Path to the configuration file",
-    ".graphinx.yaml"
+    DEFAULT_CONFIG_PATH
   )
   .option("--build-area <path>", "Path to the build area", ".build")
   .option("-k, --keep", "Keep the build area after building", false)
   .parse(process.argv)
 
 const options = program.opts()
+
+const INIT_CONFIG_FILE = `# yaml-language-server: $schema=https://raw.githubusercontent.com/ewen-lbh/graphinx/main/config.schema.json
+
+template: ewen-lbh/graphinx/packages/template
+
+schema: schema.graphql
+  # otherwise, you can do:
+  #   introspection:
+  #     url: ... where your API is ...
+  #     headers:
+  #       User-Agent: Narasimha # for example
+
+branding:
+  logo: # TODO
+  name: # TODO
+
+pages: pages/
+static: static/
+
+environment:
+  PUBLIC_API_URL: # TODO
+  PUBLIC_API_WEBSOCKET_URL: # TODO
+  CURRENT_COMMIT: # TODO
+  CURRENT_VERSION: # TODO
+  CURRENT_COMMIT_SHORT: # TODO
+
+modules:
+  index:
+    title: Index
+    description: The entire GraphQL schema
+  filesystem:
+    names:
+      in: modules/
+    intro: modules/%module%/README.md
+    icon: modules/%module%/icon.svg
+    # An example configuration that works well with Pothos:
+    items:
+      - files: modules/%module%/{resolvers,types}/*.ts
+        match: "builder.((query|mutation|subscription)Field|\\\\w+Type)\\\\('(?<name>[^']+)'"
+      - files: ./packages/api/src/modules/%module%/types/*.ts
+        match: "builder.\\\\w+Type\\\\(.+, \\\\{ name: '(?<name>[^']+)' \\\\}"
+`
+
+if (options.init) {
+  if (existsSync(options.config)) {
+    console.error(`❌ Config file already exists: ${options.config}`)
+    process.exit(1)
+  }
+
+  writeFileSync(options.config, INIT_CONFIG_FILE)
+  console.info(`✨ Initialized Graphinx config file at ${options.config}`)
+  console.info("\n➡️  Please edit it to fit your needs, then run:")
+  console.info(
+    `\n     graphinx ${options.config === DEFAULT_CONFIG_PATH ? "" : `--config ${options.config}`}\n`
+  )
+  process.exit(0)
+}
 
 if (!existsSync(options.config)) {
   console.error(`❌ Config file not found: ${options.config}`)

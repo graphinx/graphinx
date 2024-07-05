@@ -3,11 +3,6 @@
 template: file://../template
 
 schema: ./packages/app/schema.graphql
-  # otherwise, you can do:
-  #   introspection:
-  #     url: https://churros.inpt.fr/graphql
-  #     headers:
-  #       User-Agent: Narasimha
 
 branding:
   logo: https://churros.inpt.fr/logo.svg

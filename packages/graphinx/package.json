@@ -1,6 +1,6 @@
 {
   "name": "graphinx",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "repository": {
     "url": "https://github.com/ewen-lbh/graphinx/tree/main/packages/graphinx"
   },
@@ -23,7 +23,6 @@
     "yaml": "^2.4.5"
   },
   "devDependencies": {
-    "@clack/prompts": "^0.7.0",
     "@sveltejs/package": "^2.0.0",
     "@sveltejs/vite-plugin-svelte": "^3.0.0",
     "@types/degit": "^2.8.6",
