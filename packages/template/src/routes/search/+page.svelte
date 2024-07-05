@@ -12,6 +12,7 @@
 		findSubscriptionInSchema,
 		findTypeInSchema
 	} from '$lib/schema-utils';
+	import { browser } from '$app/environment';
 
 	function nonNullable<T>(value: T): value is NonNullable<T> {
 		return value !== null;
@@ -41,7 +42,8 @@
 			.map((t) => ({ ...t, module }))
 	);
 
-	$: query = $page.url.searchParams.get('q') || '';
+	let query = '';
+	$: if (browser) query = $page.url.searchParams.get('q') || '';
 
 	function search(searchQuery: string) {
 		if (searchQuery.length < 3) return { resultsCount: 0, results: [], modulesResults: [] };
