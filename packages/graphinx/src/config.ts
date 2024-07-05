@@ -12,10 +12,7 @@
  * API
  */
 export interface Config {
-    /**
-     * Branding information for the API
-     */
-    branding: Branding;
+    branding: SiteBranding;
     /**
      * Define environment variables that will be made available to the template.
      */
@@ -23,12 +20,8 @@ export interface Config {
     /**
      * HTML to insert at the bottom of every page
      */
-    footer?: string;
-    /**
-     * Categorize your schema's items. If not specified, all items will be displayed in a single
-     * module
-     */
-    modules?: Modules;
+    footer?:  string;
+    modules?: ModulesConfiguration;
     /**
      * Directory to look for additional documentation pages, as markdown or [MDSveX
      * (.svx)](https://mdsvex.pngwn.io/) files. The final URL will be the path to the markdown
@@ -38,11 +31,8 @@ export interface Config {
      * without extension)/+page.svx`. If the filename is prefix with a `+`, it'll be copied in
      * src/routes directly (not in a subdirectory)
      */
-    pages: string;
-    /**
-     * A path or URL to a graphl schema file, or configuration for introspection
-     */
-    schema: SchemaClass | string;
+    pages:  string;
+    schema: Schema;
     /**
      * Directory to look for additional static files that will be copied to the template's
      * `static` directory, to be served at the root of the website
@@ -62,7 +52,7 @@ export interface Config {
 /**
  * Branding information for the API
  */
-export interface Branding {
+export interface SiteBranding {
     /**
      * Path or URL to the API's logo
      */
@@ -77,54 +67,46 @@ export interface Branding {
  * Categorize your schema's items. If not specified, all items will be displayed in a single
  * module
  */
-export interface Modules {
-    /**
-     * Auto-categorize using your API's source code tree. Every value in here can use %module%,
-     * which will be replaced by the module we are currently checking.
-     */
-    filesystem?: Filesystem;
-    /**
-     * Configure the "index" module, that contains every schema item. Set this to false, or
-     * remove it, to disable the index module. Set to true to enable it, with default values
-     */
-    index?: boolean | IndexClass;
+export interface ModulesConfiguration {
+    filesystem?: MatchModulesWithSourceCode;
+    index?:      IndexModuleConfiguration;
     /**
      * Manually declare modules.
      */
-    static?: Static[];
+    static?: StaticModuleConfiguration[];
 }
 
 /**
  * Auto-categorize using your API's source code tree. Every value in here can use %module%,
  * which will be replaced by the module we are currently checking.
  */
-export interface Filesystem {
+export interface MatchModulesWithSourceCode {
     /**
      * Path or URL to an icon for the module
      */
     icon?: string;
     /**
      * Path to a markdown file describing the module. The first paragraph will serve as the
-     * short description, while the <h1>'s content will serve as the module's display name
+     * short description, while the `<h1>`'s content will serve as the module's display name
      */
     intro: string;
     /**
      * How to know that a given schema item (a type, a query, a mutation, etc.) should belong to
      * that module?
      */
-    items: Item[];
+    items: SourceCodeModuleMatcher[];
     /**
      * How to get the modules' names?
      */
     names?: Names;
     /**
-     * Order in which to display the modules. If a module is not
-     * listed here, it will be displayed at the end. If not specified, the order is alphabetical
+     * Order in which to display the modules. If a module is not listed here, it will be
+     * displayed at the end. If not specified, the order is alphabetical
      */
     order?: string[];
 }
 
-export interface Item {
+export interface SourceCodeModuleMatcher {
     /**
      * URL to use for the "contribute" button for that item. Available placeholders are:
      *
@@ -164,7 +146,11 @@ export interface Names {
     is?: string[];
 }
 
-export interface IndexClass {
+/**
+ * Configure the "index" module, that contains every schema item. Set this to false, or
+ * remove it, to disable the index module. Set to true to enable it, with default values
+ */
+export interface IndexModuleConfiguration {
     /**
      * A Markdown-formatted text describing the index module
      */
@@ -175,7 +161,7 @@ export interface IndexClass {
     title?: string;
 }
 
-export interface Static {
+export interface StaticModuleConfiguration {
     /**
      * Path or URL to an icon for the module
      */
@@ -198,11 +184,21 @@ export interface Static {
     title: string;
 }
 
-export interface SchemaClass {
-    introspection: Introspection;
+/**
+ * A path or URL to a graphl schema file, or configuration for introspection
+ */
+export interface Schema {
+    introspection?: SchemaIntrospection;
+    /**
+     * Path or URL to a GraphQL schema file
+     */
+    static?: string;
 }
 
-export interface Introspection {
+/**
+ * Introspect a GraphQL schema of a given running GraphQL API server
+ */
+export interface SchemaIntrospection {
     /**
      * Define headers to use when doing the POST request. For example, an authorization header
      */
@@ -379,32 +375,32 @@ function r(name: string) {
 
 const typeMap: any = {
     "Config": o([
-        { json: "branding", js: "branding", typ: r("Branding") },
+        { json: "branding", js: "branding", typ: r("SiteBranding") },
         { json: "environment", js: "environment", typ: u(undefined, m("")) },
         { json: "footer", js: "footer", typ: u(undefined, "") },
-        { json: "modules", js: "modules", typ: u(undefined, r("Modules")) },
+        { json: "modules", js: "modules", typ: u(undefined, r("ModulesConfiguration")) },
         { json: "pages", js: "pages", typ: "" },
-        { json: "schema", js: "schema", typ: u(r("SchemaClass"), "") },
+        { json: "schema", js: "schema", typ: r("Schema") },
         { json: "static", js: "static", typ: "" },
         { json: "template", js: "template", typ: u(undefined, "") },
     ], false),
-    "Branding": o([
+    "SiteBranding": o([
         { json: "logo", js: "logo", typ: "" },
         { json: "name", js: "name", typ: "" },
     ], false),
-    "Modules": o([
-        { json: "filesystem", js: "filesystem", typ: u(undefined, r("Filesystem")) },
-        { json: "index", js: "index", typ: u(undefined, u(true, r("IndexClass"))) },
-        { json: "static", js: "static", typ: u(undefined, a(r("Static"))) },
+    "ModulesConfiguration": o([
+        { json: "filesystem", js: "filesystem", typ: u(undefined, r("MatchModulesWithSourceCode")) },
+        { json: "index", js: "index", typ: u(undefined, r("IndexModuleConfiguration")) },
+        { json: "static", js: "static", typ: u(undefined, a(r("StaticModuleConfiguration"))) },
     ], false),
-    "Filesystem": o([
+    "MatchModulesWithSourceCode": o([
         { json: "icon", js: "icon", typ: u(undefined, "") },
         { json: "intro", js: "intro", typ: "" },
-        { json: "items", js: "items", typ: a(r("Item")) },
+        { json: "items", js: "items", typ: a(r("SourceCodeModuleMatcher")) },
         { json: "names", js: "names", typ: u(undefined, r("Names")) },
         { json: "order", js: "order", typ: u(undefined, a("")) },
     ], false),
-    "Item": o([
+    "SourceCodeModuleMatcher": o([
         { json: "contribution", js: "contribution", typ: u(undefined, "") },
         { json: "files", js: "files", typ: "" },
         { json: "match", js: "match", typ: "" },
@@ -413,21 +409,22 @@ const typeMap: any = {
         { json: "in", js: "in", typ: u(undefined, "") },
         { json: "is", js: "is", typ: u(undefined, a("")) },
     ], false),
-    "IndexClass": o([
+    "IndexModuleConfiguration": o([
         { json: "description", js: "description", typ: u(undefined, "") },
         { json: "title", js: "title", typ: u(undefined, "") },
     ], false),
-    "Static": o([
+    "StaticModuleConfiguration": o([
         { json: "icon", js: "icon", typ: u(undefined, "") },
         { json: "intro", js: "intro", typ: "" },
         { json: "items", js: "items", typ: a("") },
         { json: "name", js: "name", typ: "" },
         { json: "title", js: "title", typ: "" },
     ], false),
-    "SchemaClass": o([
-        { json: "introspection", js: "introspection", typ: r("Introspection") },
+    "Schema": o([
+        { json: "introspection", js: "introspection", typ: u(undefined, r("SchemaIntrospection")) },
+        { json: "static", js: "static", typ: u(undefined, "") },
     ], false),
-    "Introspection": o([
+    "SchemaIntrospection": o([
         { json: "headers", js: "headers", typ: u(undefined, m("")) },
         { json: "url", js: "url", typ: "" },
     ], false),

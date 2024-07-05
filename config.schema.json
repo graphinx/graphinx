@@ -11,15 +11,9 @@
     "static",
     "pages"
   ],
-  "properties": {
-    "template": {
-      "type": "string",
-      "description": "Degit repository specifier to use as the website template. Defaults to Graphinx's default template.  See [degit's documentation](https://www.npmjs.com/package/degit#basics) for more information.  Basic syntax is `owner/repo/path#branch` for github repositories, or `https://example.com/...` for any git repository.  The only difference is that the default branch name is \"main\" instead of master (i.e. use  `...#master` to clone the master branch, and `...#main` is not needed)",
-      "examples": [
-        "ewen-lbh/graphinx/packages/template#main"
-      ]
-    },
-    "branding": {
+  "definitions": {
+    "SiteBranding": {
+      "title": "Site branding",
       "description": "Branding information for the API",
       "type": "object",
       "additionalProperties": false,
@@ -38,6 +32,241 @@
         "logo",
         "name"
       ]
+    },
+    "schema_introspection": {
+      "title": "Schema introspection",
+      "description": "Introspect a GraphQL schema of a given running GraphQL API server",
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "URL where to query the API to generate a schema via introspection",
+          "format": "uri"
+        },
+        "headers": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Define headers to use when doing the POST request. For example, an authorization header"
+        }
+      },
+      "required": [
+        "url"
+      ]
+    },
+    "static_module": {
+      "title": "Static module configuration",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "intro",
+        "items",
+        "name"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Display name of the module"
+        },
+        "name": {
+          "type": "string",
+          "description": "URL-friendly name of the module. Cannot be \"index\" (reserved for the index module)",
+          "not": {
+            "oneOf": [
+              {
+                "type": "string",
+                "pattern": "^index$"
+              }
+            ]
+          }
+        },
+        "intro": {
+          "type": "string",
+          "description": "A Markdown-formatted text describing the module"
+        },
+        "icon": {
+          "type": "string",
+          "format": "uri",
+          "description": "Path or URL to an icon for the module"
+        },
+        "items": {
+          "type": "array",
+          "description": "List of schema item names that belong in that module",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "filesystem_modules": {
+      "title": "Match modules with source code",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Auto-categorize using your API's source code tree. Every value in here can use %module%, which will be replaced by the module we are currently checking.",
+      "required": [
+        "intro",
+        "items"
+      ],
+      "properties": {
+        "names": {
+          "description": "How to get the modules' names?",
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "in": {
+                  "type": "string",
+                  "description": "Directory to look for modules. The modules' names will be\nthe name of all the sub-directories in this directory\n"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "is": {
+                  "type": "array",
+                  "description": "Explicitly list the modules' names",
+                  "items": {
+                    "type": "string",
+                    "not": {
+                      "oneOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^index$"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "order": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Order in which to display the modules. If a module is not listed here, it will be displayed at the end. If not specified, the order is alphabetical"
+        },
+        "intro": {
+          "type": "string",
+          "description": "Path to a markdown file describing the module. The first paragraph will serve as the short description, while the `<h1>`'s content will serve as the module's display name"
+        },
+        "icon": {
+          "type": "string",
+          "format": "uri",
+          "description": "Path or URL to an icon for the module"
+        },
+        "items": {
+          "type": "array",
+          "description": "How to know that a given schema item (a type, a query, a mutation, etc.) should belong to that module?",
+          "items": {
+            "$ref": "#/definitions/filesystem_matcher"
+          }
+        }
+      }
+    },
+    "filesystem_matcher": {
+      "title": "Source code module matcher",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "files": {
+          "type": "string",
+          "description": "Glob pattern of file paths to search in"
+        },
+        "match": {
+          "type": "string",
+          "description": "Regular expressions that will be tried for every file found in `files`. The regexp must define a named capture group named `name`. A given GraphQL Schema item will be considered as part of that module if a line of any file as specified by `files` matches this regular expression, with the capture group named `name` having as value the GraphQL schema type's name."
+        },
+        "contribution": {
+          "type": "string",
+          "description": "URL to use for the \"contribute\" button for that item. Available placeholders are:\n\n- %module%, \n- %name%, the item's name\n- %path%, the path to the file that matched\n\nIf the value is not specified, the \"contribute\" button will not be displayed\n"
+        }
+      },
+      "required": [
+        "files",
+        "match"
+      ]
+    },
+    "index_module": {
+      "title": "Index module configuration",
+      "description": "Configure the \"index\" module, that contains every schema item. Set this to false, or remove it, to disable the index module. Set to true to enable it, with default values",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Display name of the index module",
+          "examples": [
+            "Index"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "description": "A Markdown-formatted text describing the index module",
+          "examples": [
+            "The entire GraphQL schema"
+          ]
+        }
+      }
+    },
+    "modules": {
+      "title": "Modules configuration",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Categorize your schema's items. If not specified, all items will be displayed in a single module",
+      "properties": {
+        "index": {
+          "$ref": "#/definitions/index_module"
+        },
+        "filesystem": {
+          "$ref": "#/definitions/filesystem_modules"
+        },
+        "static": {
+          "type": "array",
+          "description": "Manually declare modules.",
+          "items": {
+            "$ref": "#/definitions/static_module"
+          }
+        }
+      }
+    },
+    "schema": {
+      "title": "Schema",
+      "type": "object",
+      "additionalProperties": false,
+      "description": "A path or URL to a graphl schema file, or configuration for introspection",
+      "properties": {
+        "introspection": {
+          "$ref": "#/definitions/schema_introspection"
+        },
+        "static": {
+          "type": "string",
+          "description": "Path or URL to a GraphQL schema file",
+          "examples": [
+            "./schema.graphql"
+          ]
+        }
+      }
+    }
+  },
+  "properties": {
+    "template": {
+      "type": "string",
+      "description": "Degit repository specifier to use as the website template. Defaults to Graphinx's default template.  See [degit's documentation](https://www.npmjs.com/package/degit#basics) for more information.  Basic syntax is `owner/repo/path#branch` for github repositories, or `https://example.com/...` for any git repository.  The only difference is that the default branch name is \"main\" instead of master (i.e. use  `...#master` to clone the master branch, and `...#main` is not needed)",
+      "examples": [
+        "ewen-lbh/graphinx/packages/template#main"
+      ]
+    },
+    "branding": {
+      "$ref": "#/definitions/SiteBranding"
     },
     "footer": {
       "description": "HTML to insert at the bottom of every page",
@@ -62,215 +291,10 @@
       }
     },
     "modules": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "Categorize your schema's items. If not specified, all items will be displayed in a single module",
-      "properties": {
-        "index": {
-          "description": "Configure the \"index\" module, that contains every schema item. Set this to false, or remove it, to disable the index module. Set to true to enable it, with default values",
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "title": {
-                  "type": "string",
-                  "description": "Display name of the index module",
-                  "examples": [
-                    "Index"
-                  ]
-                },
-                "description": {
-                  "type": "string",
-                  "description": "A Markdown-formatted text describing the index module",
-                  "examples": [
-                    "The entire GraphQL schema"
-                  ]
-                }
-              }
-            }
-          ]
-        },
-        "static": {
-          "type": "array",
-          "description": "Manually declare modules.",
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "title",
-              "intro",
-              "items",
-              "name"
-            ],
-            "properties": {
-              "title": {
-                "type": "string",
-                "description": "Display name of the module"
-              },
-              "name": {
-                "type": "string",
-                "description": "URL-friendly name of the module. Cannot be \"index\" (reserved for the index module)",
-                "not": {
-                  "oneOf": [
-                    {
-                      "type": "string",
-                      "pattern": "^index$"
-                    }
-                  ]
-                }
-              },
-              "intro": {
-                "type": "string",
-                "description": "A Markdown-formatted text describing the module"
-              },
-              "icon": {
-                "type": "string",
-                "format": "uri",
-                "description": "Path or URL to an icon for the module"
-              },
-              "items": {
-                "type": "array",
-                "description": "List of schema item names that belong in that module",
-                "items": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        },
-        "filesystem": {
-          "type": "object",
-          "additionalProperties": false,
-          "description": "Auto-categorize using your API's source code tree. Every value in here can use %module%, which will be replaced by the module we are currently checking.",
-          "properties": {
-            "names": {
-              "description": "How to get the modules' names?",
-              "oneOf": [
-                {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "in": {
-                      "type": "string",
-                      "description": "Directory to look for modules. The modules' names will be\nthe name of all the sub-directories in this directory\n"
-                    }
-                  }
-                },
-                {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "is": {
-                      "type": "array",
-                      "description": "Explicitly list the modules' names",
-                      "items": {
-                        "type": "string",
-                        "not": {
-                          "oneOf": [
-                            {
-                              "type": "string",
-                              "pattern": "^index$"
-                            }
-                          ]
-                        }
-                      }
-                    }
-                  }
-                }
-              ]
-            },
-            "order": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Order in which to display the modules. If a module is not\nlisted here, it will be displayed at the end. If not specified, the order is alphabetical\n"
-            },
-            "intro": {
-              "type": "string",
-              "description": "Path to a markdown file describing the module. The first paragraph will serve as the short description, while the <h1>'s content will serve as the module's display name"
-            },
-            "icon": {
-              "type": "string",
-              "format": "uri",
-              "description": "Path or URL to an icon for the module"
-            },
-            "items": {
-              "type": "array",
-              "description": "How to know that a given schema item (a type, a query, a mutation, etc.) should belong to that module?",
-              "items": {
-                "type": "object",
-                "additionalProperties": false,
-                "properties": {
-                  "files": {
-                    "type": "string",
-                    "description": "Glob pattern of file paths to search in"
-                  },
-                  "match": {
-                    "type": "string",
-                    "description": "Regular expressions that will be tried for every file found in `files`. The regexp must define a named capture group named `name`. A given GraphQL Schema item will be considered as part of that module if a line of any file as specified by `files` matches this regular expression, with the capture group named `name` having as value the GraphQL schema type's name."
-                  },
-                  "contribution": {
-                    "type": "string",
-                    "description": "URL to use for the \"contribute\" button for that item. Available placeholders are:\n\n- %module%, \n- %name%, the item's name\n- %path%, the path to the file that matched\n\nIf the value is not specified, the \"contribute\" button will not be displayed\n"
-                  }
-                },
-                "required": [
-                  "files",
-                  "match"
-                ]
-              }
-            }
-          },
-          "required": [
-            "intro",
-            "items"
-          ]
-        }
-      }
+      "$ref": "#/definitions/modules"
     },
     "schema": {
-      "oneOf": [
-        {
-          "type": "string",
-          "format": "uri"
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "introspection": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "url": {
-                  "type": "string",
-                  "description": "URL where to query the API to generate a schema via introspection",
-                  "format": "uri"
-                },
-                "headers": {
-                  "type": "object",
-                  "additionalProperties": {
-                    "type": "string"
-                  },
-                  "description": "Define headers to use when doing the POST request. For example, an authorization header"
-                }
-              },
-              "required": [
-                "url"
-              ]
-            }
-          },
-          "required": [
-            "introspection"
-          ]
-        }
-      ],
-      "description": "A path or URL to a graphl schema file, or configuration for introspection"
+      "$ref": "#/definitions/schema"
     }
   }
 }

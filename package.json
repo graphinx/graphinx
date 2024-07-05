@@ -4,8 +4,9 @@
   "workspaces": ["packages/*"],
   "scripts": {
     "check": "biome check --apply .",
-    "build-config-types": "yq . < config.schema.yaml > config.schema.json && quicktype --src-lang schema config.schema.json -o packages/graphinx/src/config.ts && bun run wetzel config.schema.json > docs/config.md",
-    "dev": "nodemon --watch config.schema.yaml --exec 'bun run build-config-types'"
+    "build-config-types": "yq . < config.schema.yaml > config.schema.json && quicktype --src-lang schema config.schema.json -o packages/graphinx/src/config.ts && bun run wetzel config.schema.json -l 3 > docs/config.md",
+    "readme": "sed '/^<!-- Include docs\\/config.md -->$/r docs/config.md' README.template.md > README.md && cp README.md packages/graphinx",
+    "dev": "nodemon --watch config.schema.yaml --exec 'bun run build-config-types' & nodemon --watch README.template.md --watch docs/ --exec 'bun run readme'"
   },
   "devDependencies": {
     "@biomejs/biome": "1.7.0",
