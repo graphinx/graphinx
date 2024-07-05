@@ -6,7 +6,8 @@ Sphinx for GraphQL APIs.
 
 ## Production example
 
-- [Churros](https://churros.app)'s API: [api-docs.churros.inpt.fr](https://api-docs.churros.inpt.fr)
+- [Churros](https://github.com/inp-net/churros)' API: [api-docs.churros.inpt.fr](https://api-docs.churros.inpt.fr)
+
 
 ## Getting Started
 
