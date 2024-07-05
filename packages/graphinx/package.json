@@ -1,6 +1,6 @@
 {
   "name": "graphinx",
-  "version": "0.5.3",
+  "version": "0.6.0",
   "repository": {
     "url": "https://github.com/ewen-lbh/graphinx/tree/main/packages/graphinx"
   },
