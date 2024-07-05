@@ -2,7 +2,8 @@
 
 template: file://../template
 
-schema: ./packages/app/schema.graphql
+schema:
+  static: ./packages/app/schema.graphql
 
 branding:
   logo: https://churros.inpt.fr/logo.svg

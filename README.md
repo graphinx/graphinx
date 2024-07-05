@@ -2,6 +2,12 @@
 
 Sphinx for GraphQL APIs.
 
+![](./demo.gif)
+
+## Production example
+
+- [Churros](https://churros.app)'s API: [api-docs.churros.inpt.fr](https://api-docs.churros.inpt.fr)
+
 ## Getting Started
 
 1. Add Graphinx to your dev dependencies:
