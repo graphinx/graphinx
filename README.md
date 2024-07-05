@@ -20,7 +20,7 @@ Sphinx for GraphQL APIs.
 
 Configuration is done through a `.graphinx.yaml` config file. The path to the config file can be changed with `--config`.
 
-A JSON schema is available at <https://raw.githubusercontent.com/ewen-lbh/graphinx/main/config.schema.json>. The documentation below is generated from it, but right now is missing documentation for nested objects...
+A JSON schema is available at <https://raw.githubusercontent.com/ewen-lbh/graphinx/main/config.schema.json>.
 
 <!-- Include docs/config.md -->
 ### Objects
