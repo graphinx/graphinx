@@ -1,12 +1,14 @@
 import { data } from '$lib/data.generated';
 import { findMutationInSchema, findQueryInSchema, findTypeInSchema } from '$lib/schema-utils.js';
+import { buildSchema } from 'graphql';
 
 function nonNullable<T>(value: T): value is NonNullable<T> {
 	return value !== null;
 }
 
 export async function load() {
-	const { schema, modules } = data;
+	const { schema: schemaRaw, modules, resolvers } = data;
+	const schema = buildSchema(schemaRaw);
 
 	const queries = modules.flatMap((module) =>
 		module.queries
@@ -25,18 +27,15 @@ export async function load() {
 		module.types
 			.map((t) => findTypeInSchema(schema, t))
 			.filter(nonNullable)
-			.map((t) => ({
-				...t,
-				args: t.fields,
-				isType: true,
-				module
-			}))
+			.map((t) => ({ ...t, module }))
 	);
 
 	return {
 		queries,
 		types,
 		mutations,
-		modules
+		modules,
+		schemaRaw,
+		resolvers
 	};
 }

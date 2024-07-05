@@ -5,7 +5,7 @@
 	import { MODULES_COLORS } from '$lib/colors';
 	import EditIcon from '$lib/icons/EditIcon.svelte';
 	import ExternalLinkIcon from '$lib/icons/ExternalLinkIcon.svelte';
-	import type { SchemaClass, Module } from 'graphinx';
+	import type { Module } from 'graphinx';
 	import {
 		findMutationInSchema,
 		findQueryInSchema,
@@ -14,8 +14,11 @@
 	} from '$lib/schema-utils';
 	import Query from './Query.svelte';
 	import TypeDef from './TypeDef.svelte';
+	import type { GraphQLSchema } from 'graphql';
+	import type { ResolverFromFilesystem } from '$lib/markdown';
 
-	export let schema: SchemaClass;
+	export let schema: GraphQLSchema;
+	export let allResolvers: ResolverFromFilesystem[];
 	export let modules: Module[];
 	export let renderTitle: boolean = modules.length > 1;
 
@@ -60,7 +63,7 @@
 			{#each types as typeName}
 				{@const type = findTypeInSchema(schema, typeName)}
 				{#if type}
-					<TypeDef moduleName={name} {type} {renderTitle} />
+					<TypeDef {schema} {allResolvers} moduleName={name} {type} {renderTitle} />
 				{:else if dev}
 					<article class="error">
 						<code class="no-color">{typeName}</code> non trouvée dans le schéma.
@@ -74,6 +77,7 @@
 				{@const query = findQueryInSchema(schema, queryName)}
 				{#if query}
 					<Query
+						{schema}
 						{query}
 						kind="query"
 						hasAvailableSubscription={isImplicitSubscription(queryName)}
@@ -92,7 +96,7 @@
 			{#each mutations as mutationName}
 				{@const query = findMutationInSchema(schema, mutationName)}
 				{#if query}
-					<Query {query} kind="mutation" />
+					<Query {schema} {query} kind="mutation" />
 				{:else if dev}
 					<article class="error">
 						<code class="no-color">{mutationName}</code> non trouvée dans le schéma.
@@ -107,7 +111,7 @@
 			{#each subscriptions as subscription}
 				{@const query = findSubscriptionInSchema(schema, subscription)}
 				{#if query}
-					<Query {query} kind="subscription" />
+					<Query {schema} {query} kind="subscription" />
 				{:else if dev}
 					<article class="error">
 						<code class="no-color">{subscription}</code> non trouvée dans le schéma.

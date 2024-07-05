@@ -4,38 +4,47 @@
 	import LiveIndicator from '$lib/LiveIndicator.svelte';
 	import { pascalToKebab } from '$lib/casing';
 	import { markdownToHtml } from '$lib/markdown';
-	import type { Arg, Field } from '$lib/schema';
+	import {
+		getNamedType,
+		type GraphQLField,
+		type GraphQLNamedType,
+		type GraphQLSchema,
+		type GraphQLType,
+		isEnumType,
+		isInputObjectType,
+		isNamedType
+	} from 'graphql';
 	import { onMount } from 'svelte';
 	import ArgType from './ArgType.svelte';
 
-	export let query: Field | (Arg & { args: [] });
+	export let schema: GraphQLSchema;
+	export let query: GraphQLField<unknown, unknown>; //| GraphQLArgument;
 	export let kind: 'query' | 'mutation' | 'subscription' | 'field';
 	export let hasAvailableSubscription = false;
 	// export let showReturnType = false;
 	export let typeIsEnumAndWasExpanded = false;
+
+	$: args = query.args ?? [];
 
 	let mobile = false;
 	onMount(() => {
 		mobile = window.innerWidth < 768;
 	});
 
-	function syntaxHighlightTypeName(t: Field['type']): string {
-		if (t.kind === 'ENUM') return 'enum';
-		return t.name ?? (t.ofType ? syntaxHighlightTypeName(t.ofType) : 'Unknown');
+	function syntaxHighlightTypeName(t: GraphQLType): string {
+		if (isEnumType(t)) return 'enum';
+		return isNamedType(t) ? t.name : t.ofType ? syntaxHighlightTypeName(t.ofType) : 'Unknown';
 	}
 
-	function expandTypedef(t: Field['type']): boolean {
+	function expandTypedef(t: GraphQLType): boolean {
 		const name = firstNonWrapperType(t)?.name ?? '';
 		return name.includes('Input') || name.includes('HealthCheck');
 	}
 
-	function firstNonWrapperType(t: Field['type']): Field['type'] | null {
-		if (t.kind === 'NON_NULL' || t.kind === 'LIST')
-			return t.ofType ? firstNonWrapperType(t.ofType) : null;
-		return { ...t, ofType: null };
+	function firstNonWrapperType(t: GraphQLType): GraphQLNamedType | null {
+		if (!isNamedType(t)) return t.ofType ? firstNonWrapperType(t.ofType) : null;
+		return t;
 	}
-
-	$: ({ types } = $page.data);
 
 	$: hash = kind !== 'field' ? `${kind}/${query.name}` : undefined;
 
@@ -53,27 +62,31 @@
 		{#if hasAvailableSubscription}
 			<LiveIndicator></LiveIndicator>
 		{/if}
-		{#if kind === 'field' && query.args.length === 0}
+		{#if kind === 'field' && args && args.length === 0}
 			<code class="no-color"
 				><svelte:element
 					this={typeIsEnumAndWasExpanded ? 'a' : 'span'}
 					href="#{query.name}"
 					class="field-name">{query.name}</svelte:element
-				>: <ArgType bind:enumWasExpanded={typeIsEnumAndWasExpanded} typ={query.type}
+				>: <ArgType {schema} bind:enumWasExpanded={typeIsEnumAndWasExpanded} typ={query.type}
 				></ArgType></code
 			>
 		{:else}
 			<code class="no-color"
-				>{query.name}({#if !mobile}&#8203;{/if}{#if query.args && query.args.length >= (mobile ? 3 : 5)}<span
+				>{query.name}({#if !mobile}&#8203;{/if}{#if args && args.length >= (mobile ? 3 : 5)}<span
 						class="too-many-args">...</span
-					>{:else}{#each Object.entries(query.args) as [i, { name, type, defaultValue }]}{name}{#if !mobile}:&nbsp;<ArgType
+					>{:else}{#each Object.entries(args) as [i, { name, type, defaultValue }]}{name}{#if !mobile}:&nbsp;<ArgType
+								{schema}
 								noExpandEnums={Boolean(defaultValue)}
 								inline
 								typ={type}
-							></ArgType>{/if}{#if defaultValue !== null}&nbsp;=&nbsp;<span
+
+							></ArgType>{/if}{#if defaultValue !== null && defaultValue !== undefined}&nbsp;=&nbsp;<span
 								class="literal {pascalToKebab(syntaxHighlightTypeName(type))}">{defaultValue}</span
-							>{/if}{#if Number(i) < query.args.length - 1},&#x20;&#8203;{/if}{/each}{/if})</code
-			>&#x20;&rarr;&nbsp;<code class="no-color"><ArgType inline typ={query.type}></ArgType></code>
+							>{/if}{#if Number(i) < args.length - 1},&#x20;&#8203;{/if}{/each}{/if})</code
+			>&#x20;&rarr;&nbsp;<code class="no-color"
+				><ArgType {schema} inline typ={query.type}></ArgType></code
+			>
 		{/if}
 	</HashLink>
 	{#if query.description}
@@ -102,16 +115,16 @@
 			{/if}
 		</section>
 	{/if}
-	{#if query.args.length > 0}
+	{#if args.length > 0}
 		<section class="args">
 			<p class="subtitle">Arguments</p>
 			<ul>
-				{#each query.args as arg}
+				{#each args as arg}
 					<li>
 						<code class="no-color">{arg.name}: </code>
 						<span class="type">
 							<code class="no-color">
-								<ArgType typ={arg.type} />
+								<ArgType {schema} typ={arg.type} />
 							</code>
 						</span>
 						{#if arg.defaultValue}
@@ -136,13 +149,14 @@
 							</div>
 						{/if}
 						{#if expandTypedef(arg.type)}
-							{@const innerType = types[firstNonWrapperType(arg.type)?.name ?? '']}
+							{@const innerTypeName = firstNonWrapperType(arg.type)?.name}
+							{@const innerType = innerTypeName ? schema.getType(innerTypeName) : undefined}
 							{#if innerType}
 								<div class="inner-type">
 									<ul>
-										{#each innerType.inputFields ?? [] as field}
+										{#each isInputObjectType(innerType) ? Object.values(innerType.getFields()) ?? [] : [] as field}
 											<li>
-												<svelte:self kind="field" query={{ ...field, args: [] }}></svelte:self>
+												<svelte:self kind="field" query={field}></svelte:self>
 											</li>
 										{/each}
 									</ul>

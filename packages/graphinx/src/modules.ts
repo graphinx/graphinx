@@ -1,24 +1,23 @@
 import * as cheerio from "cheerio"
+import { glob } from "glob"
+import type { GraphQLSchema } from "graphql"
 import { readFile, readdir, stat } from "node:fs/promises"
 import * as path from "node:path"
-import { kebabToCamel, kebabToPascal } from "./casing.js"
+import type { Module } from "./built-data.js"
+import type { Config } from "./config.js"
 import {
   getFrontmatter,
   markdownToHtml,
   type ResolverFromFilesystem,
 } from "./markdown.js"
+import { replacePlaceholders } from "./placeholders.js"
 import { loadSchema } from "./schema-loader.js"
-import type { SchemaClass } from "./schema.js"
-import type { Module } from "./built-data.js"
-import type { Config } from "./config.js"
 import {
   getAllFieldsOfType,
   getAllTypesInSchema,
   getRootResolversInSchema,
 } from "./schema-utils.js"
-import { asyncFilter, transformStrings } from "./utils.js"
-import { replacePlaceholders } from "./placeholders.js"
-import { glob } from "glob"
+import { asyncFilter } from "./utils.js"
 
 async function readdirNotExistOk(directory: string): Promise<string[]> {
   if (!(await stat(directory).catch(() => false))) {
@@ -57,62 +56,62 @@ function firstSentence(text: string) {
   return text.split(/\.(\s|$)/)[0]
 }
 
-/**
- * Sort types such that a type comes before another if it is used by the other.
- */
-function typesTopologicalSorter(
-  schema: SchemaClass
-): (
-  aName: Module["types"][number],
-  bName: Module["types"][number]
-) => -1 | 0 | 1 {
-  return (aName, bName) => {
-    if (aName === bName) {
-      return 0
-    }
-    const a = findTypeInSchema(schema, aName)
-    const b = findTypeInSchema(schema, bName)
-    if (!a || !b) {
-      console.warn(
-        `WARN: could not find types ${aName} and/or ${bName} in schema.`
-      )
-      return 0
-    }
-    const aUsedByB =
-      b.fields?.some((field) =>
-        [
-          field.type.name,
-          field.type.ofType?.name,
-          field.type?.ofType?.ofType?.name,
-        ].includes(a.name)
-      ) || b.interfaces?.some((i) => i.name === a.name)
-    const bUsedByA =
-      a.fields?.some((field) =>
-        [
-          field.type.name,
-          field.type.ofType?.name,
-          field.type?.ofType?.ofType?.name,
-        ].includes(b.name)
-      ) || a.interfaces?.some((i) => i.name === b.name)
+// /**
+//  * Sort types such that a type comes before another if it is used by the other.
+//  */
+// function typesTopologicalSorter(
+//   schema: GraphQLSchema
+// ): (
+//   aName: Module["types"][number],
+//   bName: Module["types"][number]
+// ) => -1 | 0 | 1 {
+//   return (aName, bName) => {
+//     if (aName === bName) {
+//       return 0
+//     }
+//     const a = findTypeInSchema(schema, aName)
+//     const b = findTypeInSchema(schema, bName)
+//     if (!a || !b) {
+//       console.warn(
+//         `WARN: could not find types ${aName} and/or ${bName} in schema.`
+//       )
+//       return 0
+//     }
+//     const aUsedByB =
+//       b.fields?.some((field) =>
+//         [
+//           field.type.name,
+//           field.type.ofType?.name,
+//           field.type?.ofType?.ofType?.name,
+//         ].includes(a.name)
+//       ) || b.interfaces?.some((i) => i.name === a.name)
+//     const bUsedByA =
+//       a.fields?.some((field) =>
+//         [
+//           field.type.name,
+//           field.type.ofType?.name,
+//           field.type?.ofType?.ofType?.name,
+//         ].includes(b.name)
+//       ) || a.interfaces?.some((i) => i.name === b.name)
 
-    if (aUsedByB && bUsedByA) {
-      return 0
-    }
+//     if (aUsedByB && bUsedByA) {
+//       return 0
+//     }
 
-    if (aUsedByB) {
-      return 1
-    }
+//     if (aUsedByB) {
+//       return 1
+//     }
 
-    if (bUsedByA) {
-      return -1
-    }
+//     if (bUsedByA) {
+//       return -1
+//     }
 
-    return 0
-  }
-}
+//     return 0
+//   }
+// }
 
 export async function getModule(
-  schema: SchemaClass,
+  schema: GraphQLSchema,
   config: Config,
   resolvers: ResolverFromFilesystem[],
   name: string
@@ -138,12 +137,15 @@ export async function getModule(
 
   console.info(`Parsed documentation for module ${name}`)
 
-  const findItemsOnType = async (typename: string) =>
-    (
+  const findItemsOnType = async (typename: string | undefined) => {
+    if (!typename) return []
+
+    return (
       await asyncFilter(getAllFieldsOfType(schema, typename), async (field) =>
         itemIsInModule(config, name, field.name)
       )
     ).map((f) => f.name)
+  }
 
   const module: Module = {
     name: name,
@@ -154,13 +156,9 @@ export async function getModule(
         itemIsInModule(config, name, t.name)
       )
     ).map((t) => t.name),
-    queries: await findItemsOnType(schema.queryType.name),
-    mutations: schema.mutationType
-      ? await findItemsOnType(schema.mutationType.name)
-      : [],
-    subscriptions: schema.subscriptionType
-      ? await findItemsOnType(schema.subscriptionType.name)
-      : [],
+    queries: await findItemsOnType(schema.getQueryType()?.name),
+    mutations: await findItemsOnType(schema.getMutationType()?.name),
+    subscriptions: await findItemsOnType(schema.getSubscriptionType()?.name),
   }
 
   if (metadata.manually_include) {
@@ -253,7 +251,7 @@ async function itemIsInModule(config: Config, module: string, item: string) {
 export async function parseDocumentation(
   docs: string,
   resolvers: ResolverFromFilesystem[],
-  schema: SchemaClass,
+  schema: GraphQLSchema,
   config: Config
 ) {
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -282,7 +280,7 @@ export async function parseDocumentation(
 }
 
 export async function getAllModules(
-  schema: SchemaClass,
+  schema: GraphQLSchema,
   config: Config,
   resolvers: ResolverFromFilesystem[]
 ) {
@@ -330,7 +328,7 @@ export async function moduleNames(config: Config): Promise<string[]> {
 }
 
 export async function getAllResolvers(
-  schema: SchemaClass,
+  schema: GraphQLSchema,
   config: Config
 ): Promise<ResolverFromFilesystem[]> {
   if (allResolvers.length > 0) {
@@ -382,31 +380,24 @@ export async function indexModule(
     renderedDocs,
     shortDescription,
     name: "index",
-    mutations:
-      schema.types
-        .find(
-          (type) => type.name === (schema.mutationType ?? { name: "" }).name
-        )
-        ?.fields?.map((field) => field.name) ?? [],
-    queries:
-      schema.types
-        .find((type) => type.name === schema.queryType.name)
-        ?.fields?.map((field) => field.name) ?? [],
-    subscriptions:
-      schema.types
-        .find(
-          (type) =>
-            type.name === (schema.subscriptionType ?? { name: "" })?.name
-        )
-        ?.fields?.map((field) => field.name) ?? [],
-    types: schema.types
+    mutations: getAllFieldsOfType(schema, schema.getMutationType()?.name).map(
+      ({ name }) => name
+    ),
+    queries: getAllFieldsOfType(schema, schema.getQueryType()?.name).map(
+      ({ name }) => name
+    ),
+    subscriptions: getAllFieldsOfType(
+      schema,
+      schema.getSubscriptionType()?.name
+    ).map(({ name }) => name),
+    types: getAllTypesInSchema(schema)
       .map((t) => t.name)
       .filter(
         (n) =>
           ![
-            schema.queryType.name,
-            (schema.mutationType ?? { name: "" }).name,
-            (schema.subscriptionType ?? { name: "" })?.name,
+            schema.getQueryType()?.name ?? "",
+            schema.getMutationType()?.name ?? "",
+            schema.getSubscriptionType()?.name ?? "",
           ].includes(n) &&
           !BUILTIN_TYPES.includes(n) /* &&
 					!/(Connection|Edge|Success)$/.test(n) */ &&
@@ -414,12 +405,4 @@ export async function indexModule(
 					!/^(Query|Mutation|Subscription)\w+(Result|Success)$/.test(n) */
       ),
   } as Module
-}
-
-export function findTypeInSchema(schema: SchemaClass, name: string) {
-  const type = schema.types.find((type) => type.name === name)
-
-  if (!type) console.error(`Not found in schema: Type ${name}`)
-
-  return type
 }

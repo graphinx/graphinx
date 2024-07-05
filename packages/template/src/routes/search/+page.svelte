@@ -1,52 +1,68 @@
 <script lang="ts">
-import { page } from "$app/stores";
-import ModuleCard from "$lib/ModuleCard.svelte";
-import Fuse from "fuse.js";
-import Query from "../Query.svelte";
-import TypeDef from "../TypeDef.svelte";
-import type { PageData } from "./$types";
+	import { page } from '$app/stores';
+	import ModuleCard from '$lib/ModuleCard.svelte';
+	import Fuse from 'fuse.js';
+	import Query from '../Query.svelte';
+	import TypeDef from '../TypeDef.svelte';
+	import type { PageData } from './$types';
+	import { buildSchema, isNamedType } from 'graphql';
+	import {
+		findMutationInSchema,
+		findQueryInSchema,
+		findSubscriptionInSchema
+	} from '$lib/schema-utils';
 
-export let data: PageData;
-$: ({ modules, mutations, queries, types } = data);
+	export let data: PageData;
+	$: ({ modules, mutations, queries, types } = data);
 
-$: query = $page.url.searchParams.get("q") || "";
+	$: schema = buildSchema(data.schemaRaw);
 
-function search(searchQuery: string) {
-	if (searchQuery.length < 3)
-		return { resultsCount: 0, results: [], modulesResults: [] };
-	const modulesResults = new Fuse(modules, {
-		keys: [
-			{ name: "name", weight: 2 },
-			{ name: "displayName", weight: 2 },
-			{ name: "description", weight: 0.5 },
-		],
-		includeMatches: true,
-		includeScore: true,
-		threshold: 0.2,
-	}).search(searchQuery);
-	const results = new Fuse([...queries, ...mutations, ...types], {
-		keys: [
-			{ name: "name", weight: 4 },
-			{ name: "type", weight: 1 },
-			{ name: "description", weight: 2 },
-			{ name: "args.name", weight: 1 },
-			{ name: "args.description", weight: 0.5 },
-			{ name: "module.name", weight: 0.3 },
-			{ name: "module.displayName", weight: 0.3 },
-			{ name: "module.description", weight: 0.25 },
-		],
-		includeScore: true,
-		includeMatches: true,
-		threshold: 0.2,
-	}).search(searchQuery);
-	return {
-		resultsCount: results.length + modulesResults.length,
-		results,
-		modulesResults,
-	};
-}
+	$: query = $page.url.searchParams.get('q') || '';
 
-$: ({ resultsCount, results, modulesResults } = search(query));
+	function search(searchQuery: string) {
+		if (searchQuery.length < 3) return { resultsCount: 0, results: [], modulesResults: [] };
+		const modulesResults = new Fuse(modules, {
+			keys: [
+				{ name: 'name', weight: 2 },
+				{ name: 'displayName', weight: 2 },
+				{ name: 'description', weight: 0.5 }
+			],
+			includeMatches: true,
+			includeScore: true,
+			threshold: 0.2
+		}).search(searchQuery);
+		const results = new Fuse([...queries, ...mutations, ...types], {
+			keys: [
+				{ name: 'name', weight: 4 },
+				{ name: 'type', weight: 1 },
+				{ name: 'description', weight: 2 },
+				{ name: 'args.name', weight: 1 },
+				{ name: 'args.description', weight: 0.5 },
+				{ name: 'module.name', weight: 0.3 },
+				{ name: 'module.displayName', weight: 0.3 },
+				{ name: 'module.description', weight: 0.25 }
+			],
+			includeScore: true,
+			includeMatches: true,
+			threshold: 0.2
+		}).search(searchQuery);
+		return {
+			resultsCount: results.length + modulesResults.length,
+			results,
+			modulesResults
+		};
+	}
+
+	$: ({ resultsCount, results, modulesResults } = search(query));
+
+	function resultIsType({ item }: (typeof results)[number]): boolean {
+		return types.some((type) => type.name === item.name);
+	}
+	function resultKind({ item }: (typeof results)[number]) {
+		if (queries.some((query) => query.name === item.name)) return 'query';
+		if (mutations.some((mutation) => mutation.name === item.name)) return 'mutation';
+		return 'field';
+	}
 </script>
 
 <svelte:head>
@@ -68,11 +84,24 @@ $: ({ resultsCount, results, modulesResults } = search(query));
 	<hr />
 {/if} -->
 
-{#each results as { item }}
-	{#if item.isType}
-		<TypeDef moduleName={item.module.name} type={item}></TypeDef>
+{#each results as result}
+	{#if isNamedType(result.item)}
+		<TypeDef
+			{schema}
+			allResolvers={data.resolvers}
+			moduleName={result.item.module.name}
+			type={result.item}
+		></TypeDef>
 	{:else}
-		<Query kind={item.kind} query={item}></Query>
+		{@const query =
+			findQueryInSchema(schema, result.item.name) ??
+			findMutationInSchema(schema, result.item.name) ??
+			findSubscriptionInSchema(schema, result.item.name)}
+		{#if query}
+			<Query {schema} kind={resultKind(result)} {query}></Query>
+		{:else}
+			<p>Impossible de trouver la query {result.item.name} dans le schéma</p>
+		{/if}
 	{/if}
 {:else}
 	<p class="no-results">Aucun résultat.</p>

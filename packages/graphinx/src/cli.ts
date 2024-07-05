@@ -1,25 +1,26 @@
 #!/usr/bin/env node
-import { program } from "commander"
-import { version } from "../package.json"
-import yaml from "yaml"
-import { Convert, type Config } from "./config.js"
 import {
-  readFileSync,
-  writeFileSync,
+  cpSync,
   existsSync,
   mkdirSync,
-  cpSync,
+  readFileSync,
+  writeFileSync,
 } from "node:fs"
-import { execa } from "execa"
-import { transformStrings } from "./utils.js"
-import { replacePlaceholders } from "./placeholders.js"
-import degit from "degit"
-import { rimrafSync } from "rimraf"
-import type { BuiltData } from "./built-data.js"
-import { getAllModules, getAllResolvers } from "./modules.js"
-import { loadSchema } from "./schema-loader.js"
 import path from "node:path"
+import { program } from "commander"
+import degit from "degit"
 import * as detectPackageManager from "detect-package-manager"
+import { execa } from "execa"
+import { printSchema } from "graphql"
+import { rimrafSync } from "rimraf"
+import yaml from "yaml"
+import { version } from "../package.json"
+import type { BuiltData } from "./built-data.js"
+import { type Config, Convert } from "./config.js"
+import { getAllModules, getAllResolvers } from "./modules.js"
+import { replacePlaceholders } from "./placeholders.js"
+import { loadSchema } from "./schema-loader.js"
+import { transformStrings } from "./utils.js"
 
 program
   .version(version)
@@ -70,15 +71,21 @@ console.info(`Using template ${templateSpecifier}`)
 
 if (!existsSync(buildAreaDirectory)) {
   mkdirSync(path.dirname(buildAreaDirectory), { recursive: true })
-  if (!templateSpecifier.includes("#")) templateSpecifier += "#main"
-  const emitter = degit(templateSpecifier, {
-    verbose: true,
-  })
+  if (templateSpecifier.startsWith("file://")) {
+    const templatePath = templateSpecifier.replace("file://", "")
+    console.info(`Copying template from ${templatePath}`)
+    cpSync(templatePath, buildAreaDirectory, { recursive: true })
+  } else {
+    if (!templateSpecifier.includes("#")) templateSpecifier += "#main"
+    const emitter = degit(templateSpecifier, {
+      verbose: true,
+    })
 
-  emitter.on("info", (info) => {
-    if ("message" in info) console.info(info.message)
-  })
-  await emitter.clone(buildAreaDirectory)
+    emitter.on("info", (info) => {
+      if ("message" in info) console.info(info.message)
+    })
+    await emitter.clone(buildAreaDirectory)
+  }
 }
 
 const templateConfig = {
@@ -105,14 +112,16 @@ if (templateConfig.inject) {
 }
 
 const schema = await loadSchema(config)
-console.log(`Loaded ${Object.keys(schema.types).length} types from schema`)
+console.log(
+  `Loaded ${Object.keys(schema.getTypeMap()).length} types from schema`
+)
 
 const resolvers = await getAllResolvers(schema, config)
 
 const builtData: BuiltData = {
   modules: await getAllModules(schema, config, resolvers),
   resolvers,
-  schema,
+  schema: printSchema(schema),
   config,
 }
 
@@ -140,7 +149,6 @@ if (config.pages) {
     console.error("The template does not support custom pages")
     process.exit(1)
   }
-  // TODO destination configurable by template
   console.info(
     `Copying pages from ${config.pages} into ${path.join(buildAreaDirectory, templateConfig.pages)}`
   )

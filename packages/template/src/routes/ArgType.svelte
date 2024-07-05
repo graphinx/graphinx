@@ -1,56 +1,91 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { Kind, type Arg, type EnumValue, type InterfaceElement } from '$lib/schema';
+	import {
+		type GraphQLEnumValue,
+		type GraphQLNamedType,
+		type GraphQLObjectType,
+		type GraphQLSchema,
+		type GraphQLType,
+		isEnumType,
+		isInputObjectType,
+		isInterfaceType,
+		isListType,
+		isNamedType,
+		isNonNullType,
+		isObjectType,
+		isScalarType,
+		isUnionType
+	} from 'graphql';
 
-	export let typ: Arg['type'];
+	export let schema: GraphQLSchema;
+	export let typ: GraphQLType;
 	export let inline = false;
 	export let nullable = true;
 	export let noExpandEnums = false;
 	export let invertNullabilitySign = true;
 	export let explicitNullabilitySign = false;
-	export let underlyingType: Arg['type'] | undefined = undefined;
+	export let underlyingType: GraphQLNamedType | undefined = undefined;
 
 	export let enumWasExpanded = false;
 	$: enumWasExpanded = willExpandEnum(typ);
 
-	$: ({ successTypes, edgeTypes, enumTypes } = $page.data);
+	$: successTypes = schema
+		? Object.fromEntries(
+				Object.values(schema.getTypeMap())
+					.filter(isObjectType)
+					.filter((type) => type.name.endsWith('Success'))
+					.map((t) => [t.name, Object.values(t.getFields()).find((f) => f.name === 'data')?.type])
+			)
+		: {};
+
+	$: edgeTypes = schema
+		? Object.fromEntries(
+				Object.values(schema.getTypeMap())
+					.filter(isObjectType)
+					.filter((type) => type.name.endsWith('ConnectionEdge'))
+					.map((t) => [t.name, Object.values(t.getFields()).find((f) => f.name === 'node')?.type])
+			)
+		: {};
+
 	$: enumValues = getEnumValues(typ);
 
 	$: {
-		if (typ && typ.kind === 'UNION' && typ.name?.endsWith('Result')) {
-			underlyingType ??= successTypes[typ.name?.replace('Result', 'Success')];
-		} else if (typ?.name?.endsWith('Connection')) {
-			underlyingType ??= edgeTypes[`${typ.name}Edge`];
+		if (typ && isUnionType(typ) && typ.name?.endsWith('Result')) {
+			const maybeUnderlying = successTypes[typ.name?.replace('Result', 'Success')];
+			if (isNamedType(maybeUnderlying)) underlyingType ??= maybeUnderlying;
+		} else if (isNamedType(typ) && typ?.name?.endsWith('Connection')) {
+			// biome-ignore lint/style/noNonNullAssertion: Connection types always have their corresponding Edge type
+			const maybeUnderlying = edgeTypes[`${typ.name}Edge`]!;
+			if (isNamedType(maybeUnderlying)) underlyingType ??= maybeUnderlying;
 		}
 	}
 
-	function getEnumValues(t: Arg['type']): EnumValue[] {
+	function getEnumValues(t: GraphQLType): GraphQLEnumValue[] {
 		try {
-			if (t.kind === 'ENUM') return enumTypes[t.name ?? ''] ?? [];
+			if (isEnumType(t)) return Object.values(t.getValues()) ?? [];
 		} catch {
 			return [];
 		}
 		return [];
 	}
 
-	function getUnionValues(t: Arg['type']): InterfaceElement[] {
+	function getUnionValues(t: GraphQLType): readonly GraphQLObjectType[] {
 		try {
-			if (t.kind === 'UNION') return $page.data.types[t.name ?? '']?.possibleTypes ?? [];
+			if (isUnionType(t)) return t.getTypes() ?? [];
 		} catch {
 			return [];
 		}
 		return [];
 	}
 
-	function willExpandEnum(t: Arg['type']) {
-		const valuesCount =
-			t.kind === Kind.Enum
-				? getEnumValues(t).length
-				: t.kind === Kind.Union
-					? getUnionValues(t).length
-					: 0;
+	function willExpandEnum(t: GraphQLType) {
+		const valuesCount = isEnumType(t)
+			? getEnumValues(t).length
+			: isUnionType(t)
+				? getUnionValues(t).length
+				: 0;
 		return Boolean(
-			(t.kind === 'ENUM' || t.kind === 'UNION') &&
+			(isEnumType(t) || isUnionType(t)) &&
 				enumValues &&
 				!noExpandEnums &&
 				(inline ? valuesCount <= 3 : true) &&
@@ -60,7 +95,7 @@
 </script>
 
 <!-- Need to avoid extraneous whitespace, so the code is ugly like that. Sowwy ._. -->
-{#if !typ}(none){:else}{#if typ.kind === 'ENUM'}{#if !enumValues || !willExpandEnum(typ)}<a
+{#if !typ}(none){:else}{#if isEnumType(typ)}{#if !enumValues || !willExpandEnum(typ)}<a
 				href="#{typ.name}"
 				title={(enumValues || []).map((v) => v.name).join(' | ')}
 				class="type enum">{typ.name}</a
@@ -69,21 +104,21 @@
 					><svelte:self nullable={false} {inline} {noExpandEnums} typ={value}></svelte:self></span
 				>{#if Number(i) < enumValues.length - 1}<span class="type enum enum-value-separator"
 						>&nbsp;|&#x20;</span
-					>{/if}{/each}{#if nullable}){/if}{/if}{:else if typ.kind === 'INPUT_OBJECT'}<a
+					>{/if}{/each}{#if nullable}){/if}{/if}{:else if isInputObjectType(typ)}<a
 			href="#{typ.name}"
 			class="type input">{typ.name}</a
-		>{:else if typ.kind === 'INTERFACE'}<span class="type interface">{typ.name}</span
-		>{:else if typ.kind === 'LIST'}<span class="type array">[</span><svelte:self
+		>{:else if isInterfaceType(typ)}<span class="type interface">{typ.name}</span
+		>{:else if isListType(typ)}<span class="type array">[</span><svelte:self
 			noExpandEnums={true}
 			{nullable}
 			{inline}
 			typ={typ.ofType}
-		/><span class="type array">]</span>{:else if typ.kind === 'NON_NULL'}<svelte:self
+		/><span class="type array">]</span>{:else if isNonNullType(typ)}<svelte:self
 			{noExpandEnums}
 			{inline}
 			nullable={false}
 			typ={typ.ofType}
-		/>{:else if typ.kind === 'OBJECT'}{#if typ.name?.endsWith('Connection') && underlyingType}<span
+		/>{:else if isObjectType(typ)}{#if typ.name?.endsWith('Connection') && underlyingType}<span
 				class="type connection"
 				><a class="type connection" href="/#types/special/connection">Connection</a>&lt;<svelte:self
 					{noExpandEnums}
@@ -92,8 +127,8 @@
 					typ={underlyingType}
 				></svelte:self>&gt;</span
 			>{:else}<a class="type object" href="#{typ.name}">{typ.name}</a
-			>{/if}{:else if typ.kind === 'SCALAR'}<span class="type scalar">{typ.name}</span
-		>{:else if typ.kind === 'UNION'}{#if typ.name?.endsWith('Result') && underlyingType}<span
+			>{/if}{:else if isScalarType(typ)}<span class="type scalar">{typ.name}</span
+		>{:else if isUnionType(typ)}{#if typ.name?.endsWith('Result') && underlyingType}<span
 				class="type errorable"
 				><a class="type errorable" href="/#types/special/result">Result</a>&lt;<svelte:self
 					{inline}
@@ -108,11 +143,11 @@
 						></svelte:self>{#if Number(i) < getUnionValues(typ).length - 1}&nbsp;<strong>|</strong
 							>&nbsp;{/if}{/each}</span
 				>{#if nullable}){/if}{:else}<a href="#{typ.name}">{typ.name}</a>{/if}{/if}{:else}<span
-			class="type unknown">{typ.name}</span
-		>{/if}<span class:nullable class:non-nullable={typ.kind === 'NON_NULL'}
-		>{#if invertNullabilitySign}{#if typ.kind !== 'NON_NULL' && nullable}{#if explicitNullabilitySign}&nbsp;|&#x20;null{:else}<span
+			class="type unknown">unknown</span
+		>{/if}<span class:nullable class:non-nullable={isNonNullType(typ)}
+		>{#if invertNullabilitySign}{#if !isNonNullType(typ) && nullable}{#if explicitNullabilitySign}&nbsp;|&#x20;null{:else}<span
 						title="Peut être null">?</span
-					>{/if}{/if}{:else if typ.kind === 'NON_NULL'}!{/if}</span
+					>{/if}{/if}{:else if isNonNullType(typ)}!{/if}</span
 	>{/if}
 
 <style>

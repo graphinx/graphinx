@@ -1,12 +1,13 @@
 # yaml-language-server: $schema=../../config.schema.json
 
-template: ewen-lbh/graphinx/packages/template
+template: file://../template
 
-schema:
-  introspection:
-    url: https://churros.inpt.fr/graphql
-    headers:
-      User-Agent: Narasimha
+schema: ./packages/app/schema.graphql
+  # otherwise, you can do:
+  #   introspection:
+  #     url: https://churros.inpt.fr/graphql
+  #     headers:
+  #       User-Agent: Narasimha
 
 branding:
   logo: https://churros.inpt.fr/logo.svg
@@ -34,6 +35,9 @@ modules:
     items:
       - files: ./packages/api/src/modules/%module%/{resolvers,types}/*.ts
         match: "builder.((query|mutation|subscription)Field|\\w+Type)\\('(?<name>[^']+)'"
+        contribution: https://git.inpt.fr/inp-net/churros/-/blob/main/packages/api/src/modules/%module%/
+      - files: ./packages/api/src/modules/%module%/types/*.ts
+        match: "builder.\\w+Type\\(.+, \\{ name: '(?<name>[^']+)' \\}"
         contribution: https://git.inpt.fr/inp-net/churros/-/blob/main/packages/api/src/modules/%module%/
     order:
       - global

@@ -1,7 +1,5 @@
 import type { Config } from "./config.js"
 import type { ResolverFromFilesystem } from "./markdown.js"
-import type { SchemaClass } from "./schema.js"
-export type { SchemaClass } from "./schema.js"
 
 export type Module = {
   name: string
@@ -20,7 +18,7 @@ export type Module = {
  */
 export type BuiltData = {
   modules: Module[]
-  schema: SchemaClass
+  schema: string
   config: Config
   resolvers: ResolverFromFilesystem[]
 }

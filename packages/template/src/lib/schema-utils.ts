@@ -1,37 +1,29 @@
-import type { SchemaClass } from 'graphinx';
+import type { GraphQLSchema } from 'graphql';
 
-export function findQueryInSchema(schema: SchemaClass, name: string) {
-	const field = schema.types
-		.find((type) => type.name === schema.queryType.name)
-		?.fields?.find((field) => field.name === name);
+export function findQueryInSchema(schema: GraphQLSchema, name: string) {
+	const field = schema.getQueryType()?.getFields()[name];
 
 	if (!field) console.error(`Not found in schema: Query ${name}`);
 
 	return field;
 }
 
-export function findMutationInSchema(schema: SchemaClass, name: string) {
-	const field = schema.types
-		.find((type) => type.name === (schema.mutationType ?? { name: '' }).name)
-		?.fields?.find((field) => field.name === name);
-
+export function findMutationInSchema(schema: GraphQLSchema, name: string) {
+	const field = schema.getMutationType()?.getFields()[name];
 	if (!field) console.error(`Not found in schema: Mutation ${name}`);
 
 	return field;
 }
 
-export function findSubscriptionInSchema(schema: SchemaClass, name: string) {
-	const field = schema.types
-		.find((type) => type.name === (schema.subscriptionType ?? { name: '' }).name)
-		?.fields?.find((field) => field.name === name);
-
+export function findSubscriptionInSchema(schema: GraphQLSchema, name: string) {
+	const field = schema.getSubscriptionType()?.getFields()[name];
 	// if (!field) console.error(`Subscription ${name} not found in schema.`);
 
 	return field;
 }
 
-export function findTypeInSchema(schema: SchemaClass, name: string) {
-	const type = schema.types.find((type) => type.name === name);
+export function findTypeInSchema(schema: GraphQLSchema, name: string) {
+	const type = schema.getTypeMap()[name];
 
 	if (!type) console.error(`Not found in schema: Type ${name}`);
 

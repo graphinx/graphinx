@@ -1,11 +1,12 @@
 <script lang="ts">
-import ModuleIcon from "$lib/ModuleIcon.svelte";
-import { MODULES_COLORS } from "$lib/colors";
-import EditIcon from "$lib/icons/EditIcon.svelte";
-import GraphQlModules from "../GraphQLModules.svelte";
-import type { PageData } from "./$types";
+	import ModuleIcon from '$lib/ModuleIcon.svelte';
+	import { MODULES_COLORS } from '$lib/colors';
+	import EditIcon from '$lib/icons/EditIcon.svelte';
+	import { buildSchema } from 'graphql';
+	import GraphQlModules from '../GraphQLModules.svelte';
+	import type { PageData } from './$types';
 
-export let data: PageData;
+	export let data: PageData;
 </script>
 
 <svelte:head>
@@ -35,7 +36,8 @@ export let data: PageData;
 	{/if}
 </h1>
 
-<GraphQlModules {...data}></GraphQlModules>
+<GraphQlModules {...data} allResolvers={data.resolvers} schema={buildSchema(data.schema)}
+></GraphQlModules>
 
 <style>
 	h1 {
