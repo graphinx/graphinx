@@ -45,7 +45,10 @@
     "pages": "src/routes",
     "dotenv": {
       "path": ".env",
-      "variables": ["PUBLIC_API_WEBSOCKET_URL", "PUBLIC_API_URL"]
+      "variables": [
+        "PUBLIC_API_WEBSOCKET_URL",
+        "PUBLIC_API_URL"
+      ]
     }
   },
   "dependencies": {

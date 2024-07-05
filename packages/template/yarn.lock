@@ -234,7 +234,8 @@ __metadata:
     eslint-config-prettier: "npm:^9.1.0"
     eslint-plugin-svelte: "npm:^2.35.1"
     fuse.js: "npm:^7.0.0"
-    graphinx: "npm:^0.1.0"
+    graphinx: "npm:^0.6.0"
+    graphql: "npm:^16.9.0"
     jsdom: "npm:^24.0.0"
     linkifyjs: "npm:^4.1.3"
     lodash.throttle: "npm:^4.1.1"
@@ -2108,15 +2109,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphinx@npm:^0.1.0":
-  version: 0.1.0
-  resolution: "graphinx@npm:0.1.0"
+"graphinx@npm:^0.6.0":
+  version: 0.6.0
+  resolution: "graphinx@npm:0.6.0"
   dependencies:
     commander: "npm:^12.1.0"
     degit: "npm:^2.8.4"
     detect-package-manager: "npm:^3.0.2"
     execa: "npm:^9.3.0"
     glob: "npm:^10.4.2"
+    graphql: "npm:^16.9.0"
     handlebars: "npm:^4.7.8"
     linkify-plugin-mention: "npm:^4.1.3"
     rehype-stringify: "npm:^10.0.0"
@@ -2129,7 +2131,14 @@ __metadata:
     yaml: "npm:^2.4.5"
   bin:
     graphinx: dist/cli.js
-  checksum: 10c0/0b709f23e16f67ec2a320bd0b1df78de0645de49c70f42fcaded910b0a6c61818847da8091396a6697738ec718fd7a4fdd551495cce2a91f1195558ef5ea42d2
+  checksum: 10c0/fbb840650a3b7d2f9ba164486a8e5014b05a0923b7b54cb6af594033b2169cda6cd12823e3be55c3eec2be224fd8fc317ba9026d707229d6168ddd5248c07fa8
+  languageName: node
+  linkType: hard
+
+"graphql@npm:^16.9.0":
+  version: 16.9.0
+  resolution: "graphql@npm:16.9.0"
+  checksum: 10c0/a8850f077ff767377237d1f8b1da2ec70aeb7623cdf1dfc9e1c7ae93accc0c8149c85abe68923be9871a2934b1bce5a2496f846d4d56e1cfb03eaaa7ddba9b6a
   languageName: node
   linkType: hard
 
