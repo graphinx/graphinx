@@ -116,7 +116,6 @@ export async function getModule(
   resolvers: ResolverFromFilesystem[],
   name: string
 ): Promise<Module> {
-  console.info(`Getting module ${name}...`)
   const staticallyDefined = config.modules?.static?.find((m) => m.name === name)
   let docs = staticallyDefined?.intro
   if (config.modules?.filesystem) {
@@ -126,7 +125,7 @@ export async function getModule(
     )
   }
 
-  if (!docs) throw new Error(`No documentation found for module ${name}`)
+  if (!docs) throw new Error(`⚠️ No documentation found for module ${name}`)
 
   const { parsedDocs, metadata, ...documentation } = await parseDocumentation(
     docs,
@@ -135,7 +134,7 @@ export async function getModule(
     config
   )
 
-  console.info(`Parsed documentation for module ${name}`)
+  console.info(`\x1b[F\x1b[K\r📝 Parsed documentation for module ${name}`)
 
   const findItemsOnType = async (typename: string | undefined) => {
     if (!typename) return []
@@ -176,14 +175,9 @@ export async function getModule(
     }
   }
 
-  console.info(`Finished module ${name}:
-
-- Queries: ${module.queries.length}
-- Mutations: ${module.mutations.length}
-- Subscriptions: ${module.subscriptions.length}
-- Types: ${module.types.length}
-
-    `)
+  console.info(
+    `\x1b[F\x1b[K\r📦 Finished module ${name}: ${module.queries.length} queries, ${module.mutations.length} mutations, ${module.subscriptions.length} subscriptions, ${module.types.length} types`
+  )
 
   return module
 }
@@ -284,12 +278,12 @@ export async function getAllModules(
   config: Config,
   resolvers: ResolverFromFilesystem[]
 ) {
-  console.info("Getting all modules...")
+  console.info("🏃 Getting all modules...")
   const order =
     config.modules?.filesystem?.order ??
     config.modules?.static?.map((m) => m.name) ??
     []
-  console.info(`Module names order was resolved to ${order}`)
+  console.info(`📚 Module names order was resolved to ${order}`)
   const allModuleNames = await moduleNames(config)
   return (
     await Promise.all(
@@ -322,7 +316,7 @@ export async function moduleNames(config: Config): Promise<string[]> {
     names = [...names, ...config.modules.filesystem.names.is]
   }
 
-  console.info(`Found modules: ${names.join(", ")}`)
+  console.info(`🔍 Found modules: ${names.join(", ")}`)
 
   return [...new Set(names)]
 }
@@ -335,20 +329,26 @@ export async function getAllResolvers(
     return allResolvers
   }
   const names = await moduleNames(config)
-  const resolvers: ResolverFromFilesystem[] = []
-  for (const module of names) {
-    for (const resolver of getRootResolversInSchema(schema)) {
-      if (await itemIsInModule(config, module, resolver.name)) {
-        resolvers.push({
-          name: resolver.name,
-          moduleName: path.basename(module),
-          type: resolver.parentType,
-        })
-      }
-    }
-  }
-  allResolvers = resolvers
-  return resolvers
+  const rootResolvers = getRootResolversInSchema(schema)
+  console.info("👣 Categorizing all resolvers...\n")
+  const results = await Promise.all(
+    names
+      .flatMap((moduleName) =>
+        rootResolvers.map((resolver) => [moduleName, resolver] as const)
+      )
+      .map(async ([moduleName, resolver]) => {
+        if (await itemIsInModule(config, moduleName, resolver.name)) {
+          console.info(`\x1b[F\x1b[2K\r📕 Categorized ${resolver.name} into ${moduleName}`)
+          return {
+            name: resolver.name,
+            moduleName: path.basename(moduleName),
+            type: resolver.parentType,
+          }
+        }
+        return null
+      })
+  )
+  return results.filter((r) => r !== null) as ResolverFromFilesystem[]
 }
 
 const BUILTIN_TYPES = ["String", "Boolean", "Int", "Float"]

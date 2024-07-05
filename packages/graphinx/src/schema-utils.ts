@@ -47,7 +47,7 @@ export function getRootResolversInSchema(schema: GraphQLSchema) {
 export function findTypeInSchema(schema: GraphQLSchema, name: string) {
   const type = schema.getType(name)
 
-  if (!type) console.error(`Not found in schema: Type ${name}`)
+  if (!type) console.error(`⚠️ Not found in schema: Type ${name}`)
 
   return type
 }

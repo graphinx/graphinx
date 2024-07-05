@@ -36,7 +36,7 @@ program
 const options = program.opts()
 
 if (!existsSync(options.config)) {
-  console.error(`Config file not found: ${options.config}`)
+  console.error(`❌ Config file not found: ${options.config}`)
   process.exit(1)
 }
 
@@ -61,19 +61,19 @@ const config: Config = {
 const DEFAULT_TEMPLATE = "ewen-lbh/graphinx/packages/template"
 const buildAreaDirectory = path.resolve(options.buildArea)
 
-console.info(`Building site in ${buildAreaDirectory}`)
+console.info(`🍲 Building site in ${buildAreaDirectory}`)
 
 if (!options.keep && existsSync(buildAreaDirectory))
   rimrafSync(buildAreaDirectory)
 
 let templateSpecifier = config.template ?? DEFAULT_TEMPLATE
-console.info(`Using template ${templateSpecifier}`)
+console.info(`🗃️  Using template ${templateSpecifier}`)
 
 if (!existsSync(buildAreaDirectory)) {
   mkdirSync(path.dirname(buildAreaDirectory), { recursive: true })
   if (templateSpecifier.startsWith("file://")) {
     const templatePath = templateSpecifier.replace("file://", "")
-    console.info(`Copying template from ${templatePath}`)
+    console.info(`⬇️️ Copying template from ${templatePath}`)
     cpSync(templatePath, buildAreaDirectory, { recursive: true })
   } else {
     if (!templateSpecifier.includes("#")) templateSpecifier += "#main"
@@ -106,14 +106,14 @@ if (templateConfig.inject) {
   injectionPath = templateConfig.inject
 } else {
   console.error(
-    "Provided template is not a valid Graphinx template: missing graphinx.inject field in package.json"
+    "❌ Provided template is not a valid Graphinx template: missing graphinx.inject field in package.json"
   )
   process.exit(1)
 }
 
 const schema = await loadSchema(config)
 console.log(
-  `Loaded ${Object.keys(schema.getTypeMap()).length} types from schema`
+  `🏷️  Loaded ${Object.keys(schema.getTypeMap()).length} types from schema`
 )
 
 const resolvers = await getAllResolvers(schema, config)
@@ -146,11 +146,11 @@ writeFileSync(
 // Copy over pages from pages directory
 if (config.pages) {
   if (!templateConfig.pages) {
-    console.error("The template does not support custom pages")
+    console.error("❌ The template does not support custom pages")
     process.exit(1)
   }
   console.info(
-    `Copying pages from ${config.pages} into ${path.join(buildAreaDirectory, templateConfig.pages)}`
+    `📄 Copying pages from ${config.pages} into ${path.join(buildAreaDirectory, templateConfig.pages)}`
   )
   cpSync(config.pages, path.join(buildAreaDirectory, templateConfig.pages), {
     recursive: true,
@@ -176,18 +176,18 @@ const packageManager = await detectPackageManager.detect({
   cwd: buildAreaDirectory,
 })
 
-console.info("Installing template's dependencies...")
+console.info("⬇️ Installing template's dependencies...\n")
 
 await execa(packageManager, ["install"], {
   cwd: buildAreaDirectory,
   stdio: "inherit",
 })
 
-console.info("Building site...")
+console.info("\n📦 Building site...\n")
 
 await execa(packageManager, ["run", "build"], {
   cwd: buildAreaDirectory,
   stdio: "inherit",
 })
 
-console.info("✅ Site built")
+console.info("\n✅ Site built")
