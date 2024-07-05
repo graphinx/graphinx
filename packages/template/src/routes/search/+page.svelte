@@ -9,13 +9,37 @@
 	import {
 		findMutationInSchema,
 		findQueryInSchema,
-		findSubscriptionInSchema
+		findSubscriptionInSchema,
+		findTypeInSchema
 	} from '$lib/schema-utils';
 
-	export let data: PageData;
-	$: ({ modules, mutations, queries, types } = data);
+	function nonNullable<T>(value: T): value is NonNullable<T> {
+		return value !== null;
+	}
 
-	$: schema = buildSchema(data.schemaRaw);
+	export let data: PageData;
+	$: ({ modules, schemaRaw } = data);
+	$: schema = buildSchema(schemaRaw);
+
+	$: queries = modules.flatMap((module) =>
+		module.queries
+			.map((q) => findQueryInSchema(schema, q))
+			.filter(nonNullable)
+			.map((q) => ({ ...q, module }))
+	);
+	$: mutations = modules.flatMap((module) =>
+		module.mutations
+			.map((m) => findMutationInSchema(schema, m))
+			.filter(nonNullable)
+			.map((m) => ({ ...m, module }))
+	);
+
+	$: types = modules.flatMap((module) =>
+		module.types
+			.map((t) => findTypeInSchema(schema, t))
+			.filter(nonNullable)
+			.map((t) => ({ ...t, module }))
+	);
 
 	$: query = $page.url.searchParams.get('q') || '';
 
@@ -55,9 +79,6 @@
 
 	$: ({ resultsCount, results, modulesResults } = search(query));
 
-	function resultIsType({ item }: (typeof results)[number]): boolean {
-		return types.some((type) => type.name === item.name);
-	}
 	function resultKind({ item }: (typeof results)[number]) {
 		if (queries.some((query) => query.name === item.name)) return 'query';
 		if (mutations.some((mutation) => mutation.name === item.name)) return 'mutation';
