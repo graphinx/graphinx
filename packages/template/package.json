@@ -58,5 +58,6 @@
     "graphql": "^16.9.0",
     "linkifyjs": "^4.1.3",
     "svelte-param-store": "^0.0.4"
-  }
+  },
+  "packageManager": "yarn@4.3.1"
 }
