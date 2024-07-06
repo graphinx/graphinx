@@ -2,11 +2,11 @@ export function transformStrings<T>(
 	obj: T,
 	transformer: (v: string) => string,
 ): T {
-	if (typeof obj === "string") {
+	if (typeof obj === 'string') {
 		return transformer(obj) as unknown as T;
 	}
 
-	if (typeof obj !== "object" || obj === null) {
+	if (typeof obj !== 'object' || obj === null) {
 		return obj;
 	}
 
@@ -14,7 +14,7 @@ export function transformStrings<T>(
 		return obj.map((v) => transformStrings(v, transformer)) as unknown as T;
 	}
 
-	if (typeof obj === "object") {
+	if (typeof obj === 'object') {
 		return Object.fromEntries(
 			Object.entries(obj).map(([key, value]) => [
 				key,
@@ -37,7 +37,7 @@ export async function asyncFilter<T>(
 	const output: T[] = [];
 	const results = await Promise.allSettled(input.map(condition));
 	for (const [i, result] of results.entries()) {
-		if (result.status === "rejected") {
+		if (result.status === 'rejected') {
 			throw result.reason;
 		}
 

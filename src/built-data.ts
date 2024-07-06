@@ -1,5 +1,5 @@
-import type { Config } from "./config.js";
-import type { ResolverFromFilesystem } from "./markdown.js";
+import type { Config } from './config.js';
+import type { ResolverFromFilesystem } from './markdown.js';
 
 export type Module = {
 	name: string;

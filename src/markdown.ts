@@ -1,16 +1,16 @@
-import "linkify-plugin-mention";
-import rehypeStringify from "rehype-stringify";
-import remarkFrontmatter from "remark-frontmatter";
-import remarkParse from "remark-parse";
-import remarkRehype from "remark-rehype";
-import { unified } from "unified";
-import { camelToKebab } from "./casing.js";
-import { matter } from "vfile-matter";
+import 'linkify-plugin-mention';
+import rehypeStringify from 'rehype-stringify';
+import remarkFrontmatter from 'remark-frontmatter';
+import remarkParse from 'remark-parse';
+import remarkRehype from 'remark-rehype';
+import { unified } from 'unified';
+import { camelToKebab } from './casing.js';
+import { matter } from 'vfile-matter';
 
 export type ResolverFromFilesystem = {
 	name: string;
 	moduleName: string;
-	type: "query" | "mutation" | "subscription";
+	type: 'query' | 'mutation' | 'subscription';
 };
 
 export async function getFrontmatter(markdown: string) {
@@ -38,8 +38,13 @@ export async function markdownToHtml(
 		.use(() => ({ children }) => {
 			if (downlevelHeadings)
 				for (const child of children) {
-					if (child.type === "heading")
-						child.depth = Math.min(child.depth + 1, 6) as 2 | 3 | 4 | 5 | 6;
+					if (child.type === 'heading')
+						child.depth = Math.min(child.depth + 1, 6) as
+							| 2
+							| 3
+							| 4
+							| 5
+							| 6;
 				}
 		})
 		.use(remarkRehype)
@@ -62,15 +67,17 @@ export async function markdownToHtml(
 					},
 				)
 				// auto-link "registerApp" but not "user"
-				.split(" ")
+				.split(' ')
 				.map((word) => {
 					const r = allResolvers.find(
-						(r) => r.name === word && camelToKebab(r.name).includes("-"),
+						(r) =>
+							r.name === word &&
+							camelToKebab(r.name).includes('-'),
 					);
 					return r
 						? `<a href="/${r.moduleName}#${r.type}/${r.name}">${word}</a>`
 						: word;
 				})
-				.join(" "),
+				.join(' '),
 		);
 }

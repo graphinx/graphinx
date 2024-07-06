@@ -1,24 +1,24 @@
-import * as cheerio from "cheerio";
-import { glob } from "glob";
-import type { GraphQLSchema } from "graphql";
-import { readFile, readdir, stat } from "node:fs/promises";
-import * as path from "node:path";
-import type { Module } from "./built-data.js";
-import type { Config } from "./config.js";
+import * as cheerio from 'cheerio';
+import { glob } from 'glob';
+import type { GraphQLSchema } from 'graphql';
+import { readFile, readdir, stat } from 'node:fs/promises';
+import * as path from 'node:path';
+import type { Module } from './built-data.js';
+import type { Config } from './config.js';
 import {
 	getFrontmatter,
 	markdownToHtml,
 	type ResolverFromFilesystem,
-} from "./markdown.js";
-import { replacePlaceholders } from "./placeholders.js";
-import { loadSchema } from "./schema-loader.js";
+} from './markdown.js';
+import { replacePlaceholders } from './placeholders.js';
+import { loadSchema } from './schema-loader.js';
 import {
 	getAllFieldsOfType,
 	getAllTypesInSchema,
 	getRootResolversInSchema,
-} from "./schema-utils.js";
-import { asyncFilter } from "./utils.js";
-import { b } from "./cli.js";
+} from './schema-utils.js';
+import { asyncFilter } from './utils.js';
+import { b } from './cli.js';
 
 async function readdirNotExistOk(directory: string): Promise<string[]> {
 	if (!(await stat(directory).catch(() => false))) {
@@ -39,18 +39,18 @@ async function typescriptFilesWithoutBarrels(
 ): Promise<string[]> {
 	return (await readdirNotExistOk(directory)).filter(
 		(file) =>
-			file.endsWith(".ts") &&
-			!file.endsWith(".d.ts") &&
-			path.basename(file) !== "index.ts",
+			file.endsWith('.ts') &&
+			!file.endsWith('.d.ts') &&
+			path.basename(file) !== 'index.ts',
 	);
 }
 
 function ellipsis(text: string, maxWords: number) {
-	const words = text.split(" ");
+	const words = text.split(' ');
 	if (words.length <= maxWords) {
 		return text;
 	}
-	return `${words.slice(0, maxWords).join(" ")}...`;
+	return `${words.slice(0, maxWords).join(' ')}...`;
 }
 
 function firstSentence(text: string) {
@@ -123,12 +123,15 @@ export async function getModule(
 	let docs = staticallyDefined?.intro;
 	if (config.modules?.filesystem) {
 		docs = await readFile(
-			replacePlaceholders(config.modules.filesystem.intro, { module: name }),
-			"utf-8",
+			replacePlaceholders(config.modules.filesystem.intro, {
+				module: name,
+			}),
+			'utf-8',
 		);
 	}
 
-	if (!docs) throw new Error(`⚠️ No documentation found for module ${b(name)}`);
+	if (!docs)
+		throw new Error(`⚠️ No documentation found for module ${b(name)}`);
 
 	const { parsedDocs, metadata, ...documentation } = await parseDocumentation(
 		docs,
@@ -143,15 +146,17 @@ export async function getModule(
 		if (!typename) return [];
 
 		return (
-			await asyncFilter(getAllFieldsOfType(schema, typename), async (field) =>
-				itemIsInModule(config, name, field.name),
+			await asyncFilter(
+				getAllFieldsOfType(schema, typename),
+				async (field) => itemIsInModule(config, name, field.name),
 			)
 		).map((f) => f.name);
 	};
 
 	const module: Module = {
 		name: name,
-		displayName: staticallyDefined?.title ?? parsedDocs("h1").first().text(),
+		displayName:
+			staticallyDefined?.title ?? parsedDocs('h1').first().text(),
 		...documentation,
 		types: (
 			await asyncFilter(getAllTypesInSchema(schema), async (t) =>
@@ -160,7 +165,9 @@ export async function getModule(
 		).map((t) => t.name),
 		queries: await findItemsOnType(schema.getQueryType()?.name),
 		mutations: await findItemsOnType(schema.getMutationType()?.name),
-		subscriptions: await findItemsOnType(schema.getSubscriptionType()?.name),
+		subscriptions: await findItemsOnType(
+			schema.getSubscriptionType()?.name,
+		),
 	};
 
 	if (metadata.manually_include) {
@@ -170,7 +177,8 @@ export async function getModule(
 		for (const mutation of metadata.manually_include.mutations ?? []) {
 			module.mutations.push(mutation);
 		}
-		for (const subscription of metadata.manually_include.subscriptions ?? []) {
+		for (const subscription of metadata.manually_include.subscriptions ??
+			[]) {
 			module.subscriptions.push(subscription);
 		}
 		for (const type of metadata.manually_include.types ?? []) {
@@ -190,7 +198,7 @@ export async function getModule(
 }
 
 async function itemIsInModuleViaFilesystem(
-	config: NonNullable<Config["modules"]>["filesystem"],
+	config: NonNullable<Config['modules']>['filesystem'],
 	currentModule: string,
 	item: string,
 ) {
@@ -204,8 +212,8 @@ async function itemIsInModuleViaFilesystem(
 			replacePlaceholders(files, { module: currentModule }),
 		);
 		for (const path of pathsToTest) {
-			const content = await readFile(path, "utf-8");
-			const lines = content.split("\n");
+			const content = await readFile(path, 'utf-8');
+			const lines = content.split('\n');
 			for (const line of lines) {
 				const match = pattern.exec(line);
 				if (!match) continue;
@@ -213,9 +221,6 @@ async function itemIsInModuleViaFilesystem(
 					return true;
 				}
 			}
-		}
-		if (currentModule === "users" && item === "user") {
-			console.log({ item, found: false, pattern, pathsToTest });
 		}
 	}
 
@@ -262,7 +267,7 @@ export async function parseDocumentation(
 	});
 	const parsedDocs = cheerio.load(htmlDocs);
 	const docsWithoutHeading = cheerio.load(htmlDocs);
-	docsWithoutHeading("h1").remove();
+	docsWithoutHeading('h1').remove();
 
 	//   if (Object.keys(metadata).length > 0) {
 	//     console.log(`Found metadata for ${name}: ${JSON.stringify(metadata)}`)
@@ -271,10 +276,10 @@ export async function parseDocumentation(
 	return {
 		rawDocs: docs,
 		shortDescription: ellipsis(
-			firstSentence(docsWithoutHeading("p").first().text()),
+			firstSentence(docsWithoutHeading('p').first().text()),
 			15,
 		),
-		renderedDocs: docsWithoutHeading.html() ?? "",
+		renderedDocs: docsWithoutHeading.html() ?? '',
 		metadata,
 		parsedDocs,
 	};
@@ -285,7 +290,7 @@ export async function getAllModules(
 	config: Config,
 	resolvers: ResolverFromFilesystem[],
 ) {
-	console.info("🏃 Getting all modules...");
+	console.info('🏃 Getting all modules...');
 	const order =
 		config.modules?.filesystem?.order ??
 		config.modules?.static?.map((m) => m.name) ??
@@ -300,7 +305,9 @@ export async function getAllModules(
 		)
 	)
 		.filter(
-			(m) => m.mutations.length + m.queries.length + m.subscriptions.length > 0,
+			(m) =>
+				m.mutations.length + m.queries.length + m.subscriptions.length >
+				0,
 		)
 		.sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name));
 }
@@ -310,7 +317,8 @@ const allResolvers: ResolverFromFilesystem[] = [];
 export async function moduleNames(config: Config): Promise<string[]> {
 	let names: string[] = [];
 	if (!config.modules) return [];
-	if (config.modules.static) names = config.modules.static?.map((m) => m.name);
+	if (config.modules.static)
+		names = config.modules.static?.map((m) => m.name);
 	if (config.modules.filesystem?.names?.in)
 		names = [
 			...names,
@@ -323,7 +331,7 @@ export async function moduleNames(config: Config): Promise<string[]> {
 		names = [...names, ...config.modules.filesystem.names.is];
 	}
 
-	console.info(`🔍 Found modules: ${names.join(", ")}`);
+	console.info(`🔍 Found modules: ${names.join(', ')}`);
 
 	return [...new Set(names)];
 }
@@ -337,11 +345,13 @@ export async function getAllResolvers(
 	}
 	const names = await moduleNames(config);
 	const rootResolvers = getRootResolversInSchema(schema);
-	console.info("👣 Categorizing all resolvers...\n");
+	console.info('👣 Categorizing all resolvers...\n');
 	const results = await Promise.all(
 		names
 			.flatMap((moduleName) =>
-				rootResolvers.map((resolver) => [moduleName, resolver] as const),
+				rootResolvers.map(
+					(resolver) => [moduleName, resolver] as const,
+				),
 			)
 			.map(async ([moduleName, resolver]) => {
 				if (await itemIsInModule(config, moduleName, resolver.name)) {
@@ -354,13 +364,14 @@ export async function getAllResolvers(
 						type: resolver.parentType,
 					};
 				}
+				console.warn(`\n⚠️ ${resolver.name} was left uncategorized`);
 				return null;
 			}),
 	);
 	return results.filter((r) => r !== null) as ResolverFromFilesystem[];
 }
 
-const BUILTIN_TYPES = ["String", "Boolean", "Int", "Float"];
+const BUILTIN_TYPES = ['String', 'Boolean', 'Int', 'Float'];
 
 export async function indexModule(
 	config: Config,
@@ -368,30 +379,28 @@ export async function indexModule(
 ): Promise<Module> {
 	const schema = await loadSchema(config);
 	const { description, title } =
-		typeof config.modules?.index === "object"
+		typeof config.modules?.index === 'object'
 			? {
 					description:
-						config.modules.index.description ?? "The entire GraphQL schema",
-					title: config.modules.index.title ?? "Index",
+						config.modules.index.description ??
+						'The entire GraphQL schema',
+					title: config.modules.index.title ?? 'Index',
 				}
-			: { description: "The entire GraphQL schema", title: "Index" };
+			: { description: 'The entire GraphQL schema', title: 'Index' };
 
-	const { renderedDocs, shortDescription, rawDocs } = await parseDocumentation(
-		description,
-		resolvers,
-		schema,
-		config,
-	);
+	const { renderedDocs, shortDescription, rawDocs } =
+		await parseDocumentation(description, resolvers, schema, config);
 
 	return {
 		displayName: title,
 		rawDocs,
 		renderedDocs,
 		shortDescription,
-		name: "index",
-		mutations: getAllFieldsOfType(schema, schema.getMutationType()?.name).map(
-			({ name }) => name,
-		),
+		name: 'index',
+		mutations: getAllFieldsOfType(
+			schema,
+			schema.getMutationType()?.name,
+		).map(({ name }) => name),
 		queries: getAllFieldsOfType(schema, schema.getQueryType()?.name).map(
 			({ name }) => name,
 		),
@@ -404,13 +413,13 @@ export async function indexModule(
 			.filter(
 				(n) =>
 					![
-						schema.getQueryType()?.name ?? "",
-						schema.getMutationType()?.name ?? "",
-						schema.getSubscriptionType()?.name ?? "",
+						schema.getQueryType()?.name ?? '',
+						schema.getMutationType()?.name ?? '',
+						schema.getSubscriptionType()?.name ?? '',
 					].includes(n) &&
 					!BUILTIN_TYPES.includes(n) /* &&
 					!/(Connection|Edge|Success)$/.test(n) */ &&
-					!n.startsWith("__") /* &&
+					!n.startsWith('__') /* &&
 					!/^(Query|Mutation|Subscription)\w+(Result|Success)$/.test(n) */,
 			),
 	} as Module;

@@ -8,10 +8,7 @@
 		"rules": {
 			"recommended": true
 		},
-		"ignore": [
-			"packages/graphinx/src/config.ts",
-			"packages/graphinx/src/schema.ts"
-		]
+		"ignore": ["src/config.ts", "example/src/"]
 	},
 	"vcs": {
 		"enabled": true,
@@ -19,33 +16,12 @@
 		"clientKind": "git"
 	},
 	"files": {
-		"ignore": [
-			"docs/",
-			".svelte-kit/",
-			"lib/schema.ts",
-			"packages/graphinx/dist/",
-			"packages/example/.build/src/lib/data.generated.ts"
-		]
+		"ignore": ["dist/", "example/src/"]
 	},
-	"overrides": [
-		{
-			"include": ["*.svelte"],
-			"linter": {
-				"rules": {
-					"correctness": {
-						"noUnusedLabels": "off"
-					},
-					"style": {
-						"useConst": "off"
-					},
-					"suspicious": {
-						"noConfusingLabels": "off"
-					},
-					"complexity": {
-						"noUselessLoneBlockStatements": "off"
-					}
-				}
-			}
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "single",
+			"indentWidth": 4
 		}
-	]
+	}
 }

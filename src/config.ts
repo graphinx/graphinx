@@ -213,18 +213,18 @@ export interface SchemaIntrospection {
 // and asserts the results of JSON.parse at runtime
 export class Convert {
 	public static toConfig(json: string): Config {
-		return cast(JSON.parse(json), r("Config"));
+		return cast(JSON.parse(json), r('Config'));
 	}
 
 	public static configToJson(value: Config): string {
-		return JSON.stringify(uncast(value, r("Config")), null, 2);
+		return JSON.stringify(uncast(value, r('Config')), null, 2);
 	}
 }
 
-function invalidValue(typ: any, val: any, key: any, parent: any = ""): never {
+function invalidValue(typ: any, val: any, key: any, parent: any = ''): never {
 	const prettyTyp = prettyTypeName(typ);
-	const parentText = parent ? ` on ${parent}` : "";
-	const keyText = key ? ` for key "${key}"` : "";
+	const parentText = parent ? ` on ${parent}` : '';
+	const keyText = key ? ` for key "${key}"` : '';
 	throw Error(
 		`Invalid value${keyText}${parentText}. Expected ${prettyTyp} but got ${JSON.stringify(
 			val,
@@ -241,9 +241,9 @@ function prettyTypeName(typ: any): string {
 				.map((a) => {
 					return prettyTypeName(a);
 				})
-				.join(", ")}]`;
+				.join(', ')}]`;
 		}
-	} else if (typeof typ === "object" && typ.literal !== undefined) {
+	} else if (typeof typ === 'object' && typ.literal !== undefined) {
 		return typ.literal;
 	} else {
 		return typeof typ;
@@ -253,7 +253,9 @@ function prettyTypeName(typ: any): string {
 function jsonToJSProps(typ: any): any {
 	if (typ.jsonToJS === undefined) {
 		const map: any = {};
-		typ.props.forEach((p: any) => (map[p.json] = { key: p.js, typ: p.typ }));
+		typ.props.forEach(
+			(p: any) => (map[p.json] = { key: p.js, typ: p.typ }),
+		);
 		typ.jsonToJS = map;
 	}
 	return typ.jsonToJS;
@@ -262,7 +264,9 @@ function jsonToJSProps(typ: any): any {
 function jsToJSONProps(typ: any): any {
 	if (typ.jsToJSON === undefined) {
 		const map: any = {};
-		typ.props.forEach((p: any) => (map[p.js] = { key: p.json, typ: p.typ }));
+		typ.props.forEach(
+			(p: any) => (map[p.js] = { key: p.json, typ: p.typ }),
+		);
 		typ.jsToJSON = map;
 	}
 	return typ.jsToJSON;
@@ -272,8 +276,8 @@ function transform(
 	val: any,
 	typ: any,
 	getProps: any,
-	key: any = "",
-	parent: any = "",
+	key: any = '',
+	parent: any = '',
 ): any {
 	function transformPrimitive(typ: string, val: any): any {
 		if (typeof typ === typeof val) return val;
@@ -306,7 +310,8 @@ function transform(
 
 	function transformArray(typ: any, val: any): any {
 		// val must be an array with no invalid elements
-		if (!Array.isArray(val)) return invalidValue(l("array"), val, key, parent);
+		if (!Array.isArray(val))
+			return invalidValue(l('array'), val, key, parent);
 		return val.map((el) => transform(el, typ, getProps));
 	}
 
@@ -316,7 +321,7 @@ function transform(
 		}
 		const d = new Date(val);
 		if (isNaN(d.valueOf())) {
-			return invalidValue(l("Date"), val, key, parent);
+			return invalidValue(l('Date'), val, key, parent);
 		}
 		return d;
 	}
@@ -326,8 +331,8 @@ function transform(
 		additional: any,
 		val: any,
 	): any {
-		if (val === null || typeof val !== "object" || Array.isArray(val)) {
-			return invalidValue(l(ref || "object"), val, key, parent);
+		if (val === null || typeof val !== 'object' || Array.isArray(val)) {
+			return invalidValue(l(ref || 'object'), val, key, parent);
 		}
 		const result: any = {};
 		Object.getOwnPropertyNames(props).forEach((key) => {
@@ -339,35 +344,41 @@ function transform(
 		});
 		Object.getOwnPropertyNames(val).forEach((key) => {
 			if (!Object.prototype.hasOwnProperty.call(props, key)) {
-				result[key] = transform(val[key], additional, getProps, key, ref);
+				result[key] = transform(
+					val[key],
+					additional,
+					getProps,
+					key,
+					ref,
+				);
 			}
 		});
 		return result;
 	}
 
-	if (typ === "any") return val;
+	if (typ === 'any') return val;
 	if (typ === null) {
 		if (val === null) return val;
 		return invalidValue(typ, val, key, parent);
 	}
 	if (typ === false) return invalidValue(typ, val, key, parent);
 	let ref: any = undefined;
-	while (typeof typ === "object" && typ.ref !== undefined) {
+	while (typeof typ === 'object' && typ.ref !== undefined) {
 		ref = typ.ref;
 		typ = typeMap[typ.ref];
 	}
 	if (Array.isArray(typ)) return transformEnum(typ, val);
-	if (typeof typ === "object") {
-		return typ.hasOwnProperty("unionMembers")
+	if (typeof typ === 'object') {
+		return typ.hasOwnProperty('unionMembers')
 			? transformUnion(typ.unionMembers, val)
-			: typ.hasOwnProperty("arrayItems")
+			: typ.hasOwnProperty('arrayItems')
 				? transformArray(typ.arrayItems, val)
-				: typ.hasOwnProperty("props")
+				: typ.hasOwnProperty('props')
 					? transformObject(getProps(typ), typ.additional, val)
 					: invalidValue(typ, val, key, parent);
 	}
 	// Numbers can be parsed by Date but shouldn't be.
-	if (typ === Date && typeof val !== "number") return transformDate(val);
+	if (typ === Date && typeof val !== 'number') return transformDate(val);
 	return transformPrimitive(typ, val);
 }
 
@@ -406,105 +417,113 @@ function r(name: string) {
 const typeMap: any = {
 	Config: o(
 		[
-			{ json: "branding", js: "branding", typ: r("SiteBranding") },
-			{ json: "environment", js: "environment", typ: u(undefined, m("")) },
-			{ json: "footer", js: "footer", typ: u(undefined, "") },
+			{ json: 'branding', js: 'branding', typ: r('SiteBranding') },
 			{
-				json: "modules",
-				js: "modules",
-				typ: u(undefined, r("ModulesConfiguration")),
+				json: 'environment',
+				js: 'environment',
+				typ: u(undefined, m('')),
 			},
-			{ json: "pages", js: "pages", typ: "" },
-			{ json: "schema", js: "schema", typ: r("Schema") },
-			{ json: "static", js: "static", typ: "" },
-			{ json: "template", js: "template", typ: u(undefined, "") },
+			{ json: 'footer', js: 'footer', typ: u(undefined, '') },
+			{
+				json: 'modules',
+				js: 'modules',
+				typ: u(undefined, r('ModulesConfiguration')),
+			},
+			{ json: 'pages', js: 'pages', typ: '' },
+			{ json: 'schema', js: 'schema', typ: r('Schema') },
+			{ json: 'static', js: 'static', typ: '' },
+			{ json: 'template', js: 'template', typ: u(undefined, '') },
 		],
 		false,
 	),
 	SiteBranding: o(
 		[
-			{ json: "logo", js: "logo", typ: "" },
-			{ json: "name", js: "name", typ: "" },
+			{ json: 'logo', js: 'logo', typ: '' },
+			{ json: 'name', js: 'name', typ: '' },
 		],
 		false,
 	),
 	ModulesConfiguration: o(
 		[
 			{
-				json: "filesystem",
-				js: "filesystem",
-				typ: u(undefined, r("MatchModulesWithSourceCode")),
+				json: 'filesystem',
+				js: 'filesystem',
+				typ: u(undefined, r('MatchModulesWithSourceCode')),
 			},
 			{
-				json: "index",
-				js: "index",
-				typ: u(undefined, r("IndexModuleConfiguration")),
+				json: 'index',
+				js: 'index',
+				typ: u(undefined, r('IndexModuleConfiguration')),
 			},
 			{
-				json: "static",
-				js: "static",
-				typ: u(undefined, a(r("StaticModuleConfiguration"))),
+				json: 'static',
+				js: 'static',
+				typ: u(undefined, a(r('StaticModuleConfiguration'))),
 			},
 		],
 		false,
 	),
 	MatchModulesWithSourceCode: o(
 		[
-			{ json: "icon", js: "icon", typ: u(undefined, "") },
-			{ json: "intro", js: "intro", typ: "" },
-			{ json: "items", js: "items", typ: a(r("SourceCodeModuleMatcher")) },
-			{ json: "names", js: "names", typ: u(undefined, r("Names")) },
-			{ json: "order", js: "order", typ: u(undefined, a("")) },
+			{ json: 'icon', js: 'icon', typ: u(undefined, '') },
+			{ json: 'intro', js: 'intro', typ: '' },
+			{
+				json: 'items',
+				js: 'items',
+				typ: a(r('SourceCodeModuleMatcher')),
+			},
+			{ json: 'names', js: 'names', typ: u(undefined, r('Names')) },
+			{ json: 'order', js: 'order', typ: u(undefined, a('')) },
 		],
 		false,
 	),
 	SourceCodeModuleMatcher: o(
 		[
-			{ json: "contribution", js: "contribution", typ: u(undefined, "") },
-			{ json: "files", js: "files", typ: "" },
-			{ json: "match", js: "match", typ: "" },
+			{ json: 'contribution', js: 'contribution', typ: u(undefined, '') },
+			{ json: 'files', js: 'files', typ: '' },
+			{ json: 'match', js: 'match', typ: '' },
 		],
 		false,
 	),
 	Names: o(
 		[
-			{ json: "in", js: "in", typ: u(undefined, "") },
-			{ json: "is", js: "is", typ: u(undefined, a("")) },
+			{ json: 'in', js: 'in', typ: u(undefined, '') },
+			{ json: 'is', js: 'is', typ: u(undefined, a('')) },
 		],
 		false,
 	),
 	IndexModuleConfiguration: o(
 		[
-			{ json: "description", js: "description", typ: u(undefined, "") },
-			{ json: "title", js: "title", typ: u(undefined, "") },
+			{ json: 'description', js: 'description', typ: u(undefined, '') },
+			{ json: 'title', js: 'title', typ: u(undefined, '') },
 		],
 		false,
 	),
 	StaticModuleConfiguration: o(
 		[
-			{ json: "icon", js: "icon", typ: u(undefined, "") },
-			{ json: "intro", js: "intro", typ: "" },
-			{ json: "items", js: "items", typ: a("") },
-			{ json: "name", js: "name", typ: "" },
-			{ json: "title", js: "title", typ: "" },
+			{ json: 'icon', js: 'icon', typ: u(undefined, '') },
+			{ json: 'intro', js: 'intro', typ: '' },
+			{ json: 'items', js: 'items', typ: a('') },
+			{ json: 'name', js: 'name', typ: '' },
+			{ json: 'title', js: 'title', typ: '' },
 		],
 		false,
 	),
 	Schema: o(
 		[
 			{
-				json: "introspection",
-				js: "introspection",
-				typ: u(undefined, r("SchemaIntrospection")),
+				json: 'introspection',
+				js: 'introspection',
+				typ: u(undefined, r('SchemaIntrospection')),
 			},
-			{ json: "static", js: "static", typ: u(undefined, "") },
+			{ json: 'static', js: 'static', typ: u(undefined, '') },
 		],
 		false,
 	),
 	SchemaIntrospection: o(
 		[
-			{ json: "headers", js: "headers", typ: u(undefined, m("")) },
-			{ json: "url", js: "url", typ: "" },
+			{ json: 'headers', js: 'headers', typ: u(undefined, m('')) },
+			{ json: 'url', js: 'url', typ: '' },
 		],
 		false,
 	),

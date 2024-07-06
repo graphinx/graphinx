@@ -1,30 +1,30 @@
-import { expect, test } from "bun:test";
-import { replacePlaceholders } from "./placeholders";
-import { transformStrings } from "./utils";
+import { expect, test } from 'bun:test';
+import { replacePlaceholders } from './placeholders';
+import { transformStrings } from './utils';
 
-test("correctly replaces placeholders", () => {
-	expect(replacePlaceholders("Hello, %name%!", { name: "world" })).toBe(
-		"Hello, world!",
+test('correctly replaces placeholders', () => {
+	expect(replacePlaceholders('Hello, %name%!', { name: 'world' })).toBe(
+		'Hello, world!',
 	);
 });
 
-test("correctly replaces environment variable placeholders", () => {
-	process.env.TEST = "world";
-	expect(replacePlaceholders("Hello, %$TEST%!")).toBe("Hello, world!");
+test('correctly replaces environment variable placeholders', () => {
+	process.env.TEST = 'world';
+	expect(replacePlaceholders('Hello, %$TEST%!')).toBe('Hello, world!');
 });
 
-test("correctly replaces missing environment variable placeholders", () => {
-	expect(replacePlaceholders("Hello, %$MISSING%!")).toBe("Hello, !");
+test('correctly replaces missing environment variable placeholders', () => {
+	expect(replacePlaceholders('Hello, %$MISSING%!')).toBe('Hello, !');
 });
 
-test("throws an error when a placeholder is missing", () => {
-	expect(() => replacePlaceholders("Hello, %missing%!")).toThrowError(
-		"Placeholder missing not available",
+test('throws an error when a placeholder is missing', () => {
+	expect(() => replacePlaceholders('Hello, %missing%!')).toThrowError(
+		'Placeholder missing not available',
 	);
 });
 
-test("correctly replaces inside URLs", () => {
-	process.env.CURRENT_COMMIT = "123456";
+test('correctly replaces inside URLs', () => {
+	process.env.CURRENT_COMMIT = '123456';
 	expect(
 		replacePlaceholders(
 			`<a href="https://git.inpt.fr/inp-net/churros/-/commit/%$CURRENT_COMMIT%">`,
@@ -32,17 +32,17 @@ test("correctly replaces inside URLs", () => {
 	).toBe('<a href="https://git.inpt.fr/inp-net/churros/-/commit/123456">');
 });
 
-test("correctly works with transformStrings", () => {
+test('correctly works with transformStrings', () => {
 	const { modules, ...restOfConfig } = {
 		modules: {
 			index: {
-				name: "Index",
+				name: 'Index',
 			},
 		},
-		footer: "Some https://%$DOMAIN%/baka test!!",
+		footer: 'Some https://%$DOMAIN%/baka test!!',
 	};
 
-	process.env.DOMAIN = "example.com";
+	process.env.DOMAIN = 'example.com';
 	const actual = {
 		...transformStrings(restOfConfig, replacePlaceholders),
 		modules: {
@@ -54,9 +54,9 @@ test("correctly works with transformStrings", () => {
 	expect(actual).toEqual({
 		modules: {
 			index: {
-				name: "Index",
+				name: 'Index',
 			},
 		},
-		footer: "Some https://example.com/baka test!!",
+		footer: 'Some https://example.com/baka test!!',
 	});
 });

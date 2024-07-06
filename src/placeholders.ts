@@ -11,8 +11,8 @@ export function replacePlaceholders(
 	placeholders?: Record<string, string>,
 ) {
 	return content.replace(/%(\$?\w+)%/g, (_, key) => {
-		if (key.startsWith("$")) {
-			return process.env[key.slice(1)] ?? "";
+		if (key.startsWith('$')) {
+			return process.env[key.slice(1)] ?? '';
 		}
 		if (placeholders && key in placeholders) {
 			return placeholders[key];
