@@ -1,13 +1,14 @@
-# Graphinx
-
-Sphinx for GraphQL APIs.
-
-![](./demo.gif)
+<p align="center">
+<img src="./wordmark.svg" alt="Graphinx logo" height="100" /><br>
+<i>Beautiful, auto-generated API documentation for your GraphQL APIs.</i>
+<br>
+<br>
+<img src="./demo.gif" alt="Graphinx logo" width="80%" /><br>
+</p>
 
 ## Production example
 
 - [Churros](https://github.com/inp-net/churros)' API: [api-docs.churros.inpt.fr](https://api-docs.churros.inpt.fr)
-
 
 ## Getting Started
 
