@@ -36,8 +36,7 @@ const LOGO = chalk.bold(
   chalk.hex("#ffffff").bgHex("#AE1AF1")(margined("Graphinx"))
 )
 
-export const b = (s: NonNullable<unknown>) =>
-  chalk.bold(s.toString())
+export const b = (s: NonNullable<unknown>) => chalk.bold(s.toString())
 
 const DEFAULT_TEMPLATE = "graphinx/graphinx/packages/template"
 const DEFAULT_CONFIG_PATH = ".graphinx.yaml"
@@ -111,7 +110,9 @@ if (options.init) {
   console.info(`✨ Initialized Graphinx config file at ${b(options.config)}`)
   console.info("\n➡️  Please edit it to fit your needs, then run:")
   console.info(
-    `\n     graphinx ${options.config === DEFAULT_CONFIG_PATH ? "" : `--config ${options.config}`}\n`
+    `\n     graphinx ${
+      options.config === DEFAULT_CONFIG_PATH ? "" : `--config ${options.config}`
+    }\n`
   )
   process.exit(0)
 }
@@ -154,7 +155,7 @@ function uppperFirst(s: string) {
 }
 
 if (!existsSync(buildAreaDirectory)) {
-  mkdirSync(path.dirname(buildAreaDirectory), { recursive: true })
+  mkdirSync(buildAreaDirectory, { recursive: true })
   if (templateSpecifier.startsWith("file://")) {
     const templatePath = templateSpecifier.replace("file://", "")
     console.info(`⬇️️  Copying template from ${b(templatePath)}`)
@@ -189,7 +190,9 @@ if (templateConfig.inject) {
   injectionPath = templateConfig.inject
 } else {
   console.error(
-    `❌ Provided template is not a valid Graphinx template: missing ${b("graphinx.inject")} field in package.json`
+    `❌ Provided template is not a valid Graphinx template: missing ${b(
+      "graphinx.inject"
+    )} field in package.json`
   )
   process.exit(1)
 }
@@ -233,7 +236,9 @@ if (config.pages) {
     process.exit(1)
   }
   console.info(
-    `📄 Copying pages from ${b(config.pages)} into ${b(path.join(buildAreaDirectory, templateConfig.pages))}`
+    `📄 Copying pages from ${b(config.pages)} into ${b(
+      path.join(buildAreaDirectory, templateConfig.pages)
+    )}`
   )
   cpSync(config.pages, path.join(buildAreaDirectory, templateConfig.pages), {
     recursive: true,

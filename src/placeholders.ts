@@ -7,16 +7,16 @@
  * @returns
  */
 export function replacePlaceholders(
-  content: string,
-  placeholders?: Record<string, string>
+	content: string,
+	placeholders?: Record<string, string>,
 ) {
-  return content.replace(/%(\$?\w+)%/g, (_, key) => {
-    if (key.startsWith("$")) {
-      return process.env[key.slice(1)] ?? ""
-    }
-    if (placeholders && key in placeholders) {
-      return placeholders[key]
-    }
-    throw new Error(`Placeholder ${key} not available`)
-  })
+	return content.replace(/%(\$?\w+)%/g, (_, key) => {
+		if (key.startsWith("$")) {
+			return process.env[key.slice(1)] ?? "";
+		}
+		if (placeholders && key in placeholders) {
+			return placeholders[key];
+		}
+		throw new Error(`Placeholder ${key} not available`);
+	});
 }

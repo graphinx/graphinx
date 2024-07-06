@@ -1,16 +1,16 @@
-# yaml-language-server: $schema=../../config.schema.json
+# yaml-language-server: $schema=../config.schema.json
 
-template: graphinx/graphinx/packages/template#main
+template: graphinx/templates/default
 
 schema:
-  static: ./packages/app/schema.graphql
+  static: ./schema.graphql
 
 branding:
   logo: https://churros.inpt.fr/logo.svg
   name: Churros API
 
-pages: ./packages/api/docs/pages
-static: ./packages/api/docs/static
+pages: docs/
+static: docs/static
 
 environment:
   PUBLIC_API_URL: https://churros.app/graphql
@@ -25,15 +25,15 @@ modules:
     description: Le schéma GraphQL entier
   filesystem:
     names:
-      in: ./packages/api/src/modules
-    intro: ./packages/api/src/modules/%module%/README.md
-    icon: ./packages/api/src/modules/%module%/icon.svg
+      in: src/modules
+    intro: src/modules/%module%/README.md
+    icon: src/modules/%module%/icon.svg
     items:
-      - files: ./packages/api/src/modules/%module%/{resolvers,types}/*.ts
-        match: "builder.((query|mutation|subscription)Field|\\w+Type)\\('(?<name>[^']+)'"
-        contribution: https://git.inpt.fr/inp-net/churros/-/blob/main/packages/api/src/modules/%module%/
-      - files: ./packages/api/src/modules/%module%/types/*.ts
-        match: "builder.\\w+Type\\(.+, \\{ name: '(?<name>[^']+)' \\}"
+      - files: src/modules/%module%/{resolvers,types}/*.ts
+        match: "builder.((query|mutation|subscription)Field|\\w+(Type|Node))\\('(?<name>[^']+)'"
+        contribution: https://git.inpt.fr/inp-net/churros/-/blob/main/src/modules/%module%/
+      - files: src/modules/%module%/types/*.ts
+        match: "builder.\\w+(Type|Node)\\(.+, \\{ name: '(?<name>[^']+)' \\}"
         contribution: https://git.inpt.fr/inp-net/churros/-/blob/main/packages/api/src/modules/%module%/
     order:
       - global
