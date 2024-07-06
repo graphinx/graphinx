@@ -23,6 +23,21 @@ import { replacePlaceholders } from "./placeholders.js"
 import { loadSchema } from "./schema-loader.js"
 import { transformStrings } from "./utils.js"
 import os from "node:os"
+import chalk from "chalk"
+
+function margined(s: string, lines = 1, cols = 2) {
+  const emptyline = `${" ".repeat(s.length + 2 * cols)}\n`
+  return `${
+    emptyline.repeat(lines) + " ".repeat(cols) + s + " ".repeat(cols)
+  }\n${emptyline.repeat(lines)}`
+}
+
+const LOGO = chalk.bold(
+  chalk.hex("#ffffff").bgHex("#AE1AF1")(margined("Graphinx"))
+)
+
+export const b = (s: NonNullable<unknown>) =>
+  chalk.bold(s.toString())
 
 const DEFAULT_CONFIG_PATH = ".graphinx.yaml"
 
@@ -40,6 +55,7 @@ program
 
 const options = program.opts()
 
+console.info(`\n${LOGO}`)
 options.buildArea ||= path.join(os.tmpdir(), mkdtempSync("graphinx-"))
 
 const INIT_CONFIG_FILE = `# yaml-language-server: $schema=https://raw.githubusercontent.com/graphinx/graphinx/main/config.schema.json
@@ -86,12 +102,12 @@ modules:
 
 if (options.init) {
   if (existsSync(options.config)) {
-    console.error(`❌ Config file already exists: ${options.config}`)
+    console.error(`❌ Config file already exists: ${b(options.config)}`)
     process.exit(1)
   }
 
   writeFileSync(options.config, INIT_CONFIG_FILE)
-  console.info(`✨ Initialized Graphinx config file at ${options.config}`)
+  console.info(`✨ Initialized Graphinx config file at ${b(options.config)}`)
   console.info("\n➡️  Please edit it to fit your needs, then run:")
   console.info(
     `\n     graphinx ${options.config === DEFAULT_CONFIG_PATH ? "" : `--config ${options.config}`}\n`
@@ -100,7 +116,7 @@ if (options.init) {
 }
 
 if (!existsSync(options.config)) {
-  console.error(`❌ Config file not found: ${options.config}`)
+  console.error(`❌ Config file not found: ${b(options.config)}`)
   process.exit(1)
 }
 
@@ -125,28 +141,31 @@ const config: Config = {
 const DEFAULT_TEMPLATE = "graphinx/graphinx/packages/template"
 const buildAreaDirectory = path.resolve(options.buildArea)
 
-console.info(`🍲 Building site in ${buildAreaDirectory}`)
+console.info(`🍲 Building site in ${b(buildAreaDirectory)}`)
 
 if (!options.keep && existsSync(buildAreaDirectory))
   rimrafSync(buildAreaDirectory)
 
 let templateSpecifier = config.template ?? DEFAULT_TEMPLATE
-console.info(`🗃️  Using template ${templateSpecifier}`)
+console.info(`🗃️  Using template ${b(templateSpecifier)}`)
+
+function uppperFirst(s: string) {
+  return s[0].toUpperCase() + s.slice(1)
+}
 
 if (!existsSync(buildAreaDirectory)) {
   mkdirSync(path.dirname(buildAreaDirectory), { recursive: true })
   if (templateSpecifier.startsWith("file://")) {
     const templatePath = templateSpecifier.replace("file://", "")
-    console.info(`⬇️️  Copying template from ${templatePath}`)
+    console.info(`⬇️️  Copying template from ${b(templatePath)}`)
     cpSync(templatePath, buildAreaDirectory, { recursive: true })
   } else {
     if (!templateSpecifier.includes("#")) templateSpecifier += "#main"
-    const emitter = degit(templateSpecifier, {
-      verbose: true,
-    })
-
+    const replaceBold = (s: string) =>
+      s.replaceAll(new RegExp(chalk.bold("(.+)")), b("$1"))
+    const emitter = degit(templateSpecifier)
     emitter.on("info", (info) => {
-      if ("message" in info) console.info(info.message)
+      if ("message" in info) console.info(`🌐 ${uppperFirst(info.message)}`)
     })
     await emitter.clone(buildAreaDirectory)
   }
@@ -170,14 +189,14 @@ if (templateConfig.inject) {
   injectionPath = templateConfig.inject
 } else {
   console.error(
-    "❌ Provided template is not a valid Graphinx template: missing graphinx.inject field in package.json"
+    `❌ Provided template is not a valid Graphinx template: missing ${b("graphinx.inject")} field in package.json`
   )
   process.exit(1)
 }
 
 const schema = await loadSchema(config)
 console.log(
-  `🏷️  Loaded ${Object.keys(schema.getTypeMap()).length} types from schema`
+  `🏷️  Loaded ${b(Object.keys(schema.getTypeMap()).length)} types from schema`
 )
 
 const resolvers = await getAllResolvers(schema, config)
@@ -214,7 +233,7 @@ if (config.pages) {
     process.exit(1)
   }
   console.info(
-    `📄 Copying pages from ${config.pages} into ${path.join(buildAreaDirectory, templateConfig.pages)}`
+    `📄 Copying pages from ${b(config.pages)} into ${b(path.join(buildAreaDirectory, templateConfig.pages))}`
   )
   cpSync(config.pages, path.join(buildAreaDirectory, templateConfig.pages), {
     recursive: true,

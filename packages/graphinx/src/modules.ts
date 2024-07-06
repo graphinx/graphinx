@@ -18,6 +18,7 @@ import {
   getRootResolversInSchema,
 } from "./schema-utils.js"
 import { asyncFilter } from "./utils.js"
+import { b } from "./cli.js"
 
 async function readdirNotExistOk(directory: string): Promise<string[]> {
   if (!(await stat(directory).catch(() => false))) {
@@ -125,7 +126,7 @@ export async function getModule(
     )
   }
 
-  if (!docs) throw new Error(`⚠️ No documentation found for module ${name}`)
+  if (!docs) throw new Error(`⚠️ No documentation found for module ${b(name)}`)
 
   const { parsedDocs, metadata, ...documentation } = await parseDocumentation(
     docs,
@@ -134,7 +135,7 @@ export async function getModule(
     config
   )
 
-  console.info(`\x1b[F\x1b[K\r📝 Parsed documentation for module ${name}`)
+  console.info(`\x1b[F\x1b[K\r📝 Parsed documentation for module ${b(name)}`)
 
   const findItemsOnType = async (typename: string | undefined) => {
     if (!typename) return []
@@ -176,7 +177,7 @@ export async function getModule(
   }
 
   console.info(
-    `\x1b[F\x1b[K\r📦 Finished module ${name}: ${module.queries.length} queries, ${module.mutations.length} mutations, ${module.subscriptions.length} subscriptions, ${module.types.length} types`
+    `\x1b[F\x1b[K\r📦 Finished module ${b(name)}: ${b(module.queries.length)} queries, ${b(module.mutations.length)} mutations, ${b(module.subscriptions.length)} subscriptions, ${b(module.types.length)} types`
   )
 
   return module
@@ -298,7 +299,7 @@ export async function getAllModules(
     .sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name))
 }
 
-let allResolvers: ResolverFromFilesystem[] = []
+const allResolvers: ResolverFromFilesystem[] = []
 
 export async function moduleNames(config: Config): Promise<string[]> {
   let names: string[] = []
@@ -338,7 +339,9 @@ export async function getAllResolvers(
       )
       .map(async ([moduleName, resolver]) => {
         if (await itemIsInModule(config, moduleName, resolver.name)) {
-          console.info(`\x1b[F\x1b[2K\r📕 Categorized ${resolver.name} into ${moduleName}`)
+          console.info(
+            `\x1b[F\x1b[2K\r📕 Categorized ${resolver.name} into ${moduleName}`
+          )
           return {
             name: resolver.name,
             moduleName: path.basename(moduleName),

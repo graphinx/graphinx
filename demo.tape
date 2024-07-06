@@ -60,10 +60,14 @@ Output demo.gif
 Require echo
 Require bun
 
+Set Margin 20
+Set MarginFill "#00FF00"
+Set BorderRadius 20
+Set Theme "Catppuccin Mocha"
 Set Shell "bash"
 Set FontFamily "Dank Mono"
 Set FontSize 24
-Set Width 1400
+Set Width 1500
 Set Height 800
 
 Type "cd packages/example" Enter
