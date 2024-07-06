@@ -42,9 +42,9 @@ const options = program.opts()
 
 options.buildArea ||= path.join(os.tmpdir(), mkdtempSync("graphinx-"))
 
-const INIT_CONFIG_FILE = `# yaml-language-server: $schema=https://raw.githubusercontent.com/ewen-lbh/graphinx/main/config.schema.json
+const INIT_CONFIG_FILE = `# yaml-language-server: $schema=https://raw.githubusercontent.com/graphinx/graphinx/main/config.schema.json
 
-template: ewen-lbh/graphinx/packages/template
+template: graphinx/graphinx/packages/template
 
 schema: schema.graphql
   # otherwise, you can do:
@@ -122,7 +122,7 @@ const config: Config = {
   },
 }
 
-const DEFAULT_TEMPLATE = "ewen-lbh/graphinx/packages/template"
+const DEFAULT_TEMPLATE = "graphinx/graphinx/packages/template"
 const buildAreaDirectory = path.resolve(options.buildArea)
 
 console.info(`🍲 Building site in ${buildAreaDirectory}`)

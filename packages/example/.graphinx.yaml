@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=../../config.schema.json
 
-template: file://../template
+template: graphinx/graphinx/packages/template#main
 
 schema:
   static: ./packages/app/schema.graphql

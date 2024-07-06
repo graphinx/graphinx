@@ -28,7 +28,7 @@
 
 Configuration is done through a `.graphinx.yaml` config file. The path to the config file can be changed with `--config`.
 
-A JSON schema is available at <https://raw.githubusercontent.com/ewen-lbh/graphinx/main/config.schema.json>.
+A JSON schema is available at <https://raw.githubusercontent.com/graphinx/graphinx/main/config.schema.json>.
 
 <!-- Include docs/config.md -->
 ### Objects
@@ -71,7 +71,7 @@ Degit repository specifier to use as the website template. Defaults to Graphinx'
 * **Type**: `string`
 * **Required**: No
 * **Examples**:
-    * `"ewen-lbh/graphinx/packages/template#main"`
+    * `"graphinx/graphinx/packages/template#main"`
 
 ##### Graphinx.branding
 

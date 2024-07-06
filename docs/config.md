@@ -38,7 +38,7 @@ Degit repository specifier to use as the website template. Defaults to Graphinx'
 * **Type**: `string`
 * **Required**: No
 * **Examples**:
-    * `"ewen-lbh/graphinx/packages/template#main"`
+    * `"graphinx/graphinx/packages/template#main"`
 
 ##### Graphinx.branding
 

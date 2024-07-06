@@ -262,7 +262,7 @@
       "type": "string",
       "description": "Degit repository specifier to use as the website template. Defaults to Graphinx's default template.  See [degit's documentation](https://www.npmjs.com/package/degit#basics) for more information.  Basic syntax is `owner/repo/path#branch` for github repositories, or `https://example.com/...` for any git repository.  The only difference is that the default branch name is \"main\" instead of master (i.e. use  `...#master` to clone the master branch, and `...#main` is not needed)",
       "examples": [
-        "ewen-lbh/graphinx/packages/template#main"
+        "graphinx/graphinx/packages/template#main"
       ]
     },
     "branding": {
