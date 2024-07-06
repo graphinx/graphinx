@@ -11,6 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - initial release
 
-[HEAD]: https://github.com/graphinx/graphinx/releases/tag/vHEAD
+## [0.6.0] - 2024-07-06
+
+### Added
+
+- (No changelog yet)
+
+[Unreleased]: https://github.com/graphinx/graphinx/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/graphinx/graphinx/releases/tag/v0.6.0
 
 [//]: # (C3-2-DKAC:GGH:Hgithub.com:Rgraphinx/graphinx:Tv{t})

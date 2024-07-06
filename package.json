@@ -8,6 +8,7 @@
     "readme": "sed '/^<!-- Include docs\\/config.md -->$/r docs/config.md' README.template.md > README.md",
     "dev": "nodemon --watch config.schema.yaml --exec 'bun run build-config-types' & nodemon --watch README.template.md --watch docs/ --exec 'bun run readme'",
     "build": "bun build ./src/index.ts ./src/cli.ts --target node --outdir ./dist && bun run build:declaration",
+    "release": "bun run build && bun run release-it",
     "build:declaration": "tsc --project tsconfig.type.json --outdir ./dist"
   },
   "dependencies": {
@@ -31,6 +32,9 @@
     "yaml": "^2.4.5"
   },
   "devDependencies": {
+    "@biomejs/biome": "1.7.0",
+    "@release-it/bumper": "^6.0.1",
+    "@release-it/keep-a-changelog": "^5.0.0",
     "@sveltejs/package": "^2.0.0",
     "@sveltejs/vite-plugin-svelte": "^3.0.0",
     "@types/degit": "^2.8.6",
@@ -41,15 +45,14 @@
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-svelte": "^2.35.1",
+    "nodemon": "^3.1.4",
     "prettier": "^3.1.1",
     "prettier-plugin-svelte": "^3.1.2",
     "publint": "^0.1.9",
-    "tslib": "^2.4.1",
-    "typescript": "^5.0.0",
-    "@biomejs/biome": "1.7.0",
-    "nodemon": "^3.1.4",
     "quicktype": "^23.0.170",
+    "tslib": "^2.4.1",
     "typedoc": "^0.25.13",
+    "typescript": "^5.0.0",
     "wetzel": "^0.2.3"
   },
   "exports": {
@@ -58,7 +61,7 @@
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": ["dist", "README.md", "logo.png", "wordmark.png", "demo.gif"],
   "license": "MIT",
   "bin": {
     "graphinx": "./dist/cli.js"
@@ -67,23 +70,19 @@
   "types": "./dist/index.d.ts",
   "release-it": {
     "git": {
-      "commitMessage": "🔖 ${version}"
+      "commitMessage": "🔖 Release ${version}"
     },
     "npm": {
-      "publish": false,
-      "ignoreVersion": true
-    },
-    "gitlab": {
-      "release": true
+      "publish": true
     },
     "github": {
-      "release": false
+      "release": true
     },
     "plugins": {
       "@release-it/bumper": {
         "out": {
           "file": "example/package.json",
-          "path": "dependencies.graphinx",
+          "path": "devDependencies.graphinx",
           "prefix": "^"
         }
       },
