@@ -1,4 +1,4 @@
-import { readFile, readdir, writeFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import * as path from 'node:path';
 import * as cheerio from 'cheerio';
 import { glob } from 'glob';
@@ -315,11 +315,6 @@ export async function getAllItems(
 
 	const itemsToCategorize = names.flatMap((moduleName) =>
 		items.map((i) => [moduleName, i] as const),
-	);
-
-	await writeFile(
-		'allitems.json',
-		JSON.stringify(itemsToCategorize, null, 2),
 	);
 
 	console.log(''); // Blank line to make room for the "Categorized" logs
