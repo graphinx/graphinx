@@ -82,9 +82,6 @@
   "type": "module",
   "types": "./dist/index.d.ts",
   "release-it": {
-    "hooks": {
-      "after:bump": "cd example && yarn && cd .. && bun run demo-gif"
-    },
     "git": {
       "commitMessage": "🔖 Release ${version}"
     },
