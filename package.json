@@ -4,7 +4,7 @@
   "scripts": {
     "check": "biome check --apply .",
     "build-config-types": "yq . < config.schema.yaml > config.schema.json && quicktype --src-lang schema config.schema.json -o packages/graphinx/src/config.ts && bun run wetzel config.schema.json -l 3 > docs/config.md",
-    "demo-gif": "vhs demo.tape && magick demo.gif -fuzz 45% -transparent '#00FF00' demo-tr.gif && move demo-tr.gif demo.gif",
+    "demo-gif": "vhs demo.tape && magick demo.gif -fuzz 45% -transparent '#00FF00' demo-tr.gif && mv demo-tr.gif demo.gif",
     "readme": "sed '/^<!-- Include docs\\/config.md -->$/r docs/config.md' README.template.md > README.md",
     "dev": "nodemon --watch config.schema.yaml --exec 'bun run build-config-types' & nodemon --watch README.template.md --watch docs/ --exec 'bun run readme'",
     "build": "bun build ./src/index.ts ./src/cli.ts --target node --outdir ./dist && bun run build:declaration",
@@ -59,6 +59,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./cli": {
+      "types": "./dist/cli.d.ts",
+      "default": "./dist/cli.js"
     }
   },
   "files": ["dist", "README.md", "logo.png", "wordmark.png", "demo.gif"],

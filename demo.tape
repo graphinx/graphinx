@@ -71,6 +71,6 @@ Set Width 1500
 Set Height 800
 
 Type "cd example" Enter
-Type "bun run graphinx" Sleep 500ms  Enter
+Type "yarn graphinx" Sleep 500ms  Enter
 
 Sleep 45s
