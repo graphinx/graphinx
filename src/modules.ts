@@ -364,10 +364,13 @@ export async function getAllResolvers(
 						type: resolver.parentType,
 					};
 				}
-				console.warn(`\n⚠️ ${resolver.name} was left uncategorized`);
 				return null;
 			}),
 	);
+	const uncategorizedResolvers = rootResolvers.filter(resolver => !results.some(r => r?.name === resolver.name));
+	if (uncategorizedResolvers.length > 0) {
+		console.warn(`🚨 The following resolvers were left uncategorized: \n  - ${uncategorizedResolvers.map(r => r.name).join('\n  - ')}`);
+	}
 	return results.filter((r) => r !== null) as ResolverFromFilesystem[];
 }
 
