@@ -5,7 +5,7 @@
 	"type": "module",
 	"devDependencies": {
 		"@types/bun": "latest",
-		"graphinx": "file:../dev-tarballs/graphinx.tgz"
+		"graphinx": "0.8.0"
 	},
 	"peerDependencies": {
 		"typescript": "^5.0.0"
