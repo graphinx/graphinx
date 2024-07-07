@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- mandatory description in config to fill the index page
+- env variable GRAPHINX_ITEMS_LIMIT to limit the maximum count of items to categorize. Useful when developing templates and test data contains a lot of items
+
+### Changed
+
+- branding.logo is now an object of dark and light, to allow setting a different logo on dark and light themes
+- contribution and source config settings are now taken into account and exposed to templates
+- the categorization process was revamped and is now much faster
+- the initial template (generated with --init) has now pins the version of the declared json schema
 ## [0.7.0] - 2024-07-07
 
 ### Added

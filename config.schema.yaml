@@ -9,6 +9,7 @@ required:
   - branding
   - schema
   - static
+  - description
   - pages
 definitions:
   SiteBranding:
@@ -18,15 +19,27 @@ definitions:
     additionalProperties: false
     properties:
       logo:
-        type: string
-        format: uri
-        description: Path or URL to the API's logo
+        $ref: "#/definitions/SiteBrandingLogo"
       name:
         type: string
         description: Name of the API
     required:
       - logo
       - name
+  SiteBrandingLogo:
+    title: Site branding logo
+    description: Logo for the API
+    type: object
+    additionalProperties: false
+    properties:
+      light:
+        type: string
+        format: uri
+        description: Path or URL to the API's logo which will be used on a light background
+      dark:
+        type: string
+        format: uri
+        description: Path or URL to the API's logo which will be used on a dark background
   schema_introspection:
     title: Schema introspection
     description: Introspect a GraphQL schema of a given running GraphQL API server
@@ -72,6 +85,14 @@ definitions:
         type: string
         format: uri
         description: Path or URL to an icon for the module
+      contribution:
+        type: string
+        format: uri
+        description: URL to contribute to the documentation of an item. Available placeholders are %module% and %name%, the name of the item. If omitted, the "contribute" button will not be displayed
+      source:
+        type: string
+        format: uri
+        description: URL to view the source code for item. Available placeholders are %module% and %name%. If omitted, the "source" button will not be displayed
       items:
         type: array
         description: List of schema item names that belong in that module
@@ -125,6 +146,14 @@ definitions:
         type: string
         format: uri
         description: Path or URL to an icon for the module
+      contribution:
+        type: string
+        format: uri
+        description: URL to contribute to the documentation for this module. If omitted, the "contribute" button will not be displayed
+      source:
+        type: string
+        format: uri
+        description: URL to view the source code for this module. If omitted, the "source" button will not be displayed
       items:
         type: array
         description: How to know that a given schema item (a type, a query, a
@@ -157,6 +186,9 @@ definitions:
           - %path%, the path to the file that matched
 
           If the value is not specified, the "contribute" button will not be displayed
+      source:
+        type: string
+        description: URL to view the source code for this item. Available placeholders are the same as for `contribution`
     required:
       - files
       - match
@@ -210,6 +242,11 @@ properties:
       - graphinx/graphinx/packages/template#main
   branding:
     $ref: "#/definitions/SiteBranding"
+
+  description:
+    type: string
+    description: Markdown-formatted text to display on the homepage. Use this to mention the purpose of the API, how to authenticate, and anything you want. Depending on the template you use, a search bar, as well as the list of all the modules will be displayed below, as well as other information such as the endpoint URL. Check with your template's documentation.
+
   footer:
     description: HTML to insert at the bottom of every page
     type: string

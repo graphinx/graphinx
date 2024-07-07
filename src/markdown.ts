@@ -4,14 +4,9 @@ import remarkFrontmatter from 'remark-frontmatter';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import { unified } from 'unified';
-import { camelToKebab } from './casing.js';
 import { matter } from 'vfile-matter';
-
-export type ResolverFromFilesystem = {
-	name: string;
-	moduleName: string;
-	type: 'query' | 'mutation' | 'subscription';
-};
+import type { ModuleItem } from './built-data.js';
+import { camelToKebab } from './casing.js';
 
 export async function getFrontmatter(markdown: string) {
 	return await unified()
@@ -28,7 +23,7 @@ export async function getFrontmatter(markdown: string) {
 
 export async function markdownToHtml(
 	markdown: string,
-	allResolvers: ResolverFromFilesystem[] = [],
+	allResolvers: ModuleItem[] = [],
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	{ downlevelHeadings = true } = {},
 ) {

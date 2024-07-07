@@ -14,6 +14,13 @@
 export interface Config {
 	branding: SiteBranding;
 	/**
+	 * Markdown-formatted text to display on the homepage. Use this to mention the purpose of
+	 * the API, how to authenticate, and anything you want. Depending on the template you use, a
+	 * search bar, as well as the list of all the modules will be displayed below, as well as
+	 * other information such as the endpoint URL. Check with your template's documentation.
+	 */
+	description: string;
+	/**
 	 * Define environment variables that will be made available to the template.
 	 */
 	environment?: { [key: string]: string };
@@ -53,14 +60,25 @@ export interface Config {
  * Branding information for the API
  */
 export interface SiteBranding {
-	/**
-	 * Path or URL to the API's logo
-	 */
-	logo: string;
+	logo: SiteBrandingLogo;
 	/**
 	 * Name of the API
 	 */
 	name: string;
+}
+
+/**
+ * Logo for the API
+ */
+export interface SiteBrandingLogo {
+	/**
+	 * Path or URL to the API's logo which will be used on a dark background
+	 */
+	dark?: string;
+	/**
+	 * Path or URL to the API's logo which will be used on a light background
+	 */
+	light?: string;
 }
 
 /**
@@ -81,6 +99,11 @@ export interface ModulesConfiguration {
  * which will be replaced by the module we are currently checking.
  */
 export interface MatchModulesWithSourceCode {
+	/**
+	 * URL to contribute to the documentation for this module. If omitted, the "contribute"
+	 * button will not be displayed
+	 */
+	contribution?: string;
 	/**
 	 * Path or URL to an icon for the module
 	 */
@@ -104,6 +127,11 @@ export interface MatchModulesWithSourceCode {
 	 * displayed at the end. If not specified, the order is alphabetical
 	 */
 	order?: string[];
+	/**
+	 * URL to view the source code for this module. If omitted, the "source" button will not be
+	 * displayed
+	 */
+	source?: string;
 }
 
 export interface SourceCodeModuleMatcher {
@@ -129,6 +157,11 @@ export interface SourceCodeModuleMatcher {
 	 * name.
 	 */
 	match: string;
+	/**
+	 * URL to view the source code for this item. Available placeholders are the same as for
+	 * `contribution`
+	 */
+	source?: string;
 }
 
 /**
@@ -163,6 +196,12 @@ export interface IndexModuleConfiguration {
 
 export interface StaticModuleConfiguration {
 	/**
+	 * URL to contribute to the documentation of an item. Available placeholders are %module%
+	 * and %name%, the name of the item. If omitted, the "contribute" button will not be
+	 * displayed
+	 */
+	contribution?: string;
+	/**
 	 * Path or URL to an icon for the module
 	 */
 	icon?: string;
@@ -178,6 +217,11 @@ export interface StaticModuleConfiguration {
 	 * URL-friendly name of the module. Cannot be "index" (reserved for the index module)
 	 */
 	name: string;
+	/**
+	 * URL to view the source code for item. Available placeholders are %module% and %name%. If
+	 * omitted, the "source" button will not be displayed
+	 */
+	source?: string;
 	/**
 	 * Display name of the module
 	 */
@@ -418,6 +462,7 @@ const typeMap: any = {
 	Config: o(
 		[
 			{ json: 'branding', js: 'branding', typ: r('SiteBranding') },
+			{ json: 'description', js: 'description', typ: '' },
 			{
 				json: 'environment',
 				js: 'environment',
@@ -438,8 +483,15 @@ const typeMap: any = {
 	),
 	SiteBranding: o(
 		[
-			{ json: 'logo', js: 'logo', typ: '' },
+			{ json: 'logo', js: 'logo', typ: r('SiteBrandingLogo') },
 			{ json: 'name', js: 'name', typ: '' },
+		],
+		false,
+	),
+	SiteBrandingLogo: o(
+		[
+			{ json: 'dark', js: 'dark', typ: u(undefined, '') },
+			{ json: 'light', js: 'light', typ: u(undefined, '') },
 		],
 		false,
 	),
@@ -465,6 +517,7 @@ const typeMap: any = {
 	),
 	MatchModulesWithSourceCode: o(
 		[
+			{ json: 'contribution', js: 'contribution', typ: u(undefined, '') },
 			{ json: 'icon', js: 'icon', typ: u(undefined, '') },
 			{ json: 'intro', js: 'intro', typ: '' },
 			{
@@ -474,6 +527,7 @@ const typeMap: any = {
 			},
 			{ json: 'names', js: 'names', typ: u(undefined, r('Names')) },
 			{ json: 'order', js: 'order', typ: u(undefined, a('')) },
+			{ json: 'source', js: 'source', typ: u(undefined, '') },
 		],
 		false,
 	),
@@ -482,6 +536,7 @@ const typeMap: any = {
 			{ json: 'contribution', js: 'contribution', typ: u(undefined, '') },
 			{ json: 'files', js: 'files', typ: '' },
 			{ json: 'match', js: 'match', typ: '' },
+			{ json: 'source', js: 'source', typ: u(undefined, '') },
 		],
 		false,
 	),
@@ -501,10 +556,12 @@ const typeMap: any = {
 	),
 	StaticModuleConfiguration: o(
 		[
+			{ json: 'contribution', js: 'contribution', typ: u(undefined, '') },
 			{ json: 'icon', js: 'icon', typ: u(undefined, '') },
 			{ json: 'intro', js: 'intro', typ: '' },
 			{ json: 'items', js: 'items', typ: a('') },
 			{ json: 'name', js: 'name', typ: '' },
+			{ json: 'source', js: 'source', typ: u(undefined, '') },
 			{ json: 'title', js: 'title', typ: '' },
 		],
 		false,

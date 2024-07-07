@@ -5,7 +5,7 @@
 	"description": "Configuration file for Graphinx, a tool to generate a documentation website for a GraphQL API",
 	"type": "object",
 	"additionalProperties": false,
-	"required": ["branding", "schema", "static", "pages"],
+	"required": ["branding", "schema", "static", "description", "pages"],
 	"definitions": {
 		"SiteBranding": {
 			"title": "Site branding",
@@ -14,9 +14,7 @@
 			"additionalProperties": false,
 			"properties": {
 				"logo": {
-					"type": "string",
-					"format": "uri",
-					"description": "Path or URL to the API's logo"
+					"$ref": "#/definitions/SiteBrandingLogo"
 				},
 				"name": {
 					"type": "string",
@@ -24,6 +22,24 @@
 				}
 			},
 			"required": ["logo", "name"]
+		},
+		"SiteBrandingLogo": {
+			"title": "Site branding logo",
+			"description": "Logo for the API",
+			"type": "object",
+			"additionalProperties": false,
+			"properties": {
+				"light": {
+					"type": "string",
+					"format": "uri",
+					"description": "Path or URL to the API's logo which will be used on a light background"
+				},
+				"dark": {
+					"type": "string",
+					"format": "uri",
+					"description": "Path or URL to the API's logo which will be used on a dark background"
+				}
+			}
 		},
 		"schema_introspection": {
 			"title": "Schema introspection",
@@ -76,6 +92,16 @@
 					"type": "string",
 					"format": "uri",
 					"description": "Path or URL to an icon for the module"
+				},
+				"contribution": {
+					"type": "string",
+					"format": "uri",
+					"description": "URL to contribute to the documentation of an item. Available placeholders are %module% and %name%, the name of the item. If omitted, the \"contribute\" button will not be displayed"
+				},
+				"source": {
+					"type": "string",
+					"format": "uri",
+					"description": "URL to view the source code for item. Available placeholders are %module% and %name%. If omitted, the \"source\" button will not be displayed"
 				},
 				"items": {
 					"type": "array",
@@ -145,6 +171,16 @@
 					"format": "uri",
 					"description": "Path or URL to an icon for the module"
 				},
+				"contribution": {
+					"type": "string",
+					"format": "uri",
+					"description": "URL to contribute to the documentation for this module. If omitted, the \"contribute\" button will not be displayed"
+				},
+				"source": {
+					"type": "string",
+					"format": "uri",
+					"description": "URL to view the source code for this module. If omitted, the \"source\" button will not be displayed"
+				},
 				"items": {
 					"type": "array",
 					"description": "How to know that a given schema item (a type, a query, a mutation, etc.) should belong to that module?",
@@ -170,6 +206,10 @@
 				"contribution": {
 					"type": "string",
 					"description": "URL to use for the \"contribute\" button for that item. Available placeholders are:\n\n- %module%, \n- %name%, the item's name\n- %path%, the path to the file that matched\n\nIf the value is not specified, the \"contribute\" button will not be displayed\n"
+				},
+				"source": {
+					"type": "string",
+					"description": "URL to view the source code for this item. Available placeholders are the same as for `contribution`"
 				}
 			},
 			"required": ["files", "match"]
@@ -238,6 +278,10 @@
 		},
 		"branding": {
 			"$ref": "#/definitions/SiteBranding"
+		},
+		"description": {
+			"type": "string",
+			"description": "Markdown-formatted text to display on the homepage. Use this to mention the purpose of the API, how to authenticate, and anything you want. Depending on the template you use, a search bar, as well as the list of all the modules will be displayed below, as well as other information such as the endpoint URL. Check with your template's documentation."
 		},
 		"footer": {
 			"description": "HTML to insert at the bottom of every page",

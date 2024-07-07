@@ -1,7 +1,12 @@
-import type { GraphQLSchema, GraphQLInputField, GraphQLField } from 'graphql';
+import type {
+	GraphQLField,
+	GraphQLInputField,
+	GraphQLNamedType,
+	GraphQLSchema,
+} from 'graphql';
 import { isInputObjectType, isInterfaceType, isObjectType } from 'graphql';
 
-export function getAllTypesInSchema(schema: GraphQLSchema) {
+export function getAllTypesInSchema(schema: GraphQLSchema): GraphQLNamedType[] {
 	return Object.values(schema.getTypeMap()).filter(
 		({ name }) =>
 			![

@@ -1,5 +1,12 @@
 import type { Config } from './config.js';
-import type { ResolverFromFilesystem } from './markdown.js';
+
+export type ModuleItem = {
+	name: string;
+	moduleName: string;
+	contributeURL?: string;
+	sourceCodeURL?: string;
+	type: 'query' | 'mutation' | 'subscription' | 'type';
+};
 
 export type Module = {
 	name: string;
@@ -11,6 +18,9 @@ export type Module = {
 	mutations: string[];
 	subscriptions: string[];
 	types: string[];
+	contributeURL?: string;
+	sourceCodeURL?: string;
+	items: ModuleItem[];
 };
 
 /**
@@ -18,7 +28,8 @@ export type Module = {
  */
 export type BuiltData = {
 	modules: Module[];
+	index: Module;
 	schema: string;
 	config: Config;
-	resolvers: ResolverFromFilesystem[];
+	items: ModuleItem[];
 };

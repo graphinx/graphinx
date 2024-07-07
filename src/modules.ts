@@ -1,15 +1,12 @@
+import { readFile, readdir, writeFile } from 'node:fs/promises';
+import * as path from 'node:path';
 import * as cheerio from 'cheerio';
 import { glob } from 'glob';
 import type { GraphQLSchema } from 'graphql';
-import { readFile, readdir, stat } from 'node:fs/promises';
-import * as path from 'node:path';
-import type { Module } from './built-data.js';
-import type { Config } from './config.js';
-import {
-	getFrontmatter,
-	markdownToHtml,
-	type ResolverFromFilesystem,
-} from './markdown.js';
+import type { Module, ModuleItem } from './built-data.js';
+import { b } from './cli.js';
+import type { Config, SourceCodeModuleMatcher } from './config.js';
+import { getFrontmatter, markdownToHtml } from './markdown.js';
 import { replacePlaceholders } from './placeholders.js';
 import { loadSchema } from './schema-loader.js';
 import {
@@ -17,33 +14,7 @@ import {
 	getAllTypesInSchema,
 	getRootResolversInSchema,
 } from './schema-utils.js';
-import { asyncFilter } from './utils.js';
-import { b } from './cli.js';
-
-async function readdirNotExistOk(directory: string): Promise<string[]> {
-	if (!(await stat(directory).catch(() => false))) {
-		console.warn(`WARN: ${directory} does not exist.`);
-		return [];
-	}
-	const files = (await readdir(directory)).map((file) =>
-		path.join(directory, file),
-	);
-	if (files.length === 0) {
-		console.warn(`WARN: ${directory} is empty.`);
-	}
-	return files;
-}
-
-async function typescriptFilesWithoutBarrels(
-	directory: string,
-): Promise<string[]> {
-	return (await readdirNotExistOk(directory)).filter(
-		(file) =>
-			file.endsWith('.ts') &&
-			!file.endsWith('.d.ts') &&
-			path.basename(file) !== 'index.ts',
-	);
-}
+import { shuffle } from './utils.js';
 
 function ellipsis(text: string, maxWords: number) {
 	const words = text.split(' ');
@@ -57,64 +28,10 @@ function firstSentence(text: string) {
 	return text.split(/\.(\s|$)/)[0];
 }
 
-// /**
-//  * Sort types such that a type comes before another if it is used by the other.
-//  */
-// function typesTopologicalSorter(
-//   schema: GraphQLSchema
-// ): (
-//   aName: Module["types"][number],
-//   bName: Module["types"][number]
-// ) => -1 | 0 | 1 {
-//   return (aName, bName) => {
-//     if (aName === bName) {
-//       return 0
-//     }
-//     const a = findTypeInSchema(schema, aName)
-//     const b = findTypeInSchema(schema, bName)
-//     if (!a || !b) {
-//       console.warn(
-//         `WARN: could not find types ${aName} and/or ${bName} in schema.`
-//       )
-//       return 0
-//     }
-//     const aUsedByB =
-//       b.fields?.some((field) =>
-//         [
-//           field.type.name,
-//           field.type.ofType?.name,
-//           field.type?.ofType?.ofType?.name,
-//         ].includes(a.name)
-//       ) || b.interfaces?.some((i) => i.name === a.name)
-//     const bUsedByA =
-//       a.fields?.some((field) =>
-//         [
-//           field.type.name,
-//           field.type.ofType?.name,
-//           field.type?.ofType?.ofType?.name,
-//         ].includes(b.name)
-//       ) || a.interfaces?.some((i) => i.name === b.name)
-
-//     if (aUsedByB && bUsedByA) {
-//       return 0
-//     }
-
-//     if (aUsedByB) {
-//       return 1
-//     }
-
-//     if (bUsedByA) {
-//       return -1
-//     }
-
-//     return 0
-//   }
-// }
-
 export async function getModule(
 	schema: GraphQLSchema,
 	config: Config,
-	resolvers: ResolverFromFilesystem[],
+	items: ModuleItem[],
 	name: string,
 ): Promise<Module> {
 	const staticallyDefined = config.modules?.static?.find(
@@ -135,39 +52,49 @@ export async function getModule(
 
 	const { parsedDocs, metadata, ...documentation } = await parseDocumentation(
 		docs,
-		resolvers,
+		items,
 		schema,
 		config,
 	);
 
 	console.info(`\x1b[F\x1b[K\r📝 Parsed documentation for module ${b(name)}`);
 
-	const findItemsOnType = async (typename: string | undefined) => {
+	const itemIsInThisModule = (itemName: string) =>
+		Boolean(
+			items.find((i) => i.moduleName === name && i.name === itemName),
+		);
+
+	const findItemsOnType = (typename: string | undefined) => {
 		if (!typename) return [];
 
-		return (
-			await asyncFilter(
-				getAllFieldsOfType(schema, typename),
-				async (field) => itemIsInModule(config, name, field.name),
-			)
-		).map((f) => f.name);
+		return getAllFieldsOfType(schema, typename)
+			.map((f) => f.name)
+			.filter(itemIsInThisModule);
 	};
 
 	const module: Module = {
-		name: name,
+		name,
 		displayName:
 			staticallyDefined?.title ?? parsedDocs('h1').first().text(),
+		contributeURL:
+			replacePlaceholders(
+				config.modules?.filesystem?.contribution ?? '',
+				{
+					module: name,
+				},
+			) || undefined,
+		sourceCodeURL:
+			replacePlaceholders(config.modules?.filesystem?.source ?? '', {
+				module: name,
+			}) || undefined,
 		...documentation,
-		types: (
-			await asyncFilter(getAllTypesInSchema(schema), async (t) =>
-				itemIsInModule(config, name, t.name),
-			)
-		).map((t) => t.name),
-		queries: await findItemsOnType(schema.getQueryType()?.name),
-		mutations: await findItemsOnType(schema.getMutationType()?.name),
-		subscriptions: await findItemsOnType(
-			schema.getSubscriptionType()?.name,
-		),
+		types: getAllTypesInSchema(schema)
+			.map((t) => t.name)
+			.filter(itemIsInThisModule),
+		queries: findItemsOnType(schema.getQueryType()?.name),
+		mutations: findItemsOnType(schema.getMutationType()?.name),
+		subscriptions: findItemsOnType(schema.getSubscriptionType()?.name),
+		items: items.filter((r) => r.moduleName === name),
 	};
 
 	if (metadata.manually_include) {
@@ -197,19 +124,27 @@ export async function getModule(
 	return module;
 }
 
+/**
+ * Check via a filesystem module matcher if a given item is in a module
+ * @param config
+ * @param module
+ * @param item
+ * @returns path to the file that matched first, or null if no match
+ */
 async function itemIsInModuleViaFilesystem(
 	config: NonNullable<Config['modules']>['filesystem'],
-	currentModule: string,
+	module: string,
 	item: string,
-) {
-	if (!config) return false;
+): Promise<MatchInfo | null> {
+	if (!config) return null;
 
-	for (const { files, match } of config.items) {
+	for (const matcher of config.items) {
+		const { files, match } = matcher;
 		const pattern = new RegExp(
-			replacePlaceholders(match, { module: currentModule }),
+			replacePlaceholders(match, { module: module }),
 		);
 		const pathsToTest = await glob(
-			replacePlaceholders(files, { module: currentModule }),
+			replacePlaceholders(files, { module: module }),
 		);
 		for (const path of pathsToTest) {
 			const content = await readFile(path, 'utf-8');
@@ -218,45 +153,63 @@ async function itemIsInModuleViaFilesystem(
 				const match = pattern.exec(line);
 				if (!match) continue;
 				if (match.groups?.name === item) {
-					return true;
+					return { filesystem: { path, matcher } };
 				}
 			}
 		}
 	}
 
-	return false;
+	return null;
 }
 
-const ITEM_IN_MODULE_CACHE: Record<string, Record<string, boolean>> = {};
+const MODULE_MEMBERSHIP_CACHE: Record<
+	string,
+	Record<string, MatchInfo | null>
+> = {};
 
-async function itemIsInModule(config: Config, module: string, item: string) {
-	if (ITEM_IN_MODULE_CACHE[module]?.[item] !== undefined) {
-		return ITEM_IN_MODULE_CACHE[module][item];
+type MatchInfo = {
+	filesystem?: {
+		path: string;
+		matcher: SourceCodeModuleMatcher;
+	};
+};
+
+async function itemIsInModule(
+	config: Config,
+	module: string,
+	item: string,
+): Promise<MatchInfo | null> {
+	if (!process.env.GRAPHINX_NO_CACHE) {
+		if (MODULE_MEMBERSHIP_CACHE[module]?.[item]) {
+			return MODULE_MEMBERSHIP_CACHE[module][item];
+		}
 	}
 
 	const staticallyIncluded = config.modules?.static
 		?.find((m) => m.name === module)
 		?.items.some((n) => n === item);
 
-	const result =
-		staticallyIncluded ||
-		(await itemIsInModuleViaFilesystem(
+	let result: MatchInfo | null = staticallyIncluded ? {} : null;
+	if (!result) {
+		result = await itemIsInModuleViaFilesystem(
 			config.modules?.filesystem,
 			module,
 			item,
-		));
+		);
+	}
 
-	ITEM_IN_MODULE_CACHE[module] = {
-		...ITEM_IN_MODULE_CACHE[module],
-		[item]: result,
-	};
+	if (!process.env.GRAPHINX_NO_CACHE)
+		MODULE_MEMBERSHIP_CACHE[module] = {
+			...MODULE_MEMBERSHIP_CACHE[module],
+			[item]: result,
+		};
 
 	return result;
 }
 
 export async function parseDocumentation(
 	docs: string,
-	resolvers: ResolverFromFilesystem[],
+	resolvers: ModuleItem[],
 	schema: GraphQLSchema,
 	config: Config,
 ) {
@@ -268,10 +221,6 @@ export async function parseDocumentation(
 	const parsedDocs = cheerio.load(htmlDocs);
 	const docsWithoutHeading = cheerio.load(htmlDocs);
 	docsWithoutHeading('h1').remove();
-
-	//   if (Object.keys(metadata).length > 0) {
-	//     console.log(`Found metadata for ${name}: ${JSON.stringify(metadata)}`)
-	//   }
 
 	return {
 		rawDocs: docs,
@@ -288,7 +237,7 @@ export async function parseDocumentation(
 export async function getAllModules(
 	schema: GraphQLSchema,
 	config: Config,
-	resolvers: ResolverFromFilesystem[],
+	resolvers: ModuleItem[],
 ) {
 	console.info('🏃 Getting all modules...');
 	const order =
@@ -312,8 +261,6 @@ export async function getAllModules(
 		.sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name));
 }
 
-const allResolvers: ResolverFromFilesystem[] = [];
-
 export async function moduleNames(config: Config): Promise<string[]> {
 	let names: string[] = [];
 	if (!config.modules) return [];
@@ -336,49 +283,110 @@ export async function moduleNames(config: Config): Promise<string[]> {
 	return [...new Set(names)];
 }
 
-export async function getAllResolvers(
+/**
+ * Gets all the items, categorized by module.
+ * The environment variale GRAPHINX_ITEMS_LIMIT can be used to limit the number of items to process.
+ * @param schema
+ * @param config
+ * @returns
+ */
+export async function getAllItems(
 	schema: GraphQLSchema,
 	config: Config,
-): Promise<ResolverFromFilesystem[]> {
-	if (allResolvers.length > 0) {
-		return allResolvers;
-	}
+): Promise<ModuleItem[]> {
 	const names = await moduleNames(config);
 	const rootResolvers = getRootResolversInSchema(schema);
-	console.info('👣 Categorizing all resolvers...\n');
-	const results = await Promise.all(
-		names
-			.flatMap((moduleName) =>
-				rootResolvers.map(
-					(resolver) => [moduleName, resolver] as const,
-				),
-			)
-			.map(async ([moduleName, resolver]) => {
-				if (await itemIsInModule(config, moduleName, resolver.name)) {
-					console.info(
-						`\x1b[F\x1b[2K\r📕 Categorized ${resolver.name} into ${moduleName}`,
-					);
-					return {
-						name: resolver.name,
-						moduleName: path.basename(moduleName),
-						type: resolver.parentType,
-					};
-				}
-				return null;
-			}),
-	);
-	const uncategorizedResolvers = rootResolvers.filter(resolver => !results.some(r => r?.name === resolver.name));
-	if (uncategorizedResolvers.length > 0) {
-		console.warn(`🚨 The following resolvers were left uncategorized: \n  - ${uncategorizedResolvers.map(r => r.name).join('\n  - ')}`);
+	const rootTypes = getAllTypesInSchema(schema);
+	console.info('👣 Categorizing...');
+
+	let items = [...rootResolvers, ...rootTypes];
+
+	if (process.env.GRAPHINX_ITEMS_LIMIT) {
+		console.info(
+			`🔒 Limiting to $GRAPHINX_ITEMS_LIMIT=${b(
+				process.env.GRAPHINX_ITEMS_LIMIT,
+			)} items to categorize`,
+		);
+		items = shuffle(items).slice(
+			0,
+			Number.parseInt(process.env.GRAPHINX_ITEMS_LIMIT),
+		);
 	}
-	return results.filter((r) => r !== null) as ResolverFromFilesystem[];
+
+	const itemsToCategorize = names.flatMap((moduleName) =>
+		items.map((i) => [moduleName, i] as const),
+	);
+
+	await writeFile(
+		'allitems.json',
+		JSON.stringify(itemsToCategorize, null, 2),
+	);
+
+	console.log(''); // Blank line to make room for the "Categorized" logs
+	const results = await Promise.all(
+		itemsToCategorize.map(async ([moduleName, resolver]) => {
+			const match = await itemIsInModule(
+				config,
+				moduleName,
+				resolver.name,
+			);
+			if (!match) {
+				// console.debug(chalk.dim(`   ${resolver.name} is not in ${moduleName}`))
+				return null;
+			}
+			console.info(
+				`\x1b[F\x1b[2K\r📕 Categorized ${resolver.name} into ${moduleName}`,
+			);
+			return {
+				name: resolver.name,
+				moduleName: path.basename(moduleName),
+				type: 'parentType' in resolver ? resolver.parentType : 'type',
+				sourceCodeURL:
+					(config.modules?.static?.find((m) => m.name === moduleName)
+						?.source ??
+						replacePlaceholders(
+							match.filesystem?.matcher.source ?? '',
+							{
+								module: moduleName,
+								name: resolver.name,
+								path: match.filesystem?.path ?? '',
+							},
+						)) ||
+					undefined,
+				contributeURL:
+					(config.modules?.static?.find((m) => m.name === moduleName)
+						?.contribution ??
+						replacePlaceholders(
+							match.filesystem?.matcher.contribution ?? '',
+							{
+								module: moduleName,
+								name: resolver.name,
+								path: match.filesystem?.path ?? '',
+							},
+						)) ||
+					undefined,
+			} satisfies ModuleItem;
+		}),
+	);
+	const uncategorized = items.filter(
+		(resolver) => !results.some((r) => r?.name === resolver.name),
+	);
+	if (uncategorized.length > 0) {
+		console.warn(
+			`⚠️ The following items were left uncategorized: \n  - ${uncategorized
+				.map((r) => r.name)
+				.join('\n  - ')}`,
+		);
+	}
+	return results.filter((r) => r !== null);
 }
 
 const BUILTIN_TYPES = ['String', 'Boolean', 'Int', 'Float'];
 
+// TODO reuse getModule
 export async function indexModule(
 	config: Config,
-	resolvers: ResolverFromFilesystem[],
+	resolvers: ModuleItem[],
 ): Promise<Module> {
 	const schema = await loadSchema(config);
 	const { description, title } =

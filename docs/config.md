@@ -8,6 +8,7 @@
 * [`Schema`](#reference-schema)
     * [`introspection`](#reference-schema_introspection)
 * [`Site branding`](#reference-sitebranding)
+    * [`logo`](#reference-sitebrandinglogo)
 
 
 ---------------------------------------
@@ -22,6 +23,7 @@ Configuration file for Graphinx, a tool to generate a documentation website for 
 |---|---|---|---|
 |**template**|`string`|Degit repository specifier to use as the website template. Defaults to Graphinx's default template.  See [degit's documentation](https://www.npmjs.com/package/degit#basics) for more information.  Basic syntax is `owner/repo/path#branch` for github repositories, or `https://example.com/...` for any git repository.  The only difference is that the default branch name is "main" instead of master (i.e. use  `...#master` to clone the master branch, and `...#main` is not needed)|No|
 |**branding**|`SiteBranding`|Branding information for the API| &#10003; Yes|
+|**description**|`string`|Markdown-formatted text to display on the homepage. Use this to mention the purpose of the API, how to authenticate, and anything you want. Depending on the template you use, a search bar, as well as the list of all the modules will be displayed below, as well as other information such as the endpoint URL. Check with your template's documentation.| &#10003; Yes|
 |**footer**|`string`|HTML to insert at the bottom of every page|No|
 |**static**|`string`|Directory to look for additional static files that will be copied to the template's `static` directory, to be served at the root of the website| &#10003; Yes|
 |**pages**|`string`|Directory to look for additional documentation pages, as markdown or [MDSveX (.svx)](https://mdsvex.pngwn.io/) files. The final URL will be the path to the markdown file relative to the value of `pages`, without the `.md` extension. For example, with `pages: ./docs`, a page defined in `./docs/foo/bar.md` will be available at `/foo/bar`. Files are copied at build time into the template code at `src/routes/(path to file without extension)/+page.svx`. If the filename is prefix with a `+`, it'll be copied in src/routes directly (not in a subdirectory)| &#10003; Yes|
@@ -45,6 +47,13 @@ Degit repository specifier to use as the website template. Defaults to Graphinx'
 Branding information for the API
 
 * **Type**: `SiteBranding`
+* **Required**:  &#10003; Yes
+
+##### Graphinx.description
+
+Markdown-formatted text to display on the homepage. Use this to mention the purpose of the API, how to authenticate, and anything you want. Depending on the template you use, a search bar, as well as the list of all the modules will be displayed below, as well as other information such as the endpoint URL. Check with your template's documentation.
+
+* **Type**: `string`
 * **Required**:  &#10003; Yes
 
 ##### Graphinx.footer
@@ -145,6 +154,8 @@ Auto-categorize using your API's source code tree. Every value in here can use %
 |**order**|`string` `[]`|Order in which to display the modules. If a module is not listed here, it will be displayed at the end. If not specified, the order is alphabetical|No|
 |**intro**|`string`|Path to a markdown file describing the module. The first paragraph will serve as the short description, while the `<h1>`'s content will serve as the module's display name| &#10003; Yes|
 |**icon**|`string`|Path or URL to an icon for the module|No|
+|**contribution**|`string`|URL to contribute to the documentation for this module. If omitted, the "contribute" button will not be displayed|No|
+|**source**|`string`|URL to view the source code for this module. If omitted, the "source" button will not be displayed|No|
 |**items**|`filesystem_matcher` `[]`|How to know that a given schema item (a type, a query, a mutation, etc.) should belong to that module?| &#10003; Yes|
 
 Additional properties are not allowed.
@@ -173,6 +184,22 @@ Path to a markdown file describing the module. The first paragraph will serve as
 ##### filesystem_modules.icon
 
 Path or URL to an icon for the module
+
+* **Type**: `string`
+* **Required**: No
+* **Format**: uri
+
+##### filesystem_modules.contribution
+
+URL to contribute to the documentation for this module. If omitted, the "contribute" button will not be displayed
+
+* **Type**: `string`
+* **Required**: No
+* **Format**: uri
+
+##### filesystem_modules.source
+
+URL to view the source code for this module. If omitted, the "source" button will not be displayed
 
 * **Type**: `string`
 * **Required**: No
@@ -306,18 +333,17 @@ Branding information for the API
 
 |   |Type|Description|Required|
 |---|---|---|---|
-|**logo**|`string`|Path or URL to the API's logo| &#10003; Yes|
+|**logo**|`SiteBrandingLogo`|Logo for the API| &#10003; Yes|
 |**name**|`string`|Name of the API| &#10003; Yes|
 
 Additional properties are not allowed.
 
 ##### SiteBranding.logo
 
-Path or URL to the API's logo
+Logo for the API
 
-* **Type**: `string`
+* **Type**: `SiteBrandingLogo`
 * **Required**:  &#10003; Yes
-* **Format**: uri
 
 ##### SiteBranding.name
 
@@ -325,6 +351,40 @@ Name of the API
 
 * **Type**: `string`
 * **Required**:  &#10003; Yes
+
+
+
+
+---------------------------------------
+<a name="reference-sitebrandinglogo"></a>
+#### Site branding logo
+
+Logo for the API
+
+**`Site branding logo` Properties**
+
+|   |Type|Description|Required|
+|---|---|---|---|
+|**light**|`string`|Path or URL to the API's logo which will be used on a light background|No|
+|**dark**|`string`|Path or URL to the API's logo which will be used on a dark background|No|
+
+Additional properties are not allowed.
+
+##### SiteBrandingLogo.light
+
+Path or URL to the API's logo which will be used on a light background
+
+* **Type**: `string`
+* **Required**: No
+* **Format**: uri
+
+##### SiteBrandingLogo.dark
+
+Path or URL to the API's logo which will be used on a dark background
+
+* **Type**: `string`
+* **Required**: No
+* **Format**: uri
 
 
 
@@ -347,6 +407,7 @@ Name of the API
 
 If the value is not specified, the "contribute" button will not be displayed
 |No|
+|**source**|`string`|URL to view the source code for this item. Available placeholders are the same as for `contribution`|No|
 
 Additional properties are not allowed.
 
@@ -378,6 +439,13 @@ If the value is not specified, the "contribute" button will not be displayed
 * **Type**: `string`
 * **Required**: No
 
+##### filesystem_matcher.source
+
+URL to view the source code for this item. Available placeholders are the same as for `contribution`
+
+* **Type**: `string`
+* **Required**: No
+
 
 
 
@@ -393,6 +461,8 @@ If the value is not specified, the "contribute" button will not be displayed
 |**name**|`string`|URL-friendly name of the module. Cannot be "index" (reserved for the index module)| &#10003; Yes|
 |**intro**|`string`|A Markdown-formatted text describing the module| &#10003; Yes|
 |**icon**|`string`|Path or URL to an icon for the module|No|
+|**contribution**|`string`|URL to contribute to the documentation of an item. Available placeholders are %module% and %name%, the name of the item. If omitted, the "contribute" button will not be displayed|No|
+|**source**|`string`|URL to view the source code for item. Available placeholders are %module% and %name%. If omitted, the "source" button will not be displayed|No|
 |**items**|`string` `[]`|List of schema item names that belong in that module| &#10003; Yes|
 
 Additional properties are not allowed.
@@ -421,6 +491,22 @@ A Markdown-formatted text describing the module
 ##### static_module.icon
 
 Path or URL to an icon for the module
+
+* **Type**: `string`
+* **Required**: No
+* **Format**: uri
+
+##### static_module.contribution
+
+URL to contribute to the documentation of an item. Available placeholders are %module% and %name%, the name of the item. If omitted, the "contribute" button will not be displayed
+
+* **Type**: `string`
+* **Required**: No
+* **Format**: uri
+
+##### static_module.source
+
+URL to view the source code for item. Available placeholders are %module% and %name%. If omitted, the "source" button will not be displayed
 
 * **Type**: `string`
 * **Required**: No
