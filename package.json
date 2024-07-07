@@ -1,6 +1,6 @@
 {
   "name": "graphinx",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "scripts": {
     "check": "biome check --apply .",
     "build-config-types": "yq . < config.schema.yaml > config.schema.json && quicktype --src-lang schema config.schema.json -o packages/graphinx/src/config.ts && bun run wetzel config.schema.json -l 3 > docs/config.md",
@@ -65,7 +65,13 @@
       "default": "./dist/cli.js"
     }
   },
-  "files": ["dist", "README.md", "logo.png", "wordmark.png", "demo.gif"],
+  "files": [
+    "dist",
+    "README.md",
+    "logo.png",
+    "wordmark.png",
+    "demo.gif"
+  ],
   "license": "MIT",
   "bin": {
     "graphinx": "./dist/cli.js"
