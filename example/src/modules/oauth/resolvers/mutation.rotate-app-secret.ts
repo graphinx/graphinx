@@ -8,22 +8,22 @@ import { CLIENT_SECRET_LENGTH } from '../index.js';
 // TODO rename rotate-app-client-secret
 
 builder.mutationField('rotateAppSecret', (t) =>
-  t.string({
-    description: "Rotate a third-party app's secret",
-    args: {
-      id: t.arg.id({
-        description: "The app's ID",
-      }),
-    },
-    authScopes: userCanEditApp,
-    async resolve(_, { id }, { user }) {
-      const secretClear = nanoid(CLIENT_SECRET_LENGTH);
-      await prisma.thirdPartyApp.update({
-        where: { id },
-        data: { secret: await hash(secretClear) },
-      });
-      await log('third-party apps', 'rotate secret', {}, id, user);
-      return secretClear;
-    },
-  }),
+	t.string({
+		description: "Rotate a third-party app's secret",
+		args: {
+			id: t.arg.id({
+				description: "The app's ID",
+			}),
+		},
+		authScopes: userCanEditApp,
+		async resolve(_, { id }, { user }) {
+			const secretClear = nanoid(CLIENT_SECRET_LENGTH);
+			await prisma.thirdPartyApp.update({
+				where: { id },
+				data: { secret: await hash(secretClear) },
+			});
+			await log('third-party apps', 'rotate secret', {}, id, user);
+			return secretClear;
+		},
+	}),
 );

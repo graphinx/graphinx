@@ -1,17 +1,23 @@
 export function authorIsBeneficiary(
-  author: { uid: string; fullName: string; firstName: string; lastName: string; email: string },
-  beneficiary: string,
-  authorEmail: string,
+	author: {
+		uid: string;
+		fullName: string;
+		firstName: string;
+		lastName: string;
+		email: string;
+	},
+	beneficiary: string,
+	authorEmail: string,
 ) {
-  return (
-    !beneficiary.trim() ||
-    author.uid === beneficiary ||
-    author.fullName === beneficiary ||
-    `${author.firstName} ${author.lastName}` === beneficiary ||
-    authorEmail === author.email
-  );
+	return (
+		!beneficiary.trim() ||
+		author.uid === beneficiary ||
+		author.fullName === beneficiary ||
+		`${author.firstName} ${author.lastName}` === beneficiary ||
+		authorEmail === author.email
+	);
 }
 
 export function preprocessBeneficiary(beneficiary: string) {
-  return beneficiary.replace(/^@/, '').trim().toLowerCase();
+	return beneficiary.replace(/^@/, '').trim().toLowerCase();
 }

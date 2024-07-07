@@ -4,7 +4,7 @@ import { UserType } from '#modules/users';
 import {} from '../index.js';
 
 builder.prismaObjectField(UserType, 'allowedApps', (t) =>
-  t.relation('allowedApps', {
-    deprecationReason: 'Use `authorizedApps` instead',
-  }),
+	t.relation('allowedApps', {
+		deprecationReason: 'Use `authorizedApps` instead',
+	}),
 );

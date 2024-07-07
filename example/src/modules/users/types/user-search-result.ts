@@ -4,18 +4,20 @@ import type { User } from '@churros/db/prisma';
 import {} from '../index.js';
 
 export const UserSearchResultType = builder
-  .objectRef<SearchResult<{ user: User }, ['description']>>('UserSearchResult')
-  .implement({
-    fields: (t) => ({
-      user: t.prismaField({
-        type: 'User',
-        resolve: (_, { user }) => user,
-      }),
-      id: t.exposeID('id'),
-      similarity: t.exposeFloat('similarity'),
-      rank: t.exposeFloat('rank', { nullable: true }),
-      highlightedDescription: t.string({
-        resolve: ({ highlights }) => highlights.description,
-      }),
-    }),
-  });
+	.objectRef<SearchResult<{ user: User }, ['description']>>(
+		'UserSearchResult',
+	)
+	.implement({
+		fields: (t) => ({
+			user: t.prismaField({
+				type: 'User',
+				resolve: (_, { user }) => user,
+			}),
+			id: t.exposeID('id'),
+			similarity: t.exposeFloat('similarity'),
+			rank: t.exposeFloat('rank', { nullable: true }),
+			highlightedDescription: t.string({
+				resolve: ({ highlights }) => highlights.description,
+			}),
+		}),
+	});
