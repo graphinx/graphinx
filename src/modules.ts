@@ -19,6 +19,8 @@ import { shuffle } from './utils.js';
 import { resolveRelayIntegration } from './relay.js';
 import { resolveResultType } from './result-types.js';
 
+const BUILTIN_TYPES = ['String', 'Boolean', 'Int', 'Float'];
+
 function ellipsis(text: string, maxWords: number) {
 	const words = text.split(' ');
 	if (words.length <= maxWords) {
@@ -376,7 +378,9 @@ export async function getAllItems(
 	);
 
 	let uncategorized = items.filter(
-		(resolver) => !results.some((r) => r?.name === resolver.name),
+		(resolver) =>
+			!results.some((r) => r?.name === resolver.name) &&
+			!BUILTIN_TYPES.includes(resolver.name),
 	);
 
 	results = [
@@ -403,28 +407,31 @@ export async function getAllItems(
 		)),
 	];
 
-	uncategorized = items.filter(
-		(resolver) =>
-			!results.some((r) =>
-				[
-					r?.name,
-					...Object.values(r?.connection ?? {}),
-					...Object.values(r?.result ?? {}),
-				].includes(resolver.name),
-			),
-	);
+	uncategorized = uncategorized.filter((i) => {
+		const candidates = results
+			.flatMap((r) => [
+				r?.name,
+				r?.connection?.edgeType,
+				r?.connection?.connectionType,
+				...(r?.result?.errorTypes ?? []),
+				r?.result?.resultType,
+				r?.result?.successType,
+			])
+			.filter(Boolean);
+		return !candidates.includes(i.name);
+	});
 
 	if (uncategorized.length > 0) {
 		console.warn(
-			`⚠️ The following items were left uncategorized: \n  - ${uncategorized
+			`⚠️ The following ${b(
+				uncategorized.length,
+			)} items were left uncategorized: \n  - ${uncategorized
 				.map((r) => r.name)
 				.join('\n  - ')}`,
 		);
 	}
 	return results.filter((r) => r !== null);
 }
-
-const BUILTIN_TYPES = ['String', 'Boolean', 'Int', 'Float'];
 
 // TODO reuse getModule
 export async function indexModule(

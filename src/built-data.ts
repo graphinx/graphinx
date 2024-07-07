@@ -23,6 +23,7 @@ export type ModuleItem = {
 	 */
 	result?: {
 		successDataType: string;
+		successType: string;
 		resultType: string;
 		errorTypes: string[];
 	};

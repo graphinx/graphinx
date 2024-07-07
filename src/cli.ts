@@ -25,16 +25,17 @@ import { replacePlaceholders } from './placeholders.js';
 import { loadSchema } from './schema-loader.js';
 import { b, transformStrings } from './utils.js';
 import { getRootResolversInSchema } from './schema-utils.js';
+import wcwidth from 'string-width';
 
 function margined(s: string, lines = 1, cols = 2) {
-	const emptyline = `${' '.repeat(s.length + 2 * cols)}\n`;
+	const emptyline = `${' '.repeat(wcwidth(s) + 2 * cols)}\n`;
 	return `${
 		emptyline.repeat(lines) + ' '.repeat(cols) + s + ' '.repeat(cols)
 	}\n${emptyline.repeat(lines)}`;
 }
 
-const LOGO = chalk.bold(
-	chalk.hex('#ffffff').bgHex('#AE1AF1')(margined('👁️ Graphinx')),
+const LOGO = chalk.hex('#ffffff').bgHex('#AE1AF1')(
+	margined(`${chalk.bold('⎔ 👁️ Graphinx')} ${chalk.dim(`v${version}`)}`),
 );
 
 const DEFAULT_TEMPLATE = 'graphinx/graphinx/packages/template';

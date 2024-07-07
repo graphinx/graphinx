@@ -76,6 +76,7 @@ export function resolveResultTypedItem<T extends GraphQLInterfaceType>(
 			errorTypes: errorTypenames,
 			resultType: type.name,
 			successDataType: dataType.name,
+			successType: successType.name,
 		},
 	};
 }

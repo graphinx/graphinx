@@ -23,11 +23,11 @@ environment:
   CURRENT_COMMIT_SHORT: dev
 
 relay:
-  connection: (Query|Mutation)\w+Connection
+  connection: ^([A-Z]\w+){2,}Connection$
 
 errors:
-  result: (Query|Mutation)\w+Result
-  success: (Query|Mutation)\w+Success
+  result: ^([A-Z]\w+){2,}Result$
+  success: ^([A-Z]\w+){2,}Success$
 
 modules:
   index:
@@ -39,14 +39,20 @@ modules:
     intro: src/modules/%module%/README.md
     icon: src/modules/%module%/icon.svg
     items:
+      - files: src/modules/%module%/**/*.ts
+        match: //\s*[gG]raphinx:?\s*(?<name>[^:]+)
       - files: src/modules/%module%/types/*.ts
-        match: "variant: '(?<name>[^']+)'"
+        match: >-
+          variant: '(?<name>[^']+)
         contribution: https://git.inpt.fr/inp-net/churros/-/blob/main/packages/api/src/modules/%module%/
+      - files: src/modules/%module%/types/*.ts
+        match: \.\w+Ref<.+>\('(?<name>[^']+)
       - files: src/modules/%module%/{resolvers,types}/*.ts
-        match: "builder.((query|mutation|subscription)Field|\\w+(Type|Node|Object|Interface))\\('(?<name>[^']+)'"
+        match: builder.((query|mutation|subscription)Field|\w+(Type|Node|Object|Interface))\('(?<name>[^']+)'
         contribution: https://git.inpt.fr/inp-net/churros/-/blob/main/src/modules/%module%/
       - files: src/modules/%module%/types/*.ts
-        match: "name: '(?<name>[^']+)'"
+        match: >-
+          name: '(?<name>[^']+)'
         contribution: https://git.inpt.fr/inp-net/churros/-/blob/main/packages/api/src/modules/%module%/
     order:
       - global
