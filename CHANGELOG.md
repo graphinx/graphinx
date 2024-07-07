@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - contribution and source config settings are now taken into account and exposed to templates
 - the categorization process was revamped and is now much faster
 - the initial template (generated with --init) has now pins the version of the declared json schema
+- example now depends on a development tarball of the graphinx package. The example is not meant to be used directly anyways, and is instead also used internally to develop templates
+
 ## [0.7.0] - 2024-07-07
 
 ### Added
@@ -30,8 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - (No changelog yet)
 
-[unreleased]: https://github.com/graphinx/graphinx/compare/v0.7.0...HEAD
-[0.7.0]: https://github.com/graphinx/graphinx/compare/v0.6.0-3...v0.7.0
+[Unreleased]: https://github.com/graphinx/graphinx/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/graphinx/graphinx/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/graphinx/graphinx/releases/tag/v0.6.0
 
 [//]: # (C3-2-DKAC:GGH:Hgithub.com:Rgraphinx/graphinx:Tv{t})

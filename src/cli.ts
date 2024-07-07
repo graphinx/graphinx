@@ -63,7 +63,7 @@ const options = program.opts();
 console.info(`\n${LOGO}`);
 options.buildArea ||= path.join(os.tmpdir(), mkdtempSync('graphinx-'));
 
-const INIT_CONFIG_FILE = `# yaml-language-server: $schema=https://raw.githubusercontent.com/graphinx/graphinx/main/config.schema.json
+const INIT_CONFIG_FILE = `# yaml-language-server: $schema=https://raw.githubusercontent.com/graphinx/graphinx/v${version}/config.schema.json
 
 template: ${DEFAULT_TEMPLATE}
 
