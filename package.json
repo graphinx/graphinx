@@ -1,6 +1,11 @@
 {
   "name": "graphinx",
   "version": "0.7.0",
+  "author": {
+    "name": "Ewen Le Bihan",
+    "email": "graphinx@ewen.works",
+    "url": "https://ewen.works"
+  },
   "scripts": {
     "check": "biome check --apply .",
     "build-config-types": "yq . < config.schema.yaml > config.schema.json && quicktype --src-lang schema config.schema.json -o packages/graphinx/src/config.ts && bun run wetzel config.schema.json -l 3 > docs/config.md",
@@ -105,5 +110,12 @@
         }
       }
     }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/graphinx/graphinx.git"
+  },
+  "bugs": {
+    "url": "https://github.com/graphinx/graphinx/issues"
   }
 }
