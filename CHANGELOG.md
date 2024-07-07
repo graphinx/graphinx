@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- special integration for relay (connection and edge types) and result types (result and success types)
+
 ### Fixed
 
 - don't write debug “allitems.json” file

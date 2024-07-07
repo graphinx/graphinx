@@ -571,8 +571,8 @@ __metadata:
   linkType: hard
 
 "graphinx@file:../dev-tarballs/graphinx.tgz::locator=example%40workspace%3A.":
-  version: 0.7.0
-  resolution: "graphinx@file:../dev-tarballs/graphinx.tgz#../dev-tarballs/graphinx.tgz::hash=6e8977&locator=example%40workspace%3A."
+  version: 0.8.0
+  resolution: "graphinx@file:../dev-tarballs/graphinx.tgz#../dev-tarballs/graphinx.tgz::hash=bfc2fa&locator=example%40workspace%3A."
   dependencies:
     chalk: "npm:^5.3.0"
     cheerio: "npm:^1.0.0-rc.12"
@@ -594,7 +594,7 @@ __metadata:
     yaml: "npm:^2.4.5"
   bin:
     graphinx: ./dist/cli.js
-  checksum: 10c0/bd543adcc09ced045a9bff8de9d35bf23af4d4ead4fe89bd56bd5b2ac5ab8ab4bfca9bf3fdbd1168b9a889787253a64d986ae5e356d82811a23b305f364e76ad
+  checksum: 10c0/3b6884979a0ee74349730bfa243f986aed0efcfcce1dd7b69450fe1e24bd82fe19f0d5f29d047f508ab803bb842cd2783e51ed841ffb9d8f31957c6bd3afcb51
   languageName: node
   linkType: hard
 

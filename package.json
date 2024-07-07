@@ -8,6 +8,7 @@
 	},
 	"scripts": {
 		"check": "biome check --apply .",
+		"format": "biome format --write .",
 		"build-config-types": "yq . < config.schema.yaml > config.schema.json && quicktype --src-lang schema config.schema.json -o src/config.ts && bun run wetzel config.schema.json -l 3 > docs/config.md",
 		"demo-gif": "vhs demo.tape && magick demo.gif -fuzz 45% -transparent '#00FF00' demo-tr.gif && mv demo-tr.gif demo.gif",
 		"readme": "sed '/^<!-- Include docs\\/config.md -->$/r docs/config.md' README.template.md > README.md",
@@ -72,13 +73,7 @@
 			"default": "./dist/cli.js"
 		}
 	},
-	"files": [
-		"dist",
-		"README.md",
-		"logo.png",
-		"wordmark.png",
-		"demo.gif"
-	],
+	"files": ["dist", "README.md", "logo.png", "wordmark.png", "demo.gif"],
 	"license": "MIT",
 	"bin": {
 		"graphinx": "./dist/cli.js"

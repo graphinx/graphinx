@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=../config.schema.json
 
-template: graphinx/templates/default
+template: file://../../graphinx-templates/default
 
 schema:
   static: ./schema.graphql
@@ -22,6 +22,13 @@ environment:
   CURRENT_VERSION: "0.1.0"
   CURRENT_COMMIT_SHORT: dev
 
+relay:
+  connection: (Query|Mutation)\w+Connection
+
+errors:
+  result: (Query|Mutation)\w+Result
+  success: (Query|Mutation)\w+Success
+
 modules:
   index:
     title: Index
@@ -32,11 +39,14 @@ modules:
     intro: src/modules/%module%/README.md
     icon: src/modules/%module%/icon.svg
     items:
+      - files: src/modules/%module%/types/*.ts
+        match: "variant: '(?<name>[^']+)'"
+        contribution: https://git.inpt.fr/inp-net/churros/-/blob/main/packages/api/src/modules/%module%/
       - files: src/modules/%module%/{resolvers,types}/*.ts
-        match: "builder.((query|mutation|subscription)Field|\\w+(Type|Node))\\('(?<name>[^']+)'"
+        match: "builder.((query|mutation|subscription)Field|\\w+(Type|Node|Object|Interface))\\('(?<name>[^']+)'"
         contribution: https://git.inpt.fr/inp-net/churros/-/blob/main/src/modules/%module%/
       - files: src/modules/%module%/types/*.ts
-        match: "builder.\\w+(Type|Node)\\(.+, \\{ name: '(?<name>[^']+)' \\}"
+        match: "name: '(?<name>[^']+)'"
         contribution: https://git.inpt.fr/inp-net/churros/-/blob/main/packages/api/src/modules/%module%/
     order:
       - global

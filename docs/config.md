@@ -5,6 +5,8 @@
     * [`Match modules with source code`](#reference-filesystem_modules)
         * [`Source code module matcher`](#reference-filesystem_matcher)
     * [`Static module configuration`](#reference-static_module)
+* [`Relay`](#reference-relay)
+* [`Result types`](#reference-result-types)
 * [`Schema`](#reference-schema)
     * [`introspection`](#reference-schema_introspection)
 * [`Site branding`](#reference-sitebranding)
@@ -28,6 +30,8 @@ Configuration file for Graphinx, a tool to generate a documentation website for 
 |**static**|`string`|Directory to look for additional static files that will be copied to the template's `static` directory, to be served at the root of the website| &#10003; Yes|
 |**pages**|`string`|Directory to look for additional documentation pages, as markdown or [MDSveX (.svx)](https://mdsvex.pngwn.io/) files. The final URL will be the path to the markdown file relative to the value of `pages`, without the `.md` extension. For example, with `pages: ./docs`, a page defined in `./docs/foo/bar.md` will be available at `/foo/bar`. Files are copied at build time into the template code at `src/routes/(path to file without extension)/+page.svx`. If the filename is prefix with a `+`, it'll be copied in src/routes directly (not in a subdirectory)| &#10003; Yes|
 |**environment**|`object`|Define environment variables that will be made available to the template.|No|
+|**relay**|`relay`|Configure handling for GraphQL Relay connection types. Queries that have a return type that match the `connection` property will be considered as connection types, and will display `Connection<T>` in the documentation, where `T` is the type of the `node` field.|No|
+|**errors**|`result-types`|Configure error-related types. Queries that have a return type that match  `result` will be considered as error types, and will display `Result<T>` in the documentation, where `T` is the type of `success`'s field `data`.|No|
 |**modules**|`modules`|Categorize your schema's items. If not specified, all items will be displayed in a single module|No|
 |**schema**|`schema`|A path or URL to a graphl schema file, or configuration for introspection| &#10003; Yes|
 
@@ -86,6 +90,20 @@ Define environment variables that will be made available to the template.
 * **Type**: `object`
 * **Required**: No
 * **Type of each property**: `string`
+
+##### Graphinx.relay
+
+Configure handling for GraphQL Relay connection types. Queries that have a return type that match the `connection` property will be considered as connection types, and will display `Connection<T>` in the documentation, where `T` is the type of the `node` field.
+
+* **Type**: `relay`
+* **Required**: No
+
+##### Graphinx.errors
+
+Configure error-related types. Queries that have a return type that match  `result` will be considered as error types, and will display `Result<T>` in the documentation, where `T` is the type of `success`'s field `data`.
+
+* **Type**: `result-types`
+* **Required**: No
 
 ##### Graphinx.modules
 
@@ -251,6 +269,99 @@ Manually declare modules.
 
 * **Type**: `static_module` `[]`
 * **Required**: No
+
+
+
+
+---------------------------------------
+<a name="reference-relay"></a>
+#### Relay
+
+Configure handling for GraphQL Relay connection types. Queries that have a return type that match the `connection` property will be considered as connection types, and will display `Connection<T>` in the documentation, where `T` is the type of the `node` field.
+
+**`Relay` Properties**
+
+|   |Type|Description|Required|
+|---|---|---|---|
+|**connection**|`string`|How are Connection types named?| &#10003; Yes|
+|**edge**|`string`|A dotted path to the edge field in the connection type (default is `edges`)|No|
+|**node**|`string`|A dotted path to the node field in the connection type (default is `edges.node`)|No|
+
+Additional properties are not allowed.
+
+##### relay.connection
+
+How are Connection types named?
+
+* **Type**: `string`
+* **Required**:  &#10003; Yes
+* **Examples**:
+    * `"(Query|Mutation)\w+Connection"`
+
+##### relay.edge
+
+A dotted path to the edge field in the connection type (default is `edges`)
+
+* **Type**: `string`
+* **Required**: No
+* **Examples**:
+    * `"edges"`
+
+##### relay.node
+
+A dotted path to the node field in the connection type (default is `edges.node`)
+
+* **Type**: `string`
+* **Required**: No
+* **Examples**:
+    * `"edges.node"`
+    * `"nodes"`
+
+
+
+
+---------------------------------------
+<a name="reference-result-types"></a>
+#### Result types
+
+Configure error-related types. Queries that have a return type that match  `result` will be considered as error types, and will display `Result<T>` in the documentation, where `T` is the type of `success`'s field `data`.
+
+**`Result types` Properties**
+
+|   |Type|Description|Required|
+|---|---|---|---|
+|**result**|`string`|How are your result types named?|No|
+|**success**|`string`|How are your success types named?|No|
+|**data**|`string`|A dotted path that describes how get to the data field in the success type (default is `data`)|No|
+
+Additional properties are not allowed.
+
+##### result-types.result
+
+How are your result types named?
+
+* **Type**: `string`
+* **Required**: No
+* **Examples**:
+    * `"(Query|Mutation)\w+Result"`
+
+##### result-types.success
+
+How are your success types named?
+
+* **Type**: `string`
+* **Required**: No
+* **Examples**:
+    * `"(Query|Mutation)\w+Success"`
+
+##### result-types.data
+
+A dotted path that describes how get to the data field in the success type (default is `data`)
+
+* **Type**: `string`
+* **Required**: No
+* **Examples**:
+    * `"data"`
 
 
 

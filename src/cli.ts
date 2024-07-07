@@ -14,7 +14,7 @@ import { program } from 'commander';
 import degit from 'degit';
 import * as detectPackageManager from 'detect-package-manager';
 import { execa } from 'execa';
-import { printSchema } from 'graphql';
+import { isNamedType, printSchema } from 'graphql';
 import { rimrafSync } from 'rimraf';
 import yaml from 'yaml';
 import { version } from '../package.json';
@@ -23,7 +23,8 @@ import { type Config, Convert } from './config.js';
 import { getAllItems, getAllModules, indexModule } from './modules.js';
 import { replacePlaceholders } from './placeholders.js';
 import { loadSchema } from './schema-loader.js';
-import { transformStrings } from './utils.js';
+import { b, transformStrings } from './utils.js';
+import { getRootResolversInSchema } from './schema-utils.js';
 
 function margined(s: string, lines = 1, cols = 2) {
 	const emptyline = `${' '.repeat(s.length + 2 * cols)}\n`;
@@ -33,10 +34,8 @@ function margined(s: string, lines = 1, cols = 2) {
 }
 
 const LOGO = chalk.bold(
-	chalk.hex('#ffffff').bgHex('#AE1AF1')(margined('Graphinx')),
+	chalk.hex('#ffffff').bgHex('#AE1AF1')(margined('👁️ Graphinx')),
 );
-
-export const b = (s: NonNullable<unknown>) => chalk.bold(s.toString());
 
 const DEFAULT_TEMPLATE = 'graphinx/graphinx/packages/template';
 const DEFAULT_CONFIG_PATH = '.graphinx.yaml';
@@ -292,7 +291,7 @@ async function main() {
  */
 async function generateDatafile(to: string, config: Config) {
 	const schema = await loadSchema(config);
-	console.log(
+	console.info(
 		`🏷️  Loaded ${b(
 			Object.keys(schema.getTypeMap()).length,
 		)} types from schema`,

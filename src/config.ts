@@ -24,6 +24,7 @@ export interface Config {
 	 * Define environment variables that will be made available to the template.
 	 */
 	environment?: { [key: string]: string };
+	errors?: ResultTypes;
 	/**
 	 * HTML to insert at the bottom of every page
 	 */
@@ -39,6 +40,7 @@ export interface Config {
 	 * src/routes directly (not in a subdirectory)
 	 */
 	pages: string;
+	relay?: Relay;
 	schema: Schema;
 	/**
 	 * Directory to look for additional static files that will be copied to the template's
@@ -79,6 +81,27 @@ export interface SiteBrandingLogo {
 	 * Path or URL to the API's logo which will be used on a light background
 	 */
 	light?: string;
+}
+
+/**
+ * Configure error-related types. Queries that have a return type that match  `result` will
+ * be considered as error types, and will display `Result<T>` in the documentation, where
+ * `T` is the type of `success`'s field `data`.
+ */
+export interface ResultTypes {
+	/**
+	 * A dotted path that describes how get to the data field in the success type (default is
+	 * `data`)
+	 */
+	data?: string;
+	/**
+	 * How are your result types named?
+	 */
+	result?: string;
+	/**
+	 * How are your success types named?
+	 */
+	success?: string;
 }
 
 /**
@@ -226,6 +249,26 @@ export interface StaticModuleConfiguration {
 	 * Display name of the module
 	 */
 	title: string;
+}
+
+/**
+ * Configure handling for GraphQL Relay connection types. Queries that have a return type
+ * that match the `connection` property will be considered as connection types, and will
+ * display `Connection<T>` in the documentation, where `T` is the type of the `node` field.
+ */
+export interface Relay {
+	/**
+	 * How are Connection types named?
+	 */
+	connection: string;
+	/**
+	 * A dotted path to the edge field in the connection type (default is `edges`)
+	 */
+	edge?: string;
+	/**
+	 * A dotted path to the node field in the connection type (default is `edges.node`)
+	 */
+	node?: string;
 }
 
 /**
@@ -468,6 +511,11 @@ const typeMap: any = {
 				js: 'environment',
 				typ: u(undefined, m('')),
 			},
+			{
+				json: 'errors',
+				js: 'errors',
+				typ: u(undefined, r('ResultTypes')),
+			},
 			{ json: 'footer', js: 'footer', typ: u(undefined, '') },
 			{
 				json: 'modules',
@@ -475,6 +523,7 @@ const typeMap: any = {
 				typ: u(undefined, r('ModulesConfiguration')),
 			},
 			{ json: 'pages', js: 'pages', typ: '' },
+			{ json: 'relay', js: 'relay', typ: u(undefined, r('Relay')) },
 			{ json: 'schema', js: 'schema', typ: r('Schema') },
 			{ json: 'static', js: 'static', typ: '' },
 			{ json: 'template', js: 'template', typ: u(undefined, '') },
@@ -492,6 +541,14 @@ const typeMap: any = {
 		[
 			{ json: 'dark', js: 'dark', typ: u(undefined, '') },
 			{ json: 'light', js: 'light', typ: u(undefined, '') },
+		],
+		false,
+	),
+	ResultTypes: o(
+		[
+			{ json: 'data', js: 'data', typ: u(undefined, '') },
+			{ json: 'result', js: 'result', typ: u(undefined, '') },
+			{ json: 'success', js: 'success', typ: u(undefined, '') },
 		],
 		false,
 	),
@@ -563,6 +620,14 @@ const typeMap: any = {
 			{ json: 'name', js: 'name', typ: '' },
 			{ json: 'source', js: 'source', typ: u(undefined, '') },
 			{ json: 'title', js: 'title', typ: '' },
+		],
+		false,
+	),
+	Relay: o(
+		[
+			{ json: 'connection', js: 'connection', typ: '' },
+			{ json: 'edge', js: 'edge', typ: u(undefined, '') },
+			{ json: 'node', js: 'node', typ: u(undefined, '') },
 		],
 		false,
 	),

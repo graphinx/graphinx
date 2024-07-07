@@ -4,17 +4,20 @@ import * as cheerio from 'cheerio';
 import { glob } from 'glob';
 import type { GraphQLSchema } from 'graphql';
 import type { Module, ModuleItem } from './built-data.js';
-import { b } from './cli.js';
+import { b } from './utils.js';
 import type { Config, SourceCodeModuleMatcher } from './config.js';
 import { getFrontmatter, markdownToHtml } from './markdown.js';
 import { replacePlaceholders } from './placeholders.js';
 import { loadSchema } from './schema-loader.js';
 import {
+	fieldReturnType,
 	getAllFieldsOfType,
 	getAllTypesInSchema,
 	getRootResolversInSchema,
 } from './schema-utils.js';
 import { shuffle } from './utils.js';
+import { resolveRelayIntegration } from './relay.js';
+import { resolveResultType } from './result-types.js';
 
 function ellipsis(text: string, maxWords: number) {
 	const words = text.split(' ');
@@ -138,6 +141,7 @@ async function itemIsInModuleViaFilesystem(
 ): Promise<MatchInfo | null> {
 	if (!config) return null;
 
+	// TODO optimization: group matchers per paths to test
 	for (const matcher of config.items) {
 		const { files, match } = matcher;
 		const pattern = new RegExp(
@@ -297,8 +301,6 @@ export async function getAllItems(
 	const names = await moduleNames(config);
 	const rootResolvers = getRootResolversInSchema(schema);
 	const rootTypes = getAllTypesInSchema(schema);
-	console.info('👣 Categorizing...');
-
 	let items = [...rootResolvers, ...rootTypes];
 
 	if (process.env.GRAPHINX_ITEMS_LIMIT) {
@@ -313,12 +315,15 @@ export async function getAllItems(
 		);
 	}
 
+	console.info(`👣 Categorizing ${b(items.length)} items…`);
+
 	const itemsToCategorize = names.flatMap((moduleName) =>
 		items.map((i) => [moduleName, i] as const),
 	);
 
+	// First pass, categorization of relay types and result types is done later
 	console.log(''); // Blank line to make room for the "Categorized" logs
-	const results = await Promise.all(
+	let results = await Promise.all(
 		itemsToCategorize.map(async ([moduleName, resolver]) => {
 			const match = await itemIsInModule(
 				config,
@@ -332,10 +337,11 @@ export async function getAllItems(
 			console.info(
 				`\x1b[F\x1b[2K\r📕 Categorized ${resolver.name} into ${moduleName}`,
 			);
-			return {
+			const item = {
 				name: resolver.name,
 				moduleName: path.basename(moduleName),
 				type: 'parentType' in resolver ? resolver.parentType : 'type',
+				returnType: fieldReturnType(schema, resolver.name)?.name,
 				sourceCodeURL:
 					(config.modules?.static?.find((m) => m.name === moduleName)
 						?.source ??
@@ -361,11 +367,53 @@ export async function getAllItems(
 						)) ||
 					undefined,
 			} satisfies ModuleItem;
+			return resolveResultType(
+				schema,
+				config,
+				resolveRelayIntegration(schema, config, item),
+			);
 		}),
 	);
-	const uncategorized = items.filter(
+
+	let uncategorized = items.filter(
 		(resolver) => !results.some((r) => r?.name === resolver.name),
 	);
+
+	results = [
+		...results,
+		...(await Promise.all(
+			uncategorized.map(async (item) => {
+				// Check if this item is not mentionned as a result, success, connection or edge type
+				for (const result of results) {
+					if (result?.returnType === item.name) {
+						return resolveResultType(
+							schema,
+							config,
+							resolveRelayIntegration(schema, config, {
+								...result,
+								name: item.name,
+								type: 'type',
+							}),
+						);
+					}
+				}
+
+				return null;
+			}),
+		)),
+	];
+
+	uncategorized = items.filter(
+		(resolver) =>
+			!results.some((r) =>
+				[
+					r?.name,
+					...Object.values(r?.connection ?? {}),
+					...Object.values(r?.result ?? {}),
+				].includes(resolver.name),
+			),
+	);
+
 	if (uncategorized.length > 0) {
 		console.warn(
 			`⚠️ The following items were left uncategorized: \n  - ${uncategorized

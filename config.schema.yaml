@@ -220,6 +220,51 @@ definitions:
         type: array
         description: Manually declare modules.
         items: { $ref: "#/definitions/static_module" }
+  relay:
+    title: Relay
+    type: object
+    description: Configure handling for GraphQL Relay connection types. Queries that have a return type that match the `connection` property will be considered as connection types, and will display `Connection<T>` in the documentation, where `T` is the type of the `node` field.
+    additionalProperties: false
+    required:
+      - connection
+    properties:
+      connection:
+        type: string
+        description: How are Connection types named?
+        examples:
+          - (Query|Mutation)\w+Connection
+      edge:
+        type: string
+        description: A dotted path to the edge field in the connection type (default is `edges`)
+        examples:
+          - edges
+      node:
+        type: string
+        description: A dotted path to the node field in the connection type (default is `edges.node`)
+        examples:
+          - edges.node
+          - nodes
+  result-types:
+    title: Result types
+    type: object
+    description: Configure error-related types. Queries that have a return type that match  `result` will be considered as error types, and will display `Result<T>` in the documentation, where `T` is the type of `success`'s field `data`.
+    additionalProperties: false
+    properties:
+      result:
+        type: string
+        description: How are your result types named?
+        examples:
+          - (Query|Mutation)\w+Result
+      success:
+        type: string
+        description: How are your success types named?
+        examples:
+          - (Query|Mutation)\w+Success
+      data:
+        type: string
+        description: A dotted path that describes how get to the data field in the success type (default is `data`)
+        examples:
+          - data
   schema:
     title: Schema
     type: object
@@ -264,6 +309,8 @@ properties:
     type: object
     additionalProperties:
       type: string
+  relay: { $ref: "#/definitions/relay" }
+  errors: { $ref: "#/definitions/result-types" }
   modules:
     $ref: "#/definitions/modules"
   schema:

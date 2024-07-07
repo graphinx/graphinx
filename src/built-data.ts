@@ -6,6 +6,26 @@ export type ModuleItem = {
 	contributeURL?: string;
 	sourceCodeURL?: string;
 	type: 'query' | 'mutation' | 'subscription' | 'type';
+	/**
+	 * Not set for types
+	 */
+	returnType?: string;
+	/**
+	 * node and edge types when the item returns or is a Relay connection
+	 */
+	connection?: {
+		nodeType: string;
+		edgeType?: string;
+		connectionType: string;
+	};
+	/**
+	 * success, data and error types  when the item returns or is a result type
+	 */
+	result?: {
+		successDataType: string;
+		resultType: string;
+		errorTypes: string[];
+	};
 };
 
 export type Module = {

@@ -1,3 +1,5 @@
+import chalk from 'chalk';
+
 export function transformStrings<T>(
 	obj: T,
 	transformer: (v: string) => string,
@@ -56,3 +58,5 @@ export function shuffle<T>(array: T[]): T[] {
 	}
 	return copy;
 }
+
+export const b = (s: NonNullable<unknown>) => chalk.bold(s.toString());
