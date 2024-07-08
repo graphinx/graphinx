@@ -1,125 +1,124 @@
 {
-  "name": "graphinx",
-  "version": "0.9.0",
-  "author": {
-    "name": "Ewen Le Bihan",
-    "email": "graphinx@ewen.works",
-    "url": "https://ewen.works"
-  },
-  "scripts": {
-    "check": "biome check --apply .",
-    "format": "biome format --write .",
-    "build-config-types": "yq . < config.schema.yaml > config.schema.json && quicktype --src-lang schema config.schema.json -o src/config.ts && bun run wetzel config.schema.json -l 3 > docs/config.md",
-    "demo-gif": "vhs demo.tape && magick demo.gif -fuzz 45% -transparent '#00FF00' demo-tr.gif && mv demo-tr.gif demo.gif",
-    "readme": "sed '/^<!-- Include docs\\/config.md -->$/r docs/config.md' README.template.md > README.md",
-    "dev": "nodemon --watch README.template.md,config.schema.yaml --exec 'bun run build-config-types && bun run readme'",
-    "build": "bun build ./src/index.ts ./src/cli.ts --target node --outdir ./dist && bun run build:declaration",
-    "release": "bun run build && bun run release-it",
-    "dev-tarball": "bun run build && rm dev-tarballs/*; npm pack --pack-destination dev-tarballs && mv dev-tarballs/*.tgz dev-tarballs/graphinx.tgz",
-    "dev:template": "nodemon -e ts --watch src/,example/.graphinx.yaml --exec 'cd ../graphinx-templates/default && yarn rebuild-graphinx'",
-    "build:declaration": "tsc --project tsconfig.type.json --outdir ./dist"
-  },
-  "dependencies": {
-    "chalk": "^5.3.0",
-    "cheerio": "^1.0.0-rc.12",
-    "commander": "^12.1.0",
-    "degit": "^2.8.4",
-    "detect-package-manager": "^3.0.2",
-    "execa": "^9.3.0",
-    "glob": "^10.4.3",
-    "graphql": "^16.9.0",
-    "handlebars": "^4.7.8",
-    "linkify-plugin-mention": "^4.1.3",
-    "rehype-stringify": "^10.0.0",
-    "remark-frontmatter": "^5.0.0",
-    "remark-parse": "^11.0.0",
-    "remark-rehype": "^11.1.0",
-    "rimraf": "^5.0.8",
-    "string-width": "^7.2.0",
-    "unified": "^11.0.5",
-    "vfile-matter": "^5.0.0",
-    "yaml": "^2.4.5"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "1.7.0",
-    "@release-it/bumper": "^6.0.1",
-    "@release-it/keep-a-changelog": "^5.0.0",
-    "@sveltejs/package": "^2.0.0",
-    "@sveltejs/vite-plugin-svelte": "^3.0.0",
-    "@types/degit": "^2.8.6",
-    "@types/eslint": "^8.56.0",
-    "@typescript-eslint/eslint-plugin": "^7.0.0",
-    "@typescript-eslint/parser": "^7.0.0",
-    "bun-plugin-dts": "^0.2.3",
-    "eslint": "^8.56.0",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-svelte": "^2.35.1",
-    "nodemon": "^3.1.4",
-    "prettier": "^3.1.1",
-    "prettier-plugin-svelte": "^3.1.2",
-    "publint": "^0.1.9",
-    "quicktype": "^23.0.170",
-    "tslib": "^2.4.1",
-    "typedoc": "^0.25.13",
-    "typescript": "^5.0.0",
-    "wetzel": "^0.2.3"
-  },
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    },
-    "./cli": {
-      "types": "./dist/cli.d.ts",
-      "default": "./dist/cli.js"
-    }
-  },
-  "files": [
-    "dist",
-    "README.md",
-    "logo.png",
-    "wordmark.png",
-    "demo.gif"
-  ],
-  "license": "MIT",
-  "bin": {
-    "graphinx": "./dist/cli.js"
-  },
-  "type": "module",
-  "types": "./dist/index.d.ts",
-  "release-it": {
-    "git": {
-      "commitMessage": "🔖 Release ${version}"
-    },
-    "npm": {
-      "publish": true
-    },
-    "github": {
-      "release": true
-    },
-    "plugins": {
-      "@release-it/bumper": {
-        "out": {
-          "file": "example/package.json",
-          "path": "devDependencies.graphinx",
-          "prefix": "^"
-        }
-      },
-      "@release-it/keep-a-changelog": {
-        "filename": "CHANGELOG.md",
-        "addVersionUrl": true,
-        "addUnreleased": true,
-        "versionUrlFormats": {
-          "repositoryUrl": "https://github.com/graphinx/graphinx"
-        }
-      }
-    }
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/graphinx/graphinx.git"
-  },
-  "bugs": {
-    "url": "https://github.com/graphinx/graphinx/issues"
-  }
+	"name": "graphinx",
+	"version": "0.9.0",
+	"author": {
+		"name": "Ewen Le Bihan",
+		"email": "graphinx@ewen.works",
+		"url": "https://ewen.works"
+	},
+	"scripts": {
+		"check": "biome check --apply .",
+		"format": "biome format --write .",
+		"build-config-types": "yq . < config.schema.yaml > config.schema.json && quicktype --src-lang schema config.schema.json -o src/config.ts && bun run wetzel config.schema.json -l 3 > docs/config.md",
+		"demo-gif": "vhs demo.tape && magick demo.gif -fuzz 45% -transparent '#00FF00' demo-tr.gif && mv demo-tr.gif demo.gif",
+		"readme": "sed '/^<!-- Include docs\\/config.md -->$/r docs/config.md' README.template.md > README.md",
+		"dev": "nodemon --watch README.template.md,config.schema.yaml --exec 'bun run build-config-types && bun run readme'",
+		"build": "bun build ./src/index.ts ./src/cli.ts --target node --outdir ./dist && bun run build:declaration",
+		"release": "bun run build && bun run release-it",
+		"build:declaration": "tsc --project tsconfig.type.json --outdir ./dist",
+		"generate-example-data": ""
+	},
+	"dependencies": {
+		"chalk": "^5.3.0",
+		"cheerio": "^1.0.0-rc.12",
+		"commander": "^12.1.0",
+		"degit": "^2.8.4",
+		"detect-package-manager": "^3.0.2",
+		"execa": "^9.3.0",
+		"glob": "^10.4.3",
+		"graphql": "^16.9.0",
+		"handlebars": "^4.7.8",
+		"linkify-plugin-mention": "^4.1.3",
+		"picomatch": "^4.0.2",
+		"rehype-stringify": "^10.0.0",
+		"remark-frontmatter": "^5.0.0",
+		"remark-parse": "^11.0.0",
+		"remark-rehype": "^11.1.0",
+		"rimraf": "^5.0.8",
+		"string-width": "^7.2.0",
+		"unified": "^11.0.5",
+		"vfile-matter": "^5.0.0",
+		"yaml": "^2.4.5"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "1.7.0",
+		"@release-it/bumper": "^6.0.1",
+		"@release-it/keep-a-changelog": "^5.0.0",
+		"@sveltejs/package": "^2.0.0",
+		"@sveltejs/vite-plugin-svelte": "^3.0.0",
+		"@types/degit": "^2.8.6",
+		"@types/eslint": "^8.56.0",
+		"@types/picomatch": "^2.3.4",
+		"@typescript-eslint/eslint-plugin": "^7.0.0",
+		"@typescript-eslint/parser": "^7.0.0",
+		"bun-plugin-dts": "^0.2.3",
+		"eslint": "^8.56.0",
+		"eslint-config-prettier": "^9.1.0",
+		"eslint-plugin-svelte": "^2.35.1",
+		"nodemon": "^3.1.4",
+		"prettier": "^3.1.1",
+		"prettier-plugin-svelte": "^3.1.2",
+		"publint": "^0.1.9",
+		"quicktype": "^23.0.170",
+		"tslib": "^2.4.1",
+		"tsx": "^4.16.2",
+		"typedoc": "^0.25.13",
+		"typescript": "^5.0.0",
+		"wetzel": "^0.2.3"
+	},
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		},
+		"./cli": {
+			"types": "./dist/cli.d.ts",
+			"default": "./dist/cli.js"
+		}
+	},
+	"files": ["dist", "README.md", "logo.png", "wordmark.png", "demo.gif"],
+	"license": "MIT",
+	"bin": {
+		"graphinx": "./dist/cli.js"
+	},
+	"type": "module",
+	"types": "./dist/index.d.ts",
+	"release-it": {
+		"hooks": {
+			"before:npm:release": "bun run build"
+		},
+		"git": {
+			"commitMessage": "🔖 Release ${version}"
+		},
+		"npm": {
+			"publish": true
+		},
+		"github": {
+			"release": true
+		},
+		"plugins": {
+			"@release-it/bumper": {
+				"out": {
+					"file": "example/package.json",
+					"path": "devDependencies.graphinx",
+					"prefix": "^"
+				}
+			},
+			"@release-it/keep-a-changelog": {
+				"filename": "CHANGELOG.md",
+				"addVersionUrl": true,
+				"addUnreleased": true,
+				"versionUrlFormats": {
+					"repositoryUrl": "https://github.com/graphinx/graphinx"
+				}
+			}
+		}
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/graphinx/graphinx.git"
+	},
+	"bugs": {
+		"url": "https://github.com/graphinx/graphinx/issues"
+	}
 }
