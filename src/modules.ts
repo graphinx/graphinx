@@ -1,10 +1,11 @@
 import { readFile, readdir } from 'node:fs/promises';
+import { existsSync, appendFileSync } from 'node:fs';
 import * as path from 'node:path';
 import * as cheerio from 'cheerio';
 import { glob } from 'glob';
 import type { GraphQLSchema } from 'graphql';
 import type { Module, ModuleItem } from './built-data.js';
-import { b } from './utils.js';
+import { b, runThenLog } from './utils.js';
 import type { Config, SourceCodeModuleMatcher } from './config.js';
 import { getFrontmatter, markdownToHtml } from './markdown.js';
 import { replacePlaceholders } from './placeholders.js';
@@ -13,6 +14,7 @@ import {
 	fieldReturnType,
 	getAllFieldsOfType,
 	getAllTypesInSchema,
+	getReferencesOfType,
 	getRootResolversInSchema,
 } from './schema-utils.js';
 import { shuffle } from './utils.js';
@@ -427,6 +429,11 @@ export async function getAllItems(
 						)) ||
 					undefined,
 			} satisfies ModuleItem;
+			if (item.type === 'type') {
+				item.referencedBy = getReferencesOfType(schema, item.name).map(
+					(t) => t.name,
+				);
+			}
 			return resolveResultType(
 				schema,
 				config,

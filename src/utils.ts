@@ -60,3 +60,12 @@ export function shuffle<T>(array: T[]): T[] {
 }
 
 export const b = (s: NonNullable<unknown>) => chalk.bold(s.toString());
+
+export async function runThenLog<T>(
+	promise: Promise<T>,
+	message: string,
+): Promise<T> {
+	const r = await promise;
+	console.info(message);
+	return r;
+}

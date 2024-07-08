@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - new field `modules.metadata` on built data that exposes arbitrary objects coming from modules' `intro`. Intended to be used for template-specific things (for example, in the default template, the accent color of a module)
 - new field `modules.iconSvg` that contains the module's icon file content as a string (assumes the given icon is a local SVG filepath)
 - new config property modules.filesystem.items.debug, to debug if specific items is are matched by a specific matcher
+- new field `items.referencedBy` that contains the list of items that reference that item.
 
 ### Changed
 

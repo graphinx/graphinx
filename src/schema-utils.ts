@@ -119,3 +119,48 @@ export function fieldReturnType(schema: GraphQLSchema, fieldname: string) {
 	if (!isOutputType(returnType)) return null;
 	return returnType;
 }
+
+/**
+ * Return all schema types that reference the given type.
+ * Note that a type implementing an interface does not count as a reference.
+ */
+export function getReferencesOfType(
+	schema: GraphQLSchema,
+	typename: string,
+): GraphQLNamedType[] {
+	const type = schema.getTypeMap()[typename];
+	const allTypes = getAllTypesInSchema(schema);
+	return allTypes.filter((t) => {
+		if (isScalarType(t)) return false;
+		if (isEnumType(t)) return false;
+		if (isInterfaceType(t)) {
+			return (
+				Object.values(t.getFields()).some((f) => {
+					const fieldType = drillToNamedType(f.type);
+					if (!fieldType) return false;
+					return fieldType.name === type.name;
+				}) ||
+				Object.values(t.getInterfaces()).some(
+					(i) => i.name === type.name,
+				)
+			);
+		}
+		if (isUnionType(t))
+			return t.getTypes().some((i) => i.name === type.name);
+		if (isObjectType(t)) {
+			return Object.values(t.getFields()).some((f) => {
+				const fieldType = drillToNamedType(f.type);
+				if (!fieldType) return false;
+				return fieldType.name === type.name;
+			});
+		}
+		if (isInputObjectType(t)) {
+			return Object.values(t.getFields()).some((f) => {
+				const fieldType = drillToNamedType(f.type);
+				if (!fieldType) return false;
+				return fieldType.name === type.name;
+			});
+		}
+		return false;
+	});
+}

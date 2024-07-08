@@ -27,6 +27,10 @@ export type ModuleItem = {
 		resultType: string;
 		errorTypes: string[];
 	};
+	/**
+	 * Items that reference this item
+	 */
+	referencedBy: string[];
 };
 
 export type Module = {
