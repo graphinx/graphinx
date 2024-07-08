@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0] - 2024-07-08
+
 ### Added
 
 - new field `modules.metadata` on built data that exposes arbitrary objects coming from modules' `intro`. Intended to be used for template-specific things (for example, in the default template, the accent color of a module)
@@ -64,7 +66,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - (No changelog yet)
 
-[Unreleased]: https://github.com/graphinx/graphinx/compare/v0.9.0...HEAD
+[unreleased]: https://github.com/graphinx/graphinx/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/graphinx/graphinx/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/graphinx/graphinx/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/graphinx/graphinx/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/graphinx/graphinx/compare/v0.6.0...v0.7.0
