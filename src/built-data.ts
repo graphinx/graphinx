@@ -43,6 +43,10 @@ export type Module = {
 	contributeURL?: string;
 	sourceCodeURL?: string;
 	items: ModuleItem[];
+	/**
+	 * The module's icon as an SVG string
+	 */
+	iconSvg?: string;
 };
 
 /**

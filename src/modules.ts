@@ -80,6 +80,11 @@ export async function getModule(
 			.filter(itemIsInThisModule);
 	};
 
+	const iconPath = replacePlaceholders(
+		staticallyDefined?.icon ?? config.modules?.filesystem?.icon ?? '',
+		{ module: name },
+	);
+
 	const module: Module = {
 		name,
 		metadata,
@@ -106,21 +111,15 @@ export async function getModule(
 		items: items.filter((r) => r.moduleName === name),
 	};
 
-	if (metadata.manually_include) {
-		for (const query of metadata.manually_include.queries ?? []) {
-			module.queries.push(query);
+	if (iconPath)
+		if (existsSync(path.join(config._dir, iconPath))) {
+			module.iconSvg = await readFile(
+				path.join(config._dir, iconPath),
+				'utf-8',
+			);
+		} else {
+			console.info(`\n⚠️ Module ${b(name)} has no icon at ${b(iconPath)}`);
 		}
-		for (const mutation of metadata.manually_include.mutations ?? []) {
-			module.mutations.push(mutation);
-		}
-		for (const subscription of metadata.manually_include.subscriptions ??
-			[]) {
-			module.subscriptions.push(subscription);
-		}
-		for (const type of metadata.manually_include.types ?? []) {
-			module.types.push(type);
-		}
-	}
 
 	console.info(
 		`\x1b[F\x1b[K\r📦 Finished module ${b(name)}: ${b(
