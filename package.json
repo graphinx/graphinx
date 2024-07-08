@@ -14,7 +14,7 @@
 		"readme": "sed '/^<!-- Include docs\\/config.md -->$/r docs/config.md' README.template.md > README.md",
 		"dev": "nodemon --watch README.template.md,config.schema.yaml --exec 'bun run build-config-types && bun run readme'",
 		"build": "bun build ./src/index.ts ./src/cli.ts --target node --outdir ./dist && bun run build:declaration",
-		"release": "bun run build && bun run release-it",
+		"release": "bun run release-it",
 		"build:declaration": "tsc --project tsconfig.type.json --outdir ./dist",
 		"generate-example-data": ""
 	},
