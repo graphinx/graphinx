@@ -91,7 +91,7 @@
 	"types": "./dist/index.d.ts",
 	"release-it": {
 		"hooks": {
-			"before:npm:release": "bun run build"
+			"before:npm:release": "bun run build && bun run demo-gif"
 		},
 		"git": {
 			"commitMessage": "🔖 Release ${version}"
