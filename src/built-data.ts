@@ -1,4 +1,4 @@
-import type { Config } from './config.js';
+import type { ProcessedConfig } from './modules.js';
 
 export type ModuleItem = {
 	name: string;
@@ -52,6 +52,6 @@ export type BuiltData = {
 	modules: Module[];
 	index: Module;
 	schema: string;
-	config: Config;
+	config: ProcessedConfig;
 	items: ModuleItem[];
 };

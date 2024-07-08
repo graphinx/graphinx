@@ -6,18 +6,21 @@ import {
 	getIntrospectionQuery,
 } from 'graphql';
 import type { Config } from './config.js';
+import * as path from 'node:path';
 
 export async function loadSchema(config: Config): Promise<GraphQLSchema> {
 	if (config.schema.static) {
+		const schemaContent = await readFile(
+			path.join(config._dir, config.schema.static),
+			'utf-8',
+		);
 		if (config.schema.static.endsWith('.json')) {
 			// Consider the schema to be the result of an introspection query
 			// return Convert.toSchema(await readFile(config.schema, "utf-8")).data
-			buildClientSchema(
-				JSON.parse(await readFile(config.schema.static, 'utf-8')),
-			);
+			buildClientSchema(JSON.parse(schemaContent));
 		}
 		// Parse the schema as a GraphQL schema language string
-		return buildSchema(await readFile(config.schema.static, 'utf-8'));
+		return buildSchema(schemaContent);
 	}
 
 	if (!config.schema.introspection) {

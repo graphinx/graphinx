@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - new field `modules.metadata` on built data that exposes arbitrary objects coming from modules' `intro`. Intended to be used for template-specific things (for example, in the default template, the accent color of a module)
 
+### Changed
+
+- paths in the config file are now taken relative to the config file's location, not the current working directory. This makes the use of `--config` not too cumbersome
+
 ## [0.9.0] - 2024-07-07
 
 ### Added

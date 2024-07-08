@@ -35,7 +35,7 @@ function firstSentence(text: string) {
 
 export async function getModule(
 	schema: GraphQLSchema,
-	config: Config,
+	config: ProcessedConfig,
 	items: ModuleItem[],
 	name: string,
 ): Promise<Module> {
@@ -45,9 +45,12 @@ export async function getModule(
 	let docs = staticallyDefined?.intro;
 	if (config.modules?.filesystem) {
 		docs = await readFile(
-			replacePlaceholders(config.modules.filesystem.intro, {
-				module: name,
-			}),
+			path.join(
+				config._dir,
+				replacePlaceholders(config.modules.filesystem.intro, {
+					module: name,
+				}),
+			),
 			'utf-8',
 		);
 	}
@@ -182,7 +185,7 @@ type MatchInfo = {
 };
 
 async function itemIsInModule(
-	config: Config,
+	config: ProcessedConfig,
 	module: string,
 	item: string,
 ): Promise<MatchInfo | null> {
@@ -218,7 +221,7 @@ export async function parseDocumentation(
 	docs: string,
 	resolvers: ModuleItem[],
 	schema: GraphQLSchema,
-	config: Config,
+	config: ProcessedConfig,
 ) {
 	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	const metadata: Record<string, any> = await getFrontmatter(docs);
@@ -243,7 +246,7 @@ export async function parseDocumentation(
 
 export async function getAllModules(
 	schema: GraphQLSchema,
-	config: Config,
+	config: ProcessedConfig,
 	resolvers: ModuleItem[],
 ) {
 	console.info('🏃 Getting all modules...');
@@ -268,7 +271,7 @@ export async function getAllModules(
 		.sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name));
 }
 
-export async function moduleNames(config: Config): Promise<string[]> {
+export async function moduleNames(config: ProcessedConfig): Promise<string[]> {
 	let names: string[] = [];
 	if (!config.modules) return [];
 	if (config.modules.static)
@@ -276,9 +279,11 @@ export async function moduleNames(config: Config): Promise<string[]> {
 	if (config.modules.filesystem?.names?.in)
 		names = [
 			...names,
-			...(await readdir(config.modules.filesystem.names.in)).map((f) =>
-				path.basename(f),
-			),
+			...(
+				await readdir(
+					path.join(config._dir, config.modules.filesystem.names.in),
+				)
+			).map((f) => path.basename(f)),
 		];
 
 	if (config.modules.filesystem?.names?.is) {
@@ -299,7 +304,7 @@ export async function moduleNames(config: Config): Promise<string[]> {
  */
 export async function getAllItems(
 	schema: GraphQLSchema,
-	config: Config,
+	config: ProcessedConfig,
 ): Promise<ModuleItem[]> {
 	const names = await moduleNames(config);
 	const rootResolvers = getRootResolversInSchema(schema);
@@ -436,7 +441,7 @@ export async function getAllItems(
 
 // TODO reuse getModule
 export async function indexModule(
-	config: Config,
+	config: ProcessedConfig,
 	resolvers: ModuleItem[],
 ): Promise<Module> {
 	const schema = await loadSchema(config);

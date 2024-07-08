@@ -20,7 +20,12 @@ import yaml from 'yaml';
 import { version } from '../package.json';
 import type { BuiltData } from './built-data.js';
 import { type Config, Convert } from './config.js';
-import { getAllItems, getAllModules, indexModule } from './modules.js';
+import {
+	getAllItems,
+	getAllModules,
+	indexModule,
+	ProcessedConfig,
+} from './modules.js';
 import { replacePlaceholders } from './placeholders.js';
 import { loadSchema } from './schema-loader.js';
 import { b, transformStrings } from './utils.js';
@@ -144,12 +149,13 @@ async function main() {
 		}
 	}
 
-	const config: Config = {
+	const config: ProcessedConfig = {
 		...transformStrings(restOfConfig, replacePlaceholders),
 		modules: {
 			...modules,
 			index: transformStrings(modules?.index, replacePlaceholders),
 		},
+		_dir: path.dirname(options.config),
 	};
 
 	if (options.generate) {
@@ -290,7 +296,7 @@ async function main() {
  * @param to must be absolute
  * @param config
  */
-async function generateDatafile(to: string, config: Config) {
+async function generateDatafile(to: string, config: ProcessedConfig) {
 	const schema = await loadSchema(config);
 	console.info(
 		`🏷️  Loaded ${b(
