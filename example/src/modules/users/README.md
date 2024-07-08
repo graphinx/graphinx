@@ -1,3 +1,6 @@
+---
+color: blue
+---
 # Users
 
 Les personnes utilisant l'application.

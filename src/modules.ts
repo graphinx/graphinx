@@ -79,6 +79,7 @@ export async function getModule(
 
 	const module: Module = {
 		name,
+		metadata,
 		displayName:
 			staticallyDefined?.title ?? parsedDocs('h1').first().text(),
 		contributeURL:

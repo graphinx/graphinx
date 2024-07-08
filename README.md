@@ -203,7 +203,7 @@ Auto-categorize using your API's source code tree. Every value in here can use %
 |---|---|---|---|
 |**names**|`any`|How to get the modules' names?|No|
 |**order**|`string` `[]`|Order in which to display the modules. If a module is not listed here, it will be displayed at the end. If not specified, the order is alphabetical|No|
-|**intro**|`string`|Path to a markdown file describing the module. The first paragraph will serve as the short description, while the `<h1>`'s content will serve as the module's display name| &#10003; Yes|
+|**intro**|`string`|Path to a markdown file describing the module. The first paragraph will serve as the short description, while the `<h1>`'s content will serve as the module's display name. Additional metadata can be used by templates when put in the file's YAML frontmatter (put three dashes, YAML content, and three dashes at the begnning of the file)| &#10003; Yes|
 |**icon**|`string`|Path or URL to an icon for the module|No|
 |**contribution**|`string`|URL to contribute to the documentation for this module. If omitted, the "contribute" button will not be displayed|No|
 |**source**|`string`|URL to view the source code for this module. If omitted, the "source" button will not be displayed|No|
@@ -227,7 +227,7 @@ Order in which to display the modules. If a module is not listed here, it will b
 
 ##### filesystem_modules.intro
 
-Path to a markdown file describing the module. The first paragraph will serve as the short description, while the `<h1>`'s content will serve as the module's display name
+Path to a markdown file describing the module. The first paragraph will serve as the short description, while the `<h1>`'s content will serve as the module's display name. Additional metadata can be used by templates when put in the file's YAML frontmatter (put three dashes, YAML content, and three dashes at the begnning of the file)
 
 * **Type**: `string`
 * **Required**:  &#10003; Yes

@@ -1,3 +1,6 @@
+---
+color: red
+---
 # Annonces
 
 Annonces effectuées par les administrateur·ice·s de l'application.

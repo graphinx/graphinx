@@ -1,4 +1,5 @@
 ---
+include: [ID, DateTime, Node, PageInfo]
 inline_types_from: [ZodError]
 manually_include:
   queries: [node, nodes]

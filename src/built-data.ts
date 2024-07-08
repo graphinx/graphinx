@@ -35,6 +35,7 @@ export type Module = {
 	rawDocs: string;
 	renderedDocs: string;
 	shortDescription: string;
+	metadata: Record<string, unknown>;
 	queries: string[];
 	mutations: string[];
 	subscriptions: string[];

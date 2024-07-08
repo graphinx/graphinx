@@ -164,7 +164,7 @@
 				},
 				"intro": {
 					"type": "string",
-					"description": "Path to a markdown file describing the module. The first paragraph will serve as the short description, while the `<h1>`'s content will serve as the module's display name"
+					"description": "Path to a markdown file describing the module. The first paragraph will serve as the short description, while the `<h1>`'s content will serve as the module's display name. Additional metadata can be used by templates when put in the file's YAML frontmatter (put three dashes, YAML content, and three dashes at the begnning of the file)"
 				},
 				"icon": {
 					"type": "string",

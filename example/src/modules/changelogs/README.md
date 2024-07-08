@@ -1,3 +1,6 @@
+---
+color: orange
+---
 # Changelogs
 
 L'historique des versions de l'application.

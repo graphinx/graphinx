@@ -1,4 +1,5 @@
 ---
+color: blue
 inline_types_from: [HealthCheck]
 ---
 
