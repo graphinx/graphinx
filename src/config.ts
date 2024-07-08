@@ -133,7 +133,9 @@ export interface MatchModulesWithSourceCode {
 	icon?: string;
 	/**
 	 * Path to a markdown file describing the module. The first paragraph will serve as the
-	 * short description, while the `<h1>`'s content will serve as the module's display name
+	 * short description, while the `<h1>`'s content will serve as the module's display name.
+	 * Additional metadata can be used by templates when put in the file's YAML frontmatter (put
+	 * three dashes, YAML content, and three dashes at the begnning of the file)
 	 */
 	intro: string;
 	/**
@@ -168,6 +170,11 @@ export interface SourceCodeModuleMatcher {
 	 * If the value is not specified, the "contribute" button will not be displayed
 	 */
 	contribution?: string;
+	/**
+	 * Display debug information when this matcher found a match or did not found a match for a
+	 * given list of item names
+	 */
+	debug?: string[];
 	/**
 	 * Glob pattern of file paths to search in
 	 */
@@ -591,6 +598,7 @@ const typeMap: any = {
 	SourceCodeModuleMatcher: o(
 		[
 			{ json: 'contribution', js: 'contribution', typ: u(undefined, '') },
+			{ json: 'debug', js: 'debug', typ: u(undefined, a('')) },
 			{ json: 'files', js: 'files', typ: '' },
 			{ json: 'match', js: 'match', typ: '' },
 			{ json: 'source', js: 'source', typ: u(undefined, '') },

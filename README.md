@@ -542,6 +542,7 @@ Path or URL to the API's logo which will be used on a dark background
 |   |Type|Description|Required|
 |---|---|---|---|
 |**files**|`string`|Glob pattern of file paths to search in| &#10003; Yes|
+|**debug**|`string` `[]`|Display debug information when this matcher found a match or did not found a match for a given list of item names|No|
 |**match**|`string`|Regular expressions that will be tried for every file found in `files`. The regexp must define a named capture group named `name`. A given GraphQL Schema item will be considered as part of that module if a line of any file as specified by `files` matches this regular expression, with the capture group named `name` having as value the GraphQL schema type's name.| &#10003; Yes|
 |**contribution**|`string`|URL to use for the "contribute" button for that item. Available placeholders are:
 
@@ -561,6 +562,13 @@ Glob pattern of file paths to search in
 
 * **Type**: `string`
 * **Required**:  &#10003; Yes
+
+##### filesystem_matcher.debug
+
+Display debug information when this matcher found a match or did not found a match for a given list of item names
+
+* **Type**: `string` `[]`
+* **Required**: No
 
 ##### filesystem_matcher.match
 

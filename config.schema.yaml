@@ -168,6 +168,11 @@ definitions:
       files:
         type: string
         description: Glob pattern of file paths to search in
+      debug:
+        type: array
+        description: Display debug information when this matcher found a match or did not found a match for a given list of item names
+        items:
+          type: string
       match:
         type: string
         description: Regular expressions that will be tried for every file

@@ -11,10 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - new field `modules.metadata` on built data that exposes arbitrary objects coming from modules' `intro`. Intended to be used for template-specific things (for example, in the default template, the accent color of a module)
 - new field `modules.iconSvg` that contains the module's icon file content as a string (assumes the given icon is a local SVG filepath)
+- new config property modules.filesystem.items.debug, to debug if specific items is are matched by a specific matcher
 
 ### Changed
 
 - paths in the config file are now taken relative to the config file's location, not the current working directory. This makes the use of `--config` not too cumbersome
+- huge performance improvements! filesystem matchers are now pre-computed per-module before being run on every item
 
 ### Removed
 

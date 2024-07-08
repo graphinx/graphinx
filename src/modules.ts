@@ -18,6 +18,9 @@ import {
 import { shuffle } from './utils.js';
 import { resolveRelayIntegration } from './relay.js';
 import { resolveResultType } from './result-types.js';
+import picomatch from 'picomatch';
+
+export type ProcessedConfig = Config & { _dir: string };
 
 const BUILTIN_TYPES = ['String', 'Boolean', 'Int', 'Float'];
 
@@ -132,45 +135,6 @@ export async function getModule(
 	return module;
 }
 
-/**
- * Check via a filesystem module matcher if a given item is in a module
- * @param config
- * @param module
- * @param item
- * @returns path to the file that matched first, or null if no match
- */
-async function itemIsInModuleViaFilesystem(
-	config: NonNullable<Config['modules']>['filesystem'],
-	module: string,
-	item: string,
-): Promise<MatchInfo | null> {
-	if (!config) return null;
-
-	// TODO optimization: group matchers per paths to test
-	for (const matcher of config.items) {
-		const { files, match } = matcher;
-		const pattern = new RegExp(
-			replacePlaceholders(match, { module: module }),
-		);
-		const pathsToTest = await glob(
-			replacePlaceholders(files, { module: module }),
-		);
-		for (const path of pathsToTest) {
-			const content = await readFile(path, 'utf-8');
-			const lines = content.split('\n');
-			for (const line of lines) {
-				const match = pattern.exec(line);
-				if (!match) continue;
-				if (match.groups?.name === item) {
-					return { filesystem: { path, matcher } };
-				}
-			}
-		}
-	}
-
-	return null;
-}
-
 const MODULE_MEMBERSHIP_CACHE: Record<
 	string,
 	Record<string, MatchInfo | null>
@@ -183,10 +147,83 @@ type MatchInfo = {
 	};
 };
 
+async function createModuleFilesystemMatcher(
+	config: ProcessedConfig,
+	module: string,
+): Promise<(item: string) => Promise<MatchInfo | null>> {
+	if (!config.modules?.filesystem?.items) return async () => null;
+
+	const matchersPerFilepath = new Map<string, SourceCodeModuleMatcher[]>();
+
+	for (const matcher of config.modules.filesystem.items) {
+		const pathsToTest = await glob(
+			replacePlaceholders(matcher.files, { module: module }),
+			{
+				cwd: config._dir,
+			},
+		);
+
+		for (const filepath of pathsToTest) {
+			matchersPerFilepath.set(filepath, [
+				...(matchersPerFilepath.get(filepath) ?? []),
+				matcher,
+			]);
+		}
+	}
+
+	const conditions = [] as Array<(item: string) => MatchInfo | null>;
+
+	for (const [filepath, matchers] of matchersPerFilepath.entries()) {
+		const content = await readFile(
+			path.join(config._dir, filepath),
+			'utf-8',
+		);
+		const lines = content.split('\n');
+		for (const line of lines) {
+			for (const [i, matcher] of matchers.entries()) {
+				const pattern = new RegExp(
+					replacePlaceholders(matcher.match, { module }),
+				);
+				const match = pattern.exec(line);
+				const shouldDebugPicomatches = (matcher.debug ?? []).map(
+					(expr) => picomatch(expr),
+				);
+				if (!match) continue;
+				conditions.push((item) => {
+					const result =
+						match.groups?.name === item
+							? { filesystem: { path: filepath, matcher } }
+							: null;
+					if (shouldDebugPicomatches.some((pm) => pm(item))) {
+						appendFileSync(
+							'debug.log',
+							`${new Date().toISOString()}\t[matcher #${i}]\t${item}\tin ${module}?\t${
+								result ? 'YES' : 'NO'
+							}\n`,
+						);
+					}
+					return result;
+				});
+			}
+		}
+	}
+
+	return async (item) => {
+		for (const condition of conditions) {
+			const matchinfo = await condition(item);
+			if (matchinfo) return matchinfo;
+		}
+		return null;
+	};
+}
+
 async function itemIsInModule(
 	config: ProcessedConfig,
 	module: string,
 	item: string,
+	filesystemMatcher: Awaited<
+		ReturnType<typeof createModuleFilesystemMatcher>
+	>,
 ): Promise<MatchInfo | null> {
 	if (!process.env.GRAPHINX_NO_CACHE) {
 		if (MODULE_MEMBERSHIP_CACHE[module]?.[item]) {
@@ -199,12 +236,8 @@ async function itemIsInModule(
 		?.items.some((n) => n === item);
 
 	let result: MatchInfo | null = staticallyIncluded ? {} : null;
-	if (!result) {
-		result = await itemIsInModuleViaFilesystem(
-			config.modules?.filesystem,
-			module,
-			item,
-		);
+	if (!result && filesystemMatcher) {
+		result = await filesystemMatcher(item);
 	}
 
 	if (!process.env.GRAPHINX_NO_CACHE)
@@ -324,6 +357,23 @@ export async function getAllItems(
 
 	console.info(`👣 Categorizing ${b(items.length)} items…`);
 
+	const filesystemMatchers = Object.fromEntries(
+		await Promise.all(
+			names.map(async (name) => {
+				const matcher = await createModuleFilesystemMatcher(
+					config,
+					name,
+				);
+				console.info(
+					`\x1b[F\x1b[K\r🚂 Created filesystem matcher for module ${b(
+						name,
+					)}`,
+				);
+				return [name, matcher];
+			}),
+		),
+	);
+
 	const itemsToCategorize = names.flatMap((moduleName) =>
 		items.map((i) => [moduleName, i] as const),
 	);
@@ -331,24 +381,27 @@ export async function getAllItems(
 	// First pass, categorization of relay types and result types is done later
 	console.log(''); // Blank line to make room for the "Categorized" logs
 	let results = await Promise.all(
-		itemsToCategorize.map(async ([moduleName, resolver]) => {
+		itemsToCategorize.map(async ([moduleName, schemaItem]) => {
 			const match = await itemIsInModule(
 				config,
 				moduleName,
-				resolver.name,
+				schemaItem.name,
+				filesystemMatchers[moduleName],
 			);
 			if (!match) {
 				// console.debug(chalk.dim(`   ${resolver.name} is not in ${moduleName}`))
 				return null;
 			}
 			console.info(
-				`\x1b[F\x1b[2K\r📕 Categorized ${resolver.name} into ${moduleName}`,
+				`\x1b[F\x1b[2K\r📕 Categorized ${schemaItem.name} into ${moduleName}`,
 			);
 			const item = {
-				name: resolver.name,
+				name: schemaItem.name,
 				moduleName: path.basename(moduleName),
-				type: 'parentType' in resolver ? resolver.parentType : 'type',
-				returnType: fieldReturnType(schema, resolver.name)?.name,
+				type:
+					'parentType' in schemaItem ? schemaItem.parentType : 'type',
+				returnType: fieldReturnType(schema, schemaItem.name)?.name,
+				referencedBy: [] as string[],
 				sourceCodeURL:
 					(config.modules?.static?.find((m) => m.name === moduleName)
 						?.source ??
@@ -356,7 +409,7 @@ export async function getAllItems(
 							match.filesystem?.matcher.source ?? '',
 							{
 								module: moduleName,
-								name: resolver.name,
+								name: schemaItem.name,
 								path: match.filesystem?.path ?? '',
 							},
 						)) ||
@@ -368,7 +421,7 @@ export async function getAllItems(
 							match.filesystem?.matcher.contribution ?? '',
 							{
 								module: moduleName,
-								name: resolver.name,
+								name: schemaItem.name,
 								path: match.filesystem?.path ?? '',
 							},
 						)) ||
