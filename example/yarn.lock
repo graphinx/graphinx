@@ -459,7 +459,7 @@ __metadata:
   resolution: "example@workspace:."
   dependencies:
     "@types/bun": "npm:latest"
-    graphinx: "file:/home/uwun/projects.local/graphinx/dev-tarballs/graphinx.tgz"
+    graphinx: "npm:0.9.0"
   peerDependencies:
     typescript: ^5.0.0
   languageName: unknown
@@ -584,9 +584,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphinx@file:/home/uwun/projects.local/graphinx/dev-tarballs/graphinx.tgz::locator=example%40workspace%3A.":
-  version: 0.8.0
-  resolution: "graphinx@file:/home/uwun/projects.local/graphinx/dev-tarballs/graphinx.tgz#/home/uwun/projects.local/graphinx/dev-tarballs/graphinx.tgz::hash=aaa0f0&locator=example%40workspace%3A."
+"graphinx@npm:0.9.0":
+  version: 0.9.0
+  resolution: "graphinx@npm:0.9.0"
   dependencies:
     chalk: "npm:^5.3.0"
     cheerio: "npm:^1.0.0-rc.12"
@@ -608,8 +608,8 @@ __metadata:
     vfile-matter: "npm:^5.0.0"
     yaml: "npm:^2.4.5"
   bin:
-    graphinx: ./dist/cli.js
-  checksum: 10c0/eadb6cae93d46c82b1c6cd0e27360666c298da36980edb8f928673b8e3b4cf59bc7b4f836a97b266c97ee1b02b453436740d01b7353c8a62d4ef2c973dd682a3
+    graphinx: dist/cli.js
+  checksum: 10c0/ebc4c66fd7433e85f2df8f9dd5b72b2e2e846838e13e19edc30761d6821d312f8be4162c7e5aeac0c6ed96806904290646e57b004e5a4b6a18dff9d188220a25
   languageName: node
   linkType: hard
 
@@ -846,9 +846,9 @@ __metadata:
   linkType: hard
 
 "lru-cache@npm:^10.2.0":
-  version: 10.3.1
-  resolution: "lru-cache@npm:10.3.1"
-  checksum: 10c0/3cb426a063bf182892ac614c24b9b971fcfe948e2ffe05316f046a6de32bbcedda956e995c0d845971f38894eb861de9b943ce3163549f1202983a9e771555d2
+  version: 10.4.0
+  resolution: "lru-cache@npm:10.4.0"
+  checksum: 10c0/2ea052e95431b50d82ac5d657e0308fed3e58031ec6153a7e019c586fc1255521273b6b14b9598745c869556338d5f31d4059f648ea2475e88df49ea140d9e07
   languageName: node
   linkType: hard
 

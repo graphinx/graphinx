@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=../config.schema.json
 
-template: file://../../graphinx-templates/default
+template: graphinx/templates/default
 
 schema:
   static: ./schema.graphql
@@ -23,11 +23,11 @@ environment:
   CURRENT_COMMIT_SHORT: dev
 
 relay:
-  connection: ^([A-Z]\w+){2,}Connection$
+  connection: ^[A-Z]\w+Connection$
 
 errors:
-  result: ^([A-Z]\w+){2,}Result$
-  success: ^([A-Z]\w+){2,}Success$
+  result: ^[A-Z]\w+Result$
+  success: ^[A-Z]\w+Success$
 
 modules:
   index:
@@ -39,6 +39,10 @@ modules:
     intro: src/modules/%module%/README.md
     icon: src/modules/%module%/icon.svg
     items:
+      - files: src/modules/%module%/README.md
+        match: >-
+          include: \[.*(?<name>.+).*\] 
+        debug: [ID, Node, DateTime]
       - files: src/modules/%module%/**/*.ts
         match: //\s*[gG]raphinx:?\s*(?<name>[^:]+)
       - files: src/modules/%module%/types/*.ts
@@ -47,6 +51,8 @@ modules:
         contribution: https://git.inpt.fr/inp-net/churros/-/blob/main/packages/api/src/modules/%module%/
       - files: src/modules/%module%/types/*.ts
         match: \.\w+Ref<.+>\('(?<name>[^']+)
+      - files: src/modules/%module%/types/*.ts
+        match: \.addScalarType\('(?<name>[^']+)
       - files: src/modules/%module%/{resolvers,types}/*.ts
         match: builder.((query|mutation|subscription)Field|\w+(Type|Node|Object|Interface))\('(?<name>[^']+)'
         contribution: https://git.inpt.fr/inp-net/churros/-/blob/main/src/modules/%module%/
