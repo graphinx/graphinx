@@ -1,14 +1,16 @@
 import { readFile } from 'node:fs/promises';
+import * as path from 'node:path';
 import {
 	type GraphQLSchema,
 	buildClientSchema,
 	buildSchema,
 	getIntrospectionQuery,
 } from 'graphql';
-import type { Config } from './config.js';
-import * as path from 'node:path';
+import type { ProcessedConfig } from './modules.js';
 
-export async function loadSchema(config: Config): Promise<GraphQLSchema> {
+export async function loadSchema(
+	config: ProcessedConfig,
+): Promise<GraphQLSchema> {
 	if (config.schema.static) {
 		const schemaContent = await readFile(
 			path.join(config._dir, config.schema.static),

@@ -16,21 +16,21 @@ import * as detectPackageManager from 'detect-package-manager';
 import { execa } from 'execa';
 import { isNamedType, printSchema } from 'graphql';
 import { rimrafSync } from 'rimraf';
+import wcwidth from 'string-width';
 import yaml from 'yaml';
 import { version } from '../package.json';
 import type { BuiltData } from './built-data.js';
 import { type Config, Convert } from './config.js';
 import {
+	type ProcessedConfig,
 	getAllItems,
 	getAllModules,
 	indexModule,
-	ProcessedConfig,
 } from './modules.js';
 import { replacePlaceholders } from './placeholders.js';
 import { loadSchema } from './schema-loader.js';
-import { b, transformStrings } from './utils.js';
 import { getRootResolversInSchema } from './schema-utils.js';
-import wcwidth from 'string-width';
+import { b, transformStrings } from './utils.js';
 
 function margined(s: string, lines = 1, cols = 2) {
 	const emptyline = `${' '.repeat(wcwidth(s) + 2 * cols)}\n`;

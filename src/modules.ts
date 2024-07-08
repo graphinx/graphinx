@@ -1,14 +1,16 @@
+import { appendFileSync, existsSync } from 'node:fs';
 import { readFile, readdir } from 'node:fs/promises';
-import { existsSync, appendFileSync } from 'node:fs';
 import * as path from 'node:path';
 import * as cheerio from 'cheerio';
 import { glob } from 'glob';
 import type { GraphQLSchema } from 'graphql';
+import picomatch from 'picomatch';
 import type { Module, ModuleItem } from './built-data.js';
-import { b, runThenLog } from './utils.js';
 import type { Config, SourceCodeModuleMatcher } from './config.js';
 import { getFrontmatter, markdownToHtml } from './markdown.js';
 import { replacePlaceholders } from './placeholders.js';
+import { resolveRelayIntegration } from './relay.js';
+import { resolveResultType } from './result-types.js';
 import { loadSchema } from './schema-loader.js';
 import {
 	fieldReturnType,
@@ -17,10 +19,8 @@ import {
 	getReferencesOfType,
 	getRootResolversInSchema,
 } from './schema-utils.js';
+import { b, runThenLog } from './utils.js';
 import { shuffle } from './utils.js';
-import { resolveRelayIntegration } from './relay.js';
-import { resolveResultType } from './result-types.js';
-import picomatch from 'picomatch';
 
 export type ProcessedConfig = Config & { _dir: string };
 
