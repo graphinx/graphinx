@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - paths in the config file are now taken relative to the config file's location, not the current working directory. This makes the use of `--config` not too cumbersome
 
+### Fixed
+
+- a bug where an empty `graphinx-*` folder was created in the current working directory
+
 ## [0.9.0] - 2024-07-07
 
 ### Added

@@ -60,13 +60,12 @@ program
 		DEFAULT_CONFIG_PATH,
 	)
 	.option('--build-area <path>', 'Path to the build area')
-	.option('-k, --keep', 'Keep the build area after building', false)
 	.parse(process.argv);
 
 const options = program.opts();
 
 console.info(`\n${LOGO}`);
-options.buildArea ||= path.join(os.tmpdir(), mkdtempSync('graphinx-'));
+options.buildArea ||= mkdtempSync(path.join(os.tmpdir(), 'graphinx-'));
 
 const INIT_CONFIG_FILE = `# yaml-language-server: $schema=https://raw.githubusercontent.com/graphinx/graphinx/v${version}/config.schema.json
 
@@ -168,9 +167,6 @@ async function main() {
 
 	console.info(`🍲 Building site in ${b(buildAreaDirectory)}`);
 
-	if (!options.keep && existsSync(buildAreaDirectory))
-		rimrafSync(buildAreaDirectory);
-
 	let templateSpecifier = config.template ?? DEFAULT_TEMPLATE;
 	console.info(`🗃️  Using template ${b(templateSpecifier)}`);
 
@@ -179,26 +175,26 @@ async function main() {
 	}
 
 	if (!existsSync(buildAreaDirectory)) {
+		console.info(`📂 Creating build area ${b(buildAreaDirectory)}`);
 		mkdirSync(buildAreaDirectory, { recursive: true });
-		if (templateSpecifier.startsWith('file://')) {
-			const templatePath = templateSpecifier.replace('file://', '');
-			console.info(`⬇️️  Copying template from ${b(templatePath)}`);
-			cpSync(templatePath, buildAreaDirectory, { recursive: true });
-		} else {
-			if (!templateSpecifier.includes('#')) templateSpecifier += '#main';
-			// degit's output is already ANSI-formatted, so we replace their highlight formatting style (just bold) with ours
-			const replaceBold = (s: string) => s;
-			// FIXME ANSI sequence needs to be regex-escaped
-			// s.replaceAll(new RegExp(chalk.bold("(.+)")), b("$1"))
-			const emitter = degit(templateSpecifier);
-			emitter.on('info', (info) => {
-				if ('message' in info)
-					console.info(
-						`🌐 ${replaceBold(uppperFirst(info.message))}`,
-					);
-			});
-			await emitter.clone(buildAreaDirectory);
-		}
+	}
+
+	if (templateSpecifier.startsWith('file://')) {
+		const templatePath = templateSpecifier.replace('file://', '');
+		console.info(`⬇️️  Copying template from ${b(templatePath)}`);
+		cpSync(templatePath, buildAreaDirectory, { recursive: true });
+	} else {
+		if (!templateSpecifier.includes('#')) templateSpecifier += '#main';
+		// degit's output is already ANSI-formatted, so we replace their highlight formatting style (just bold) with ours
+		const replaceBold = (s: string) => s;
+		// FIXME ANSI sequence needs to be regex-escaped
+		// s.replaceAll(new RegExp(chalk.bold("(.+)")), b("$1"))
+		const emitter = degit(templateSpecifier);
+		emitter.on('info', (info) => {
+			if ('message' in info)
+				console.info(`🌐 ${replaceBold(uppperFirst(info.message))}`);
+		});
+		await emitter.clone(buildAreaDirectory);
 	}
 
 	const templateConfig = {
@@ -216,11 +212,7 @@ async function main() {
 		)?.graphinx,
 	};
 
-	let injectionPath = path.join(buildAreaDirectory, 'src/data.generated.ts');
-
-	if (templateConfig.inject) {
-		injectionPath = templateConfig.inject;
-	} else {
+	if (!templateConfig.inject) {
 		console.error(
 			`❌ Provided template is not a valid Graphinx template: missing ${b(
 				'graphinx.inject',
@@ -229,6 +221,7 @@ async function main() {
 		process.exit(1);
 	}
 
+	const injectionPath = path.join(buildAreaDirectory, templateConfig.inject);
 	await generateDatafile(injectionPath, config);
 
 	// Copy over pages from pages directory
@@ -322,6 +315,7 @@ export const data: BuiltData = ${JSON.stringify(builtData, null, 2)};`;
 /** @type {require('graphinx').BuiltData} */
 export const data = ${JSON.stringify(builtData, null, 2)};`;
 
+	console.info(`📝 Writing data file to ${b(to)}`);
 	mkdirSync(path.dirname(to), { recursive: true });
 	writeFileSync(to, isTypescriptFile(to) ? typescriptDecl : jsdocDecl);
 }
