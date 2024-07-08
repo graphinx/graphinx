@@ -3,9 +3,13 @@
 	"private": true,
 	"module": "index.ts",
 	"type": "module",
+	"scripts": {
+		"graphinx": "yarn tsx ../src/cli.ts"
+	},
 	"devDependencies": {
 		"@types/bun": "latest",
-		"graphinx": "0.9.0"
+		"graphinx": "0.9.0",
+		"tsx": "^4.16.2"
 	},
 	"peerDependencies": {
 		"typescript": "^5.0.0"
