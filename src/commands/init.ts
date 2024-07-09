@@ -1,7 +1,7 @@
 import { existsSync, writeFileSync } from 'node:fs';
-import { DEFAULT_CONFIG_PATH, DEFAULT_TEMPLATE } from './defaults.js';
-import { b, packageManagerRunCommand } from '../utils.js';
 import { version } from '../../package.json';
+import { b, packageManagerRunCommand } from '../utils.js';
+import { DEFAULT_CONFIG_PATH, DEFAULT_TEMPLATE } from './defaults.js';
 
 const INIT_CONFIG_FILE = `# yaml-language-server: $schema=https://raw.githubusercontent.com/graphinx/graphinx/v${version}/config.schema.json
 

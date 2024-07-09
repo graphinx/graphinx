@@ -1,21 +1,21 @@
-import type { ProcessedConfig } from '../modules.js';
-import * as SemVer from 'semver';
 import {
-	readFileSync,
+	cpSync,
 	existsSync,
 	mkdirSync,
-	cpSync,
+	readFileSync,
 	writeFileSync,
 } from 'node:fs';
-import * as detectPackageManager from 'detect-package-manager';
-import { DEFAULT_TEMPLATE } from './defaults.js';
 import * as path from 'node:path';
-import { b } from '../utils.js';
-import degit from 'degit';
-import { generateDatafile } from './generate.js';
-import { execa } from 'execa';
-import { version } from '../../package.json';
 import chalk from 'chalk';
+import degit from 'degit';
+import * as detectPackageManager from 'detect-package-manager';
+import { execa } from 'execa';
+import * as SemVer from 'semver';
+import { version } from '../../package.json';
+import type { ProcessedConfig } from '../modules.js';
+import { b } from '../utils.js';
+import { DEFAULT_TEMPLATE } from './defaults.js';
+import { generateDatafile } from './generate.js';
 
 export async function buildSite({
 	buildArea,
