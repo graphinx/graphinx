@@ -79,13 +79,7 @@
 			"default": "./dist/cli.js"
 		}
 	},
-	"files": [
-		"dist",
-		"README.md",
-		"logo.png",
-		"wordmark.png",
-		"demo.gif"
-	],
+	"files": ["dist", "README.md", "logo.png", "wordmark.png", "demo.gif"],
 	"license": "MIT",
 	"bin": {
 		"graphinx": "./dist/cli.js"
@@ -94,7 +88,10 @@
 	"types": "./dist/index.d.ts",
 	"release-it": {
 		"hooks": {
-			"before:npm:release": "bun run build && bun run demo-gif && git add demo.gif"
+			"after:npm:release": [
+				"cd ../graphinx-templates/default && yarn && cd ../markdown && bun install && cd .. && git add . && git commit -m '⬆️ Upgrade Graphinx to ${version}' && git tag v${version} && git push && git push --tags",
+				"bun run build && bun run demo-gif && git add demo.gif"
+			]
 		},
 		"git": {
 			"commitMessage": "🔖 Release ${version}"
@@ -107,11 +104,18 @@
 		},
 		"plugins": {
 			"@release-it/bumper": {
-				"out": {
-					"file": "example/package.json",
-					"path": "devDependencies.graphinx",
-					"prefix": "^"
-				}
+				"out": [
+					{
+						"file": "example/package.json",
+						"path": "devDependencies.graphinx",
+						"prefix": "^"
+					},
+					{
+						"file": "../graphinx-templates/*/package.json",
+						"path": "dependencies.graphinx",
+						"prefix": "^"
+					}
+				]
 			},
 			"@release-it/keep-a-changelog": {
 				"filename": "CHANGELOG.md",
