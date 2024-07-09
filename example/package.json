@@ -8,7 +8,7 @@
 	},
 	"devDependencies": {
 		"@types/bun": "latest",
-		"graphinx": "0.10.0",
+		"graphinx": "0.11.0",
 		"tsx": "^4.16.2"
 	},
 	"peerDependencies": {

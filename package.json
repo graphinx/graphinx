@@ -1,6 +1,6 @@
 {
 	"name": "graphinx",
-	"version": "0.10.0",
+	"version": "0.11.0",
 	"author": {
 		"name": "Ewen Le Bihan",
 		"email": "graphinx@ewen.works",
@@ -79,7 +79,13 @@
 			"default": "./dist/cli.js"
 		}
 	},
-	"files": ["dist", "README.md", "logo.png", "wordmark.png", "demo.gif"],
+	"files": [
+		"dist",
+		"README.md",
+		"logo.png",
+		"wordmark.png",
+		"demo.gif"
+	],
 	"license": "MIT",
 	"bin": {
 		"graphinx": "./dist/cli.js"
