@@ -76,13 +76,7 @@
 			"default": "./dist/cli.js"
 		}
 	},
-	"files": [
-		"dist",
-		"README.md",
-		"logo.png",
-		"wordmark.png",
-		"demo.gif"
-	],
+	"files": ["dist", "README.md", "logo.png", "wordmark.png", "demo.gif"],
 	"license": "MIT",
 	"bin": {
 		"graphinx": "./dist/cli.js"
