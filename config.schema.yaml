@@ -98,6 +98,29 @@ definitions:
         description: List of schema item names that belong in that module
         items:
           type: string
+  filesystem_module_names:
+    title: Module names
+    oneOf:
+      - type: object
+        additionalProperties: false
+        properties:
+          in:
+            type: string
+            description: |
+              Directory to look for modules. The modules' names will be
+              the name of all the sub-directories in this directory
+      - type: object
+        additionalProperties: false
+        properties:
+          is:
+            type: array
+            description: Explicitly list the modules' names
+            items:
+              type: string
+              not:
+                oneOf:
+                  - type: string
+                    pattern: ^index$
   filesystem_modules:
     title: Match modules with source code
     type: object
@@ -111,27 +134,7 @@ definitions:
     properties:
       names:
         description: How to get the modules' names?
-        oneOf:
-          - type: object
-            additionalProperties: false
-            properties:
-              in:
-                type: string
-                description: |
-                  Directory to look for modules. The modules' names will be
-                  the name of all the sub-directories in this directory
-          - type: object
-            additionalProperties: false
-            properties:
-              is:
-                type: array
-                description: Explicitly list the modules' names
-                items:
-                  type: string
-                  not:
-                    oneOf:
-                      - type: string
-                        pattern: ^index$
+        $ref: "#/definitions/filesystem_module_names"
       order:
         type: array
         items:

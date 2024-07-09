@@ -3,6 +3,7 @@
 * [`Modules configuration`](#reference-modules)
     * [`Index module configuration`](#reference-index_module)
     * [`Match modules with source code`](#reference-filesystem_modules)
+        * [`Module names`](#reference-filesystem_module_names)
         * [`Source code module matcher`](#reference-filesystem_matcher)
     * [`Static module configuration`](#reference-static_module)
 * [`Relay`](#reference-relay)
@@ -168,7 +169,7 @@ Auto-categorize using your API's source code tree. Every value in here can use %
 
 |   |Type|Description|Required|
 |---|---|---|---|
-|**names**|`any`|How to get the modules' names?|No|
+|**names**|`filesystem_module_names`||No|
 |**order**|`string` `[]`|Order in which to display the modules. If a module is not listed here, it will be displayed at the end. If not specified, the order is alphabetical|No|
 |**intro**|`string`|Path to a markdown file describing the module. The first paragraph will serve as the short description, while the `<h1>`'s content will serve as the module's display name. Additional metadata can be used by templates when put in the file's YAML frontmatter (put three dashes, YAML content, and three dashes at the begnning of the file)| &#10003; Yes|
 |**icon**|`string`|Path or URL to an icon for the module|No|
@@ -180,9 +181,7 @@ Additional properties are not allowed.
 
 ##### filesystem_modules.names
 
-How to get the modules' names?
-
-* **Type**: `any`
+* **Type**: `filesystem_module_names`
 * **Required**: No
 
 ##### filesystem_modules.order
@@ -230,6 +229,12 @@ How to know that a given schema item (a type, a query, a mutation, etc.) should 
 * **Type**: `filesystem_matcher` `[]`
 * **Required**:  &#10003; Yes
 
+
+
+
+---------------------------------------
+<a name="reference-filesystem_module_names"></a>
+#### Module names
 
 
 
