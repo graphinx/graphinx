@@ -67,6 +67,15 @@ graphinx
 		await buildSite({ buildArea, config, destinationArea: dir });
 	});
 
+graphinx
+	.command('templates')
+	.description('Commands related to template development')
+	.command('init')
+	.description('Initialize interactively a new Graphinx template')
+	.action(() => {
+		//TODO
+	});
+
 async function main() {
 	console.info(`\n${LOGO}`);
 	await graphinx.parseAsync();
