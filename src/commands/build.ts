@@ -59,6 +59,7 @@ export async function buildSite({
 	const templateConfig = {
 		inject: null,
 		pages: null,
+		static: null,
 		dotenv: {
 			path: null,
 			variables: [],
@@ -103,6 +104,26 @@ export async function buildSite({
 		);
 	}
 
+	// Copy over static content
+	if (config.static) {
+		if (!templateConfig.static) {
+			console.error('❌ The template does not support static content');
+			process.exit(1);
+		}
+
+		console.info(
+			`🍱 Copying static content from ${b(config.static)} into ${b(
+				path.join(buildAreaDirectory, templateConfig.static),
+			)}`,
+		);
+		cpSync(
+			config.static,
+			path.join(buildAreaDirectory, templateConfig.static),
+			{
+				recursive: true,
+			},
+		);
+	}
 
 	if (templateConfig.dotenv) {
 		const { variables, path: dotenvPath } = templateConfig.dotenv as {
