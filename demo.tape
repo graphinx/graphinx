@@ -73,4 +73,4 @@ Set Height 800
 Type "cd example" Enter
 Type "yarn graphinx build docs/build" Sleep 500ms  Enter
 
-Sleep 26s
+Sleep 30s
