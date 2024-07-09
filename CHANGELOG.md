@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - support for `static`
+- checks for version mismatches between the installed Graphinx and the template's dependency
 
 ### Changed
 

@@ -1,6 +1,6 @@
 {
   "name": "graphinx",
-  "version": "0.10.0",
+  "version": "0.9.0",
   "author": {
     "name": "Ewen Le Bihan",
     "email": "graphinx@ewen.works",
@@ -50,6 +50,7 @@
     "@types/degit": "^2.8.6",
     "@types/eslint": "^8.56.0",
     "@types/picomatch": "^2.3.4",
+    "@types/semver": "^7.5.8",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
     "bun-plugin-dts": "^0.2.3",
@@ -78,7 +79,13 @@
       "default": "./dist/cli.js"
     }
   },
-  "files": ["dist", "README.md", "logo.png", "wordmark.png", "demo.gif"],
+  "files": [
+    "dist",
+    "README.md",
+    "logo.png",
+    "wordmark.png",
+    "demo.gif"
+  ],
   "license": "MIT",
   "bin": {
     "graphinx": "./dist/cli.js"

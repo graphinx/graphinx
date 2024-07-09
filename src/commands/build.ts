@@ -1,4 +1,5 @@
 import type { ProcessedConfig } from '../modules.js';
+import * as SemVer from 'semver';
 import {
 	readFileSync,
 	existsSync,
@@ -13,6 +14,8 @@ import { b } from '../utils.js';
 import degit from 'degit';
 import { generateDatafile } from './generate.js';
 import { execa } from 'execa';
+import { version } from '../../package.json';
+import chalk from 'chalk';
 
 export async function buildSite({
 	buildArea,
@@ -28,7 +31,8 @@ export async function buildSite({
 
 	console.info(`🍲 Building site in ${b(buildAreaDirectory)}`);
 
-	let templateSpecifier = config.template ?? DEFAULT_TEMPLATE;
+	const verbatimTemplateSpecifier = config.template ?? '';
+	let templateSpecifier = verbatimTemplateSpecifier ?? DEFAULT_TEMPLATE;
 	console.info(`🗃️  Using template ${b(templateSpecifier)}`);
 
 	function uppperFirst(s: string) {
@@ -58,7 +62,37 @@ export async function buildSite({
 		await emitter.clone(buildAreaDirectory);
 	}
 
-	const templateConfig = {
+	const templatePackageJson = JSON.parse(
+		readFileSync(path.join(buildAreaDirectory, 'package.json'), 'utf-8'),
+	);
+
+	if (
+		!('graphinx' in templatePackageJson) ||
+		!('dependencies' in templatePackageJson) ||
+		!('graphinx' in templatePackageJson.dependencies)
+	) {
+		console.error(
+			`❌ Provided template is not a valid Graphinx template: missing ${b(
+				'graphinx',
+			)} or ${b(
+				'dependencies.graphinx',
+			)} fields in package.json (both are required)`,
+		);
+		process.exit(1);
+	}
+
+	let {
+		graphinx: templateConfig,
+		dependencies: { graphinx: templateGraphinxVersionRequirement },
+	} = templatePackageJson;
+
+	checkGraphinxVersionsCompatibility(
+		templateGraphinxVersionRequirement,
+		templateSpecifier,
+		verbatimTemplateSpecifier,
+	);
+
+	templateConfig = {
 		inject: null,
 		pages: null,
 		static: null,
@@ -67,12 +101,7 @@ export async function buildSite({
 			path: null,
 			variables: [],
 		},
-		...JSON.parse(
-			readFileSync(
-				path.join(buildAreaDirectory, 'package.json'),
-				'utf-8',
-			),
-		)?.graphinx,
+		...templateConfig,
 	};
 
 	if (!templateConfig.inject) {
@@ -157,7 +186,7 @@ export async function buildSite({
 		stdio: 'inherit',
 	});
 
-	console.info('\n📦 Building site...\n');
+	console.info(`\n📦 Building site in ${buildAreaDirectory}...\n`);
 
 	await execa(packageManager, ['run', 'build'], {
 		cwd: buildAreaDirectory,
@@ -176,4 +205,124 @@ export async function buildSite({
 	} else {
 		console.info(`\n✅ Site built to ${b(buildAreaDirectory)}`);
 	}
+}
+function checkGraphinxVersionsCompatibility(
+	templateGraphinxVersionRequirement: string,
+	templateSpecifier: string,
+	verbatimTemplateSpecifier: string,
+) {
+	if (SemVer.satisfies(version, templateGraphinxVersionRequirement)) return;
+
+	let pinnedTemplateVersion = null;
+	let bareSpecifier = templateSpecifier;
+	if (templateSpecifier.split('#v').length === 2) {
+		[bareSpecifier, pinnedTemplateVersion] = templateSpecifier.split(
+			'#v',
+		) as [string, string];
+	}
+	console.error(
+		`❌ The template you're using requires Graphinx ${templateGraphinxVersionRequirement}, but you are running ${version}`,
+	);
+	if (SemVer.outside(version, templateGraphinxVersionRequirement, '<')) {
+		const graphinxUpgradeSuggestion = SemVer.minVersion(
+			templateGraphinxVersionRequirement,
+		)?.version;
+		console.error(
+			`   => Consider upgrading Graphinx${
+				graphinxUpgradeSuggestion
+					? ` to ${b(graphinxUpgradeSuggestion)}`
+					: ''
+			}.`,
+		);
+		if (pinnedTemplateVersion) {
+			console.error(
+				'      You can also downgrade the template in your config file:',
+			);
+			console.error();
+			console.error(
+				`        ${chalk.bold.red('-')} template: ${bareSpecifier}${b(
+					`#v${chalk.red(pinnedTemplateVersion)}`,
+				)}`,
+			);
+			console.error(
+				`        ${chalk.bold.green('+')} template: ${bareSpecifier}${b(
+					`#v${chalk.green(version)}`,
+				)}`,
+			);
+			console.error();
+			console.error(
+				chalk.dim(
+					`   (Note that the template may not have this tag, verify by visiting the template's repository)`,
+				),
+			);
+		} else {
+			console.error(
+				`      You should also be able to pin the template version in your config file with ${b(
+					'template: ...#vX.Y.Z',
+				)}:`,
+			);
+			console.error();
+			console.error(
+				`        ${chalk.bold.red(
+					'-',
+				)} template: ${verbatimTemplateSpecifier}`,
+			);
+			console.error(
+				`        ${chalk.bold.green(
+					'+',
+				)} template: ${verbatimTemplateSpecifier.replace(
+					/(#.+)$/,
+					'',
+				)}${b(chalk.green(`#v${version}`))}`,
+			);
+			console.error();
+			console.error(
+				chalk.dim(
+					`   (Note that the template may not have this tag, verify by visiting the template's repository)`,
+				),
+			);
+		}
+	} else {
+		const suggestedVersionPin = version;
+		if (pinnedTemplateVersion) {
+			console.error(
+				`   => Consider changing the pinned version, you current have set ${b(
+					pinnedTemplateVersion,
+				)}:`,
+			);
+			if (suggestedVersionPin) {
+				console.error();
+				console.error(
+					`        ${chalk.bold.red(
+						'-',
+					)} template: ${bareSpecifier}${b(
+						`#v${chalk.red(pinnedTemplateVersion)}`,
+					)}`,
+				);
+				console.error(
+					`        ${chalk.bold.green(
+						'+',
+					)} template: ${bareSpecifier}${b(
+						`#v${chalk.green(suggestedVersionPin)}`,
+					)}`,
+				);
+				console.error();
+				console.error(
+					chalk.dim(
+						`   (Note that the template may not have this tag, verify by visiting the template's repository)`,
+					),
+				);
+			}
+		} else {
+			console.error(
+				`   => Consider pinning the template to a specific version tag with ${b(
+					'template: ...#vX.Y.Z',
+				)} in your config file`,
+			);
+			// console.error(
+			// 	'      Or either downgrade Graphinx, or ask the template author to update their template.',
+			// );
+		}
+	}
+	process.exit(1);
 }
