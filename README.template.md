@@ -32,6 +32,10 @@ A JSON schema is available at <https://raw.githubusercontent.com/graphinx/graphi
 
 <!-- Include docs/config.md -->
 
-## Template authoring
+## Available templates
 
-Docs TBD.
+See [graphinx/templates](https://github.com/graphinx/templates?tab=readme-ov-file#list-of-templates)
+
+## Creating a new template
+
+See [graphinx/templates' contribution guide](https://github.com/graphinx/templates/blob/main/CONTRIBUTING.md)
