@@ -16,9 +16,11 @@ import { execa } from 'execa';
 
 export async function buildSite({
 	buildArea,
+	destinationArea,
 	config,
 }: {
 	buildArea: string;
+	destinationArea: string;
 	config: ProcessedConfig;
 }) {
 	/** Resolved (absolute) path to the build area directory */
@@ -60,6 +62,7 @@ export async function buildSite({
 		inject: null,
 		pages: null,
 		static: null,
+		output: null,
 		dotenv: {
 			path: null,
 			variables: [],
@@ -161,5 +164,16 @@ export async function buildSite({
 		stdio: 'inherit',
 	});
 
-	console.info('\n✅ Site built');
+	if (templateConfig.output) {
+		mkdirSync(path.dirname(destinationArea), { recursive: true });
+		cpSync(
+			path.join(buildAreaDirectory, templateConfig.output),
+			destinationArea,
+			{ recursive: true },
+		);
+
+		console.info(`\n✅ Site built to ${b(destinationArea)}`);
+	} else {
+		console.info(`\n✅ Site built to ${b(buildAreaDirectory)}`);
+	}
 }

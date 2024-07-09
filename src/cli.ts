@@ -51,18 +51,20 @@ graphinx
 	});
 
 graphinx
-	.command('build [directory]')
-	.description(
-		'Build the documentation site inside [directory]. If not specified, use a temporary directory named /tmp/graphinx-xxxx (where xxxx are random characters)',
+	.command('build <directory>')
+	.description('Build the documentation site to <directory>. ')
+	.option(
+		'--build-area',
+		'Directory to build the site in. If not specified, use a temporary directory named /tmp/graphinx-xxxx (where xxxx are random characters)',
 	)
 	.action(async (dir, _, cmd) => {
 		const opts = cmd.optsWithGlobals();
 		const buildArea = path.resolve(
-			dir || mkdtempSync(path.join(os.tmpdir(), 'graphinx-')),
+			opts.buildArea || mkdtempSync(path.join(os.tmpdir(), 'graphinx-')),
 		);
 
 		const config = await processConfig(opts.config);
-		await buildSite({ buildArea, config });
+		await buildSite({ buildArea, config, destinationArea: dir });
 	});
 
 async function main() {
