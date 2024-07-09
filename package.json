@@ -11,7 +11,7 @@
 		"format": "biome format --write .",
 		"build-config-types": "yq . < config.schema.yaml > config.schema.json && quicktype --src-lang schema config.schema.json -o src/config.ts && bun run wetzel config.schema.json -l 3 > docs/config.md",
 		"demo-gif": "vhs demo.tape && magick demo.gif -fuzz 45% -transparent '#00FF00' demo-tr.gif && mv demo-tr.gif demo.gif",
-		"readme": "sed '/^<!-- Include docs\\/config.md -->$/r docs/config.md' README.template.md > README.md",
+		"readme": "sed '/^<!-- Include docs\\/config.md -->$/r docs/config.md' README.template.md > README.md && bun format",
 		"dev": "nodemon --watch README.template.md,config.schema.yaml --exec 'bun run build-config-types && bun run readme'",
 		"build": "bun build ./src/index.ts ./src/cli.ts --target node --outdir ./dist && bun run build:declaration",
 		"release": "bun run release-it",
