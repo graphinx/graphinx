@@ -48,8 +48,10 @@
 2. Initialize a config file
 
    ```bash
-   yarn graphinx --init
+   yarn graphinx init
    ```
+
+3. Follow the instructions given by the CLI ;)
 
 ## Configuration
 
