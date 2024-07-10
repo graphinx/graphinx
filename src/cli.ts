@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 import { mkdtempSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';

@@ -13,7 +13,7 @@
 		"demo-gif": "vhs demo.tape && magick demo.gif -fuzz 45% -transparent '#00FF00' demo-tr.gif && mv demo-tr.gif demo.gif",
 		"readme": "sed '/^<!-- Include docs\\/config.md -->$/r docs/config.md' README.template.md > README.md && bun format",
 		"dev": "nodemon --watch README.template.md,config.schema.yaml --exec 'bun run build-config-types && bun run readme'",
-		"build": "bun build ./src/index.ts ./src/cli.ts --target node --outdir ./dist && bun run build:declaration",
+		"build": "bun build ./src/index.ts ./src/cli.ts --target node --outdir ./dist && sed -i '1i\\#!/usr/bin/env node' dist/cli.js && bun run build:declaration",
 		"release": "bun run release-it",
 		"build:declaration": "tsc --project tsconfig.type.json --outdir ./dist",
 		"devinx": "bun run build && bun add -D . && bun run graphinx"
