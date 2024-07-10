@@ -240,7 +240,7 @@ export interface StaticModuleConfiguration {
 	 */
 	intro: string;
 	/**
-	 * List of schema item names that belong in that module
+	 * List of schema item names that belong in that module. Can be glob patterns.
 	 */
 	items: string[];
 	/**

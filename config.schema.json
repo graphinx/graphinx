@@ -105,7 +105,7 @@
 				},
 				"items": {
 					"type": "array",
-					"description": "List of schema item names that belong in that module",
+					"description": "List of schema item names that belong in that module. Can be glob patterns.",
 					"items": {
 						"type": "string"
 					}

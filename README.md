@@ -649,7 +649,7 @@ URL to view the source code for this item. Available placeholders are the same a
 |**icon**|`string`|Path or URL to an icon for the module|No|
 |**contribution**|`string`|URL to contribute to the documentation of an item. Available placeholders are %module% and %name%, the name of the item. If omitted, the "contribute" button will not be displayed|No|
 |**source**|`string`|URL to view the source code for item. Available placeholders are %module% and %name%. If omitted, the "source" button will not be displayed|No|
-|**items**|`string` `[]`|List of schema item names that belong in that module| &#10003; Yes|
+|**items**|`string` `[]`|List of schema item names that belong in that module. Can be glob patterns.| &#10003; Yes|
 
 Additional properties are not allowed.
 
@@ -700,7 +700,7 @@ URL to view the source code for item. Available placeholders are %module% and %n
 
 ##### static_module.items
 
-List of schema item names that belong in that module
+List of schema item names that belong in that module. Can be glob patterns.
 
 * **Type**: `string` `[]`
 * **Required**:  &#10003; Yes

@@ -147,12 +147,40 @@ type MatchInfo = {
 		path: string;
 		matcher: SourceCodeModuleMatcher;
 	};
+	static?: {
+		matcher: string;
+	};
 };
+
+type Matcher = (item: string) => Promise<MatchInfo | null>;
+
+async function createModuleStaticMatcher(
+	config: ProcessedConfig,
+	module: string,
+): Promise<Matcher> {
+	const moduleConfig = config.modules?.static?.find(
+		({ name }) => name === module,
+	);
+	if (!moduleConfig) return async () => null;
+
+	const matchers = moduleConfig.items.map((i) => [i, picomatch(i)] as const);
+
+	return async (item: string) => {
+		for (const [pattern, match] of matchers) {
+			if (match(item)) {
+				return {
+					static: { matcher: pattern },
+				};
+			}
+		}
+		return null;
+	};
+}
 
 async function createModuleFilesystemMatcher(
 	config: ProcessedConfig,
 	module: string,
-): Promise<(item: string) => Promise<MatchInfo | null>> {
+): Promise<Matcher> {
 	if (!config.modules?.filesystem?.items) return async () => null;
 
 	const matchersPerFilepath = new Map<string, SourceCodeModuleMatcher[]>();
@@ -223,9 +251,7 @@ async function itemIsInModule(
 	config: ProcessedConfig,
 	module: string,
 	item: string,
-	filesystemMatcher: Awaited<
-		ReturnType<typeof createModuleFilesystemMatcher>
-	>,
+	...matchers: Matcher[]
 ): Promise<MatchInfo | null> {
 	if (!process.env.GRAPHINX_NO_CACHE) {
 		if (MODULE_MEMBERSHIP_CACHE[module]?.[item]) {
@@ -233,13 +259,13 @@ async function itemIsInModule(
 		}
 	}
 
-	const staticallyIncluded = config.modules?.static
-		?.find((m) => m.name === module)
-		?.items.some((n) => n === item);
-
-	let result: MatchInfo | null = staticallyIncluded ? {} : null;
-	if (!result && filesystemMatcher) {
-		result = await filesystemMatcher(item);
+	let result: MatchInfo | null = null;
+	for (const matcher of matchers) {
+		const matchResult = await matcher(item);
+		if (matchResult) {
+			result = matchResult;
+			break;
+		}
 	}
 
 	if (!process.env.GRAPHINX_NO_CACHE)
@@ -371,7 +397,21 @@ export async function getAllItems(
 						name,
 					)}`,
 				);
-				return [name, matcher];
+				return [name, matcher] as const;
+			}),
+		),
+	);
+
+	const staticMatchers = Object.fromEntries(
+		await Promise.all(
+			names.map(async (name) => {
+				const matcher = await createModuleStaticMatcher(config, name);
+				console.info(
+					`\x1b[F\x1b[K\r🚂 Created static matcher for module ${b(
+						name,
+					)}`,
+				);
+				return [name, matcher] as const;
 			}),
 		),
 	);
@@ -388,6 +428,7 @@ export async function getAllItems(
 				config,
 				moduleName,
 				schemaItem.name,
+				staticMatchers[moduleName],
 				filesystemMatchers[moduleName],
 			);
 			if (!match) {

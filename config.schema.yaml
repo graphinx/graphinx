@@ -95,7 +95,7 @@ definitions:
         description: URL to view the source code for item. Available placeholders are %module% and %name%. If omitted, the "source" button will not be displayed
       items:
         type: array
-        description: List of schema item names that belong in that module
+        description: List of schema item names that belong in that module. Can be glob patterns.
         items:
           type: string
   filesystem_module_names:
