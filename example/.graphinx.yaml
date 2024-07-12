@@ -21,6 +21,12 @@ environment:
   CURRENT_COMMIT: dev
   CURRENT_VERSION: "0.1.0"
   CURRENT_COMMIT_SHORT: dev
+  AUTH_TYPE: OAuth # available: OAuth (PKCE flow), OpenID, UserPassword, Token, None (default)
+  AUTH_HEADER: Bearer # available: Bearer (for all AUTH_TYPEs), Basic (for UserPassword, takes the base64 of the form `username:password`), plain (for all types, just puts the token as is)
+  OAUTH_AUTHORIZE_URL: https://authorization-server.com/authorize
+  OAUTH_TOKEN_URL: https://authorization-server.com/token
+  OAUTH_CLIENT_ID: 4xDFlLfJifhWDutqEcZiEbHY
+  # No client secret, as we use PKCE. This is a static website, env vars are baked in!
 
 relay:
   connection: ^[A-Z]\w+Connection$
