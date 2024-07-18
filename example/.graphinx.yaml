@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../config.schema.json
+## yaml-language-server: $schema=../config.schema.json
 
 template: graphinx/templates/default
 
@@ -36,63 +36,34 @@ errors:
   success: ^[A-Z]\w+Success$
 
 modules:
-  index:
-    title: Index
-    description: Le schéma GraphQL entier
-  filesystem:
-    names:
-      in: src/modules
-    intro: src/modules/%module%/README.md
-    icon: src/modules/%module%/icon.svg
-    items:
-      - files: src/modules/%module%/README.md
-        match: >-
-          include: \[.*(?<name>.+).*\] 
-        debug: [ID, Node, DateTime]
-      - files: src/modules/%module%/**/*.ts
-        match: //\s*[gG]raphinx:?\s*(?<name>[^:]+)
-      - files: src/modules/%module%/types/*.ts
-        match: >-
-          variant: '(?<name>[^']+)
-        contribution: https://git.inpt.fr/inp-net/churros/-/blob/main/packages/api/src/modules/%module%/
-      - files: src/modules/%module%/types/*.ts
-        match: \.\w+Ref<.+>\('(?<name>[^']+)
-      - files: src/modules/%module%/types/*.ts
-        match: \.addScalarType\('(?<name>[^']+)
-      - files: src/modules/%module%/{resolvers,types}/*.ts
-        match: builder.((query|mutation|subscription)Field|\w+(Type|Node|Object|Interface))\('(?<name>[^']+)'
-        contribution: https://git.inpt.fr/inp-net/churros/-/blob/main/src/modules/%module%/
-      - files: src/modules/%module%/types/*.ts
-        match: >-
-          name: '(?<name>[^']+)'
-        contribution: https://git.inpt.fr/inp-net/churros/-/blob/main/packages/api/src/modules/%module%/
-    order:
-      - global
-      - users
-      - groups
-      - posts
-      - events
-      - ticketing
-      - shop
-      - forms
-      - documents
-      - notifications
-      - services
-      - bar-weeks
-      - student-associations
-      - pages
-      - schools
-      - curriculum
-      - comments
-      - reactions
-      - links
-      - oauth
-      - announcements
-      - payments
-      - gitlab
-      - changelogs
-      - logs
-      - health-checks
+  manifest: src/modules/modules.yaml
+  order:
+    - global
+    - users
+    - groups
+    - posts
+    - events
+    - ticketing
+    - shop
+    - forms
+    - documents
+    - notifications
+    - services
+    - bar-weeks
+    - student-associations
+    - pages
+    - schools
+    - curriculum
+    - comments
+    - reactions
+    - links
+    - oauth
+    - announcements
+    - payments
+    - gitlab
+    - changelogs
+    - logs
+    - health-checks
 
 description: |
   ## Prise en main

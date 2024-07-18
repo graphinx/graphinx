@@ -1,0 +1,36 @@
+# Default module categorization.
+#
+# 1. Define your modules, by giving them a title and a description.
+#    You can optionally provide an icon (by pointing to a SVG file path) and/or a color, which the template might use.
+#
+# 2. Mark schema items (queries, mutations, types and subscriptions) as belonging to a module by specifying "Category: module1" or "Category: Module 1" in the item's GraphQL documentation.
+#    Don't worry, the generated documentation site will omit this line from the rendered documentation.
+#    You can also list out manually items in each module definition, using a string array of item names as the value of the "items" key.
+#
+# There's lots of other ways to categorize items, in particular using regex patterns in source code files.
+# See https://github.com/graphinx/graphinx for more information
+#
+# Note: All paths are relative to this YAML file's location; all regex patterns have the "g" and "m" flags set.
+
+module1:
+  title: Module 1
+  description: My module's description
+
+module2:
+  title: Module 2
+  description: My module's description
+
+
+.generic:
+  # %module% refers to the module's ID, %title% to the module's title and %name% to the item's name
+  # If all your module's icons are stored in a predictable fashion, so you don't have to repeat yourself, for example:
+  # icon: ./module-icons/%module%.svg
+  items:
+    - doc: "^Category: %module%$"
+    - doc: "^Category: %title%$"
+      # you can also categorize with:
+      # - name: (regex pattern): categorize in that module if the item's name matches the given regex pattern. Use %module% and %title% to refer to the module's name and title.
+      # - json: (path to a JSON file): list out all items that belong to that module in a JSON array of strings
+      # - in: search for files in glob pattern `in`, categorize using source-code-specific matchers
+      #      - in: {[ {regex: ... }, ... ]}: matches if the regex pattern matches one of the files we searched in. %name% is the item's name, %module% is the module being checked, %title% is the module's title
+      #      - in: {[ {ast-grep: ... }, ... ]}: matches if the ast-grep rule matches one of the files we searched in. %name% is the item's name, %module% is the module being checked, %title% is the module's title. Learn more about ast-grep rules on the documentation. They are basically more robust than regex patterns since they match on the AST, not the text. Most popular programming languages are supported. Programming language is inferred from the file extension, but can be overriden with the "language" key.

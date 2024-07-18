@@ -58,6 +58,23 @@ definitions:
           example, an authorization header
     required:
       - url
+  module_categorizer:
+    title: Module categorizer
+    type: object
+    additionalProperties: false
+    properties:
+      json: 
+        type: string
+        description: Path to a JSON file mapping module names to schema item names
+      at:
+        type: string
+        description: Glob pattern of file paths to search in. %module% will be replaced with the module being checked
+      regex:
+        type: string
+        description: Pattern to search for in the files. %module% will be replaced with the module being checked, and %name% with the name of the item being checked. %name% will be categorized into %module% if the regex matches
+      pattern:
+        type: string
+        description: Pattern to search for in the files. %module% will be replaced with the module being checked, and %name% with the name of the item being checked. %name% will be categorized into %module% if the pattern matches. It's like regex, but matches plain strings instead of regular expressions.
   static_module:
     title: Static module configuration
     type: object

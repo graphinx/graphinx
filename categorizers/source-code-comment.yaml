@@ -1,0 +1,11 @@
+.generic:
+  # %module% refers to the module's ID, %title% to the module's title and %name% to the item's name
+  # If all your module's icons are stored in a predictable fashion, so you don't have to repeat yourself, for example:
+  # icon: ./module-icons/%module%.svg
+  items:
+    - doc: "^Category: %module%$"
+    - doc: "^Category: %title%$"
+      # you can also categorize with:
+      # - name: (regex pattern): categorize in that module if the item's name matches the given regex pattern. Use %module% and %title% to refer to the module's name and title.
+      # - in & matches: search for files in glob pattern `in`, categorize if some match a regex pattern `matches`. %name% is the item's name, %module% is the module being checked, %title% is the module's title
+      # - json: (path to a JSON file): list out all items that belong to that module in a JSON array of strings
