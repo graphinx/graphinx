@@ -7,6 +7,14 @@ export type MatchInfo = {
 		matcher: string;
 	};
 	fallback?: true;
+	filesystem?: {
+		pattern: string;
+		computed: string;
+		path: string;
+	};
+	schema?: {
+		directive: string;
+	}
 };
 
 export type Matcher = (item: UncategorizedItem) => Promise<MatchInfo | null>;
@@ -29,6 +37,7 @@ export async function createModuleStaticMatcher(
 					static: { matcher: pattern },
 				};
 			}
+
 		}
 		return null;
 	};

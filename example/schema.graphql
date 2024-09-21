@@ -4,17 +4,14 @@ schema {
   subscription: Subscription
 }
 
-directive @rateLimit(
-  limit: Int!
-  duration: String!
-) on FIELD_DEFINITION | OBJECT
-
 directive @graphinx(module: String) on OBJECT | FIELD_DEFINITION | SCALAR | ENUM | UNION | INTERFACE | INPUT_OBJECT
+
+directive @rateLimit(limit: Int!, duration: Int!) on OBJECT | FIELD_DEFINITION
 
 """
 Announcement is a way to get a message accross the entire site, such as for maintenance announcements.
 """
-type Announcement implements Node @graphinx(module: "announcements") {
+type Announcement implements Node {
   body: String!
   bodyHtml: String!
   by: User
@@ -406,7 +403,7 @@ type BarWeek implements Node {
   uid: String! @deprecated(reason: "Use `slug` instead. This field was never universally unique.")
 }
 
-enum BookingState {
+enum BookingState @graphinx(module: "ticketing") {
   """Payée"""
   Paid
   """Non payée et non scannée"""
@@ -439,7 +436,7 @@ enum BooleanConstraint {
 
 scalar BooleanMap
 
-type BuildInfo {
+type BuildInfo @graphinx(module: "global") {
   """Le hash du commit utilisé pour build l'API"""
   commit: String!
   """La version actuelle de l'API (et de l'application)"""
@@ -450,7 +447,7 @@ type BuildInfo {
 scalar Capacity
 
 """A release in the changelog"""
-type ChangelogRelease @graphinx(module: "changelogs") {
+type ChangelogRelease {
   """The changes of the release, grouped by category"""
   changes: ReleaseChangesMaps!
   """The date of the release"""
@@ -548,7 +545,7 @@ enum CredentialType {
 }
 
 """Le dialecte CSV à utiliser"""
-enum CsvDialect {
+enum CsvDialect @graphinx(module: "ticketing") {
   """
   Dialecte CSV pour Excel: séparé par des point-virgules, et toujours guillemeté.
   """
@@ -559,7 +556,7 @@ enum CsvDialect {
   Standard
 }
 
-type DatabaseHealthCheck {
+type DatabaseHealthCheck @graphinx(module: "health-checks") {
   prisma: Boolean!
 }
 
@@ -626,7 +623,7 @@ enum DocumentType {
   Summary
 }
 
-enum DuplicateLinksAction {
+enum DuplicateLinksAction @graphinx(module: "links") {
   """Provoquer une erreur"""
   Error
   """Remplacer l'ancien lien"""
@@ -890,7 +887,7 @@ type FamilyTree {
 scalar File
 
 """Un formulaire"""
-type Form implements Node @graphinx(module: "forms") {
+type Form implements Node {
   """Nombre de réponses au formulaire"""
   answerCount: Int!
   """Réponses au formulaire"""
@@ -1263,7 +1260,7 @@ type GroupEventsConnectionEdge {
   node: Event!
 }
 
-enum GroupJoinPolicy {
+enum GroupJoinPolicy @graphinx(module: "groups") {
   """
   Seul le bureau (et autres ayant les permissions) peut ajouter des membres
   """
@@ -1381,7 +1378,7 @@ enum IssueState {
   Open
 }
 
-type LdapHealthCheck {
+type LdapHealthCheck @graphinx(module: "health-checks") {
   """Whether the LDAP internal client is ready"""
   internal: Boolean!
   """Whether the LDAP school client is ready"""
@@ -1453,7 +1450,7 @@ type LydiaAccount implements Node {
   studentAssociationId: ID
 }
 
-type MailHealthCheck {
+type MailHealthCheck @graphinx(module: "health-checks") {
   """Whether the SMTP client is ready"""
   smtp: Boolean!
 }
@@ -1672,7 +1669,7 @@ type Mutation @rateLimit(limit: 1200, duration: 600) {
     name: String
     shotgun: DateRangeInput!
   ): MutationCreateTicketResult!
-  deleteAnnouncement(id: ID!): Boolean! @graphinx(module: "announcements")
+  deleteAnnouncement(id: ID!): Boolean!
   deleteArticle(id: ID!): Boolean!
   deleteArticlePicture(id: ID!): Boolean!
   deleteBarWeek(id: ID!): Boolean!
@@ -2083,7 +2080,7 @@ type Mutation @rateLimit(limit: 1200, duration: 600) {
   """Met à jour le profil de l'utilisateur"""
   updateUserProfile(profile: UserProfileInput!, uid: UID!): MutationUpdateUserProfileResult!
   uploadDocumentFile(documentId: ID!, file: File!, solution: Boolean!): String!
-  upsertAnnouncement(body: String!, endsAt: DateTime!, id: ID, startsAt: DateTime!, title: String!, warning: Boolean!): MutationUpsertAnnouncementResult! @graphinx(module: "announcements")
+  upsertAnnouncement(body: String!, endsAt: DateTime!, id: ID, startsAt: DateTime!, title: String!, warning: Boolean!): MutationUpsertAnnouncementResult!
   """Crée ou met à jour un post"""
   upsertArticle(body: String!, event: ID, group: UID!, id: ID, publishedAt: DateTime, title: String!, visibility: Visibility!): MutationUpsertArticleResult!
   upsertBarWeek(description: String!, endsAt: DateTime!, groupsUids: [String!]!, id: ID, startsAt: DateTime!): MutationUpsertBarWeekResult!
@@ -2948,7 +2945,7 @@ type ProfitsBreakdown {
   total: Float!
 }
 
-type ProfitsBreakdownByPaymentMethod {
+type ProfitsBreakdownByPaymentMethod @graphinx(module: "payments") {
   Card: Float!
   Cash: Float!
   Check: Float!
@@ -2959,7 +2956,7 @@ type ProfitsBreakdownByPaymentMethod {
   Transfer: Float!
 }
 
-type ProfitsBreakdownByTicket {
+type ProfitsBreakdownByTicket @graphinx(module: "payments") {
   amount: Float!
   id: ID!
 }
@@ -2987,7 +2984,7 @@ type Query @rateLimit(limit: 1200, duration: 60) {
   """
   Récupérer l'ID d'un article à partir de son groupe et de son slug. Pensé pour les redirections d'URLs anciennes.
   """
-  articleID(group: UID!, slug: String!): LocalID @deprecated(reason: "Utilisez `article` à la place")
+  articleID(group: UID!, slug: String!): LocalID @graphinx(module: "posts") @deprecated(reason: "Utilisez `article` à la place")
   """
   Renvoie l'utilisateur·ice connecté·e. Si l'utilisateur·ice n'est pas connecté·e, une erreur est renvoyée. Pour avoir null aulieu d'une erreur, voir `me`.
   """
@@ -3798,7 +3795,7 @@ type Reaction implements Node {
   updatedAt: DateTime!
 }
 
-type RedisHealthCheck {
+type RedisHealthCheck @graphinx(module: "health-checks") {
   """Whether the Redis publisher client is ready"""
   publish: Boolean!
   """Whether the Redis subscriber client is ready"""
@@ -4514,7 +4511,7 @@ Une adresse internet (URL). Les protocoles autorisés sont: http:, https:, mailt
 """
 scalar URL
 
-input UpsertGroupInput {
+input UpsertGroupInput @graphinx(module: "groups") {
   address: String!
   color: String
   description: String!

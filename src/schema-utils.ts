@@ -1,9 +1,11 @@
 import type {
+	FieldDefinitionNode,
 	GraphQLField,
 	GraphQLInputField,
 	GraphQLNamedType,
 	GraphQLSchema,
 	GraphQLType,
+	TypeDefinitionNode,
 } from 'graphql';
 import {
 	isEnumType,
@@ -16,6 +18,7 @@ import {
 	isOutputType,
 	isScalarType,
 	isUnionType,
+	Kind,
 } from 'graphql';
 
 export function getAllTypesInSchema(schema: GraphQLSchema): GraphQLNamedType[] {
@@ -163,4 +166,17 @@ export function getReferencesOfType(
 		}
 		return false;
 	});
+}
+
+export function getDirectiveCallArgument(
+	item: TypeDefinitionNode | FieldDefinitionNode,
+	directive: string,
+	argument: string,
+): string | null {
+	const dir = item.directives?.find((d) => d.name.value === directive);
+	if (!dir) return null;
+	const arg = dir.arguments?.find((a) => a.name.value === argument);
+	if (!arg) return null;
+	if (arg.value.kind !== Kind.STRING) return null;
+	return arg.value.value;
 }

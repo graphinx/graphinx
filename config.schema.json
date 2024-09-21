@@ -185,6 +185,13 @@
           "type": "string",
           "description": "Fallback module name"
         },
+        "filesystem": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Categorize items into modules based on the existence of files.\n\nList of glob patterns to test, with the following tokens: \n\n- `[module]`,\n- `[fieldname]`,\n- `[typename]`,\n- `[parent]`\n\n(note that these (except `[module]`) are casing-insensitive, the following are supported: camelCase, snake_case, kebab-case and PascalCase).\n\n For example, `- src/modules/[module]/resolvers/[parent].[fieldname].ts` will categorize `Query.loggedIn` into \"users\" if `src/modules/users/resolvers/{query,Query}.{logged-in,logged_in,loggedIn,LoggedIn}.ts exists`.\n\n"
+        },
         "mapping": {
           "type": "object",
           "additionalProperties": {

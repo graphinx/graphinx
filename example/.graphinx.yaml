@@ -29,11 +29,22 @@ environment:
   # No client secret, as we use PKCE. This is a static website, env vars are baked in!
 
 modules:
+  docs: src/modules/[module]/README.md
+  icons: src/modules/[module]/icon.svg
   fallback: global
-  mapping:
-    Announcement: announcements
-    Query.upsertAnnouncement: announcements
-    '*.*{f,F}orm*': forms
+  filesystem:
+    - src/modules/[module]/resolvers/[parent].[fieldname].ts
+    - src/modules/[module]/types/[typename].ts
+  mapping: 
+    ID: global
+    Node: global
+    PageInfo: global
+    Error: global
+    ErrorInterface: global
+    ZodFieldError: global
+    NotFoundError: global
+    # FIXME: Graphinx cannot infer when success datatype is String
+    EventBookingsCsv{Result,Success}: ticketing
   order:
     - global
     - users
@@ -44,6 +55,9 @@ modules:
     - shop
     - forms
     - documents
+    - themes
+    - pictures
+    - profiles
     - notifications
     - services
     - bar-weeks

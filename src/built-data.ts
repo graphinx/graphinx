@@ -1,4 +1,5 @@
 import type { ProcessedConfig } from './configuration.js';
+import type { MatchInfo } from './matchers/index.js';
 
 export type UncategorizedItem = {
 	name: string;
@@ -6,6 +7,7 @@ export type UncategorizedItem = {
 	contributeURL?: string;
 	sourceCodeURL?: string;
 	type: 'query' | 'mutation' | 'subscription' | 'type';
+	deprecationReason?: string;
 	/**
 	 * Not set for types
 	 */
@@ -28,12 +30,21 @@ export type UncategorizedItem = {
 		errorTypes: string[];
 	};
 	/**
+	 * the type is an input type specific to a mutation
+	 */
+	inputTypeOf?: {
+		field: string;
+	};
+	/**
 	 * Items that reference this item
 	 */
 	referencedBy: string[];
 };
 
-export type ModuleItem = UncategorizedItem & { moduleName: string };
+export type ModuleItem = UncategorizedItem & {
+	moduleName: string;
+	match: MatchInfo;
+};
 
 export type Module = {
 	name: string;

@@ -1,13 +1,13 @@
 import {
 	type GraphQLInterfaceType,
-	type GraphQLNamedOutputType,
+	type GraphQLNamedType,
 	type GraphQLObjectType,
 	type GraphQLSchema,
 	type GraphQLType,
 	isNamedType,
 	isObjectType,
 	isOutputType,
-	isUnionType,
+	isUnionType
 } from 'graphql';
 import type { UncategorizedItem } from './built-data.js';
 import type { Config } from './configuration.js';
@@ -38,10 +38,10 @@ export function resolveResultType(
 	return resolveResultTypedItem(config, schema, returnType, item);
 }
 
-export function typeIsResultType<
-	T extends GraphQLNamedOutputType,
-	// @ts-expect-error shut up ts
->(config: Config, type: T): type is GraphQLInterfaceType {
+export function typeIsResultType(
+	config: Config,
+	type: GraphQLNamedType,
+): type is GraphQLInterfaceType {
 	if (!config.types.errors?.result) return false;
 	return new RegExp(config.types.errors.result).test(type.name);
 }

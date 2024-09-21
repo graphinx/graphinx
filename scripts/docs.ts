@@ -63,7 +63,7 @@ export function zodSchemaToMarkdown(
 		for (const key in shape) {
 			const subSchema = shape[key];
 			const description = subSchema.description
-				? `: ${subSchema.description}`
+				? `: ${indentMultilineString(`${indent}  `, subSchema.description)}`
 				: '';
 			if (indentLevel === 0) {
 				markdown += `\n## \`${key}\`\n\n${subSchema.description}\n`;
@@ -138,4 +138,11 @@ export function zodSchemaToMarkdown(
 
 function isSimpleString(schema: z.ZodString) {
 	return schema.minLength === null && schema.maxLength === null;
+}
+
+function indentMultilineString(indent: string, text: string): string {
+	return text
+		.split('\n')
+		.map((line) => `${indent}${line}`)
+		.join('\n');
 }
