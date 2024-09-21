@@ -50,8 +50,8 @@ export function resolveResultTypedItem<T extends GraphQLInterfaceType>(
 	config: Config,
 	_schema: GraphQLSchema,
 	type: T,
-	item: ModuleItem,
-): ModuleItem {
+	item: UncategorizedItem,
+): UncategorizedItem {
 	if (!config.types.errors) return item;
 	if (!isUnionType(type)) return item;
 	// get to the success type

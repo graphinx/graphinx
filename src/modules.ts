@@ -1,6 +1,3 @@
-import { existsSync } from 'node:fs';
-import { readFile, readdir } from 'node:fs/promises';
-import * as path from 'node:path';
 import * as cheerio from 'cheerio';
 import {
 	Kind,
@@ -9,18 +6,20 @@ import {
 	type GraphQLNamedType,
 	type GraphQLSchema,
 } from 'graphql';
+import { existsSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
+import * as path from 'node:path';
 import type { Module, ModuleItem, UncategorizedItem } from './built-data.js';
-import type { Config, ProcessedConfig } from './configuration.js';
+import type { ProcessedConfig } from './configuration.js';
 import { getFrontmatter, markdownToHtml } from './markdown.js';
 import {
+	createModuleStaticMatcher,
 	type MatchInfo,
 	type Matcher,
-	createModuleStaticMatcher,
 } from './matchers/index.js';
-import { replacePlaceholders } from './placeholders.js';
+import { createSchemaMatcher } from './matchers/schema.js';
 import { resolveRelayIntegration } from './relay.js';
 import { resolveResultType } from './result-types.js';
-import { loadSchema } from './schema-loader.js';
 import {
 	fieldReturnType,
 	getAllFieldsOfType,
@@ -29,7 +28,6 @@ import {
 	getRootResolversInSchema,
 } from './schema-utils.js';
 import { b, shuffle } from './utils.js';
-import { createSchemaMatcher } from './matchers/schema.js';
 
 const BUILTIN_TYPES = ['String', 'Boolean', 'Int', 'Float'];
 
