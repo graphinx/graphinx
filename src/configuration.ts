@@ -158,6 +158,14 @@ export const configSchema = z
 			})
 			.default({})
 			.describe('Modules configuration'),
+		description: z
+			.string()
+			.optional()
+			.describe("Markdown content for the site's homepage"),
+		footer: z
+			.string()
+			.optional()
+			.describe("Markdown content for the site's footer"),
 	})
 	.describe(
 		'Configuration file for generating documentation sites with Graphinx.',

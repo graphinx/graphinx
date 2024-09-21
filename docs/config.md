@@ -100,5 +100,19 @@ Modules configuration
   - `order`: Order of the modules. Module names that are not listed here will be placed first.
     - Default: []
     - Array of strings
+  - `fallback`: Fallback module name
+    - Optional
   - `mapping`: Map schema items to module names. Useful if you don't want to annotate your schema with @graphinx directives. For example: `{ "Query.version": "global" }`
     - Object of strings
+
+## `description`
+
+Markdown content for the site's homepage
+  - Optional
+  - String
+
+## `footer`
+
+Markdown content for the site's footer
+  - Optional
+  - String
