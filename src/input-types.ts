@@ -1,5 +1,5 @@
 import {
-	GraphQLInputObjectType,
+	type GraphQLInputObjectType,
 	isInputObjectType,
 	type GraphQLSchema,
 } from 'graphql';

@@ -1,6 +1,11 @@
 import { glob } from 'glob';
 import picomatch from 'picomatch';
-import { type Casing, casedToWords, detectCasing, encaseWords } from '../casing.js';
+import {
+	type Casing,
+	casedToWords,
+	detectCasing,
+	encaseWords,
+} from '../casing.js';
 import type { ProcessedConfig } from '../configuration.js';
 import type { Matcher } from './index.js';
 

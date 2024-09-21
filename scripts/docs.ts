@@ -63,7 +63,10 @@ export function zodSchemaToMarkdown(
 		for (const key in shape) {
 			const subSchema = shape[key];
 			const description = subSchema.description
-				? `: ${indentMultilineString(`${indent}  `, subSchema.description)}`
+				? `: ${indentMultilineString(
+						`${indent}  `,
+						subSchema.description,
+					)}`
 				: '';
 			if (indentLevel === 0) {
 				markdown += `\n## \`${key}\`\n\n${subSchema.description}\n`;

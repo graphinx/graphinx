@@ -7,7 +7,7 @@ import {
 	isNamedType,
 	isObjectType,
 	isOutputType,
-	isUnionType
+	isUnionType,
 } from 'graphql';
 import type { UncategorizedItem } from './built-data.js';
 import type { Config } from './configuration.js';
