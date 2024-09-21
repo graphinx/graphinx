@@ -1,15 +1,20 @@
-import * as cheerio from 'cheerio';
-import type { GraphQLSchema } from 'graphql';
 import { existsSync } from 'node:fs';
 import { readFile, readdir } from 'node:fs/promises';
 import * as path from 'node:path';
-import type { Module, ModuleItem } from './built-data.js';
-import type { Config } from './config.js';
+import * as cheerio from 'cheerio';
+import {
+	Kind,
+	type GraphQLField,
+	type GraphQLInputField,
+	type GraphQLNamedType,
+	type GraphQLSchema,
+} from 'graphql';
+import type { Module, ModuleItem, UncategorizedItem } from './built-data.js';
+import type { Config, ProcessedConfig } from './configuration.js';
 import { getFrontmatter, markdownToHtml } from './markdown.js';
 import {
 	type MatchInfo,
 	type Matcher,
-	createModuleFilesystemMatcher,
 	createModuleStaticMatcher,
 } from './matchers/index.js';
 import { replacePlaceholders } from './placeholders.js';
@@ -24,8 +29,7 @@ import {
 	getRootResolversInSchema,
 } from './schema-utils.js';
 import { b, shuffle } from './utils.js';
-
-export type ProcessedConfig = Config & { _dir: string };
+import { createSchemaMatcher } from './matchers/schema.js';
 
 const BUILTIN_TYPES = ['String', 'Boolean', 'Int', 'Float'];
 
@@ -47,21 +51,23 @@ export async function getModule(
 	items: ModuleItem[],
 	name: string,
 ): Promise<Module> {
-	const staticallyDefined = config.modules?.static?.find(
-		(m) => m.name === name,
-	);
-	let docs = staticallyDefined?.intro;
-	if (config.modules?.filesystem) {
-		docs = await readFile(
-			path.join(
-				config._dir,
-				replacePlaceholders(config.modules.filesystem.intro, {
-					module: name,
-				}),
-			),
-			'utf-8',
-		);
-	}
+	const staticallyDefined = undefined;
+	// const staticallyDefined = config.modules?.static?.find(
+	// 	(m) => m.name === name,
+	// );
+	// let docs = staticallyDefined?.intro;
+	const docs = 'Feur';
+	// if (config.modules?.filesystem) {
+	// 	docs = await readFile(
+	// 		path.join(
+	// 			config._dir,
+	// 			replacePlaceholders(config.modules.filesystem.intro, {
+	// 				module: name,
+	// 			}),
+	// 		),
+	// 		'utf-8',
+	// 	);
+	// }
 
 	if (!docs)
 		throw new Error(`⚠️ No documentation found for module ${b(name)}`);
@@ -88,27 +94,28 @@ export async function getModule(
 			.filter(itemIsInThisModule);
 	};
 
-	const iconPath = replacePlaceholders(
-		staticallyDefined?.icon ?? config.modules?.filesystem?.icon ?? '',
-		{ module: name },
-	);
+	const iconPath = '';
+	// const iconPath = replacePlaceholders(
+	// 	staticallyDefined?.icon ?? config.modules?.filesystem?.icon ?? '',
+	// 	{ module: name },
+	// );
 
 	const module: Module = {
 		name,
 		metadata,
-		displayName:
-			staticallyDefined?.title ?? parsedDocs('h1').first().text(),
-		contributeURL:
-			replacePlaceholders(
-				config.modules?.filesystem?.contribution ?? '',
-				{
-					module: name,
-				},
-			) || undefined,
-		sourceCodeURL:
-			replacePlaceholders(config.modules?.filesystem?.source ?? '', {
-				module: name,
-			}) || undefined,
+		displayName: 'Feur',
+		// staticallyDefined?.title ?? parsedDocs('h1').first().text(),
+		// contributeURL:
+		// 	replacePlaceholders(
+		// 		config.modules?.filesystem?.contribution ?? '',
+		// 		{
+		// 			module: name,
+		// 		},
+		// 	) || undefined,
+		// sourceCodeURL:
+		// 	replacePlaceholders(config.modules?.filesystem?.source ?? '', {
+		// 		module: name,
+		// 	}) || undefined,
 		...documentation,
 		types: getAllTypesInSchema(schema)
 			.map((t) => t.name)
@@ -148,12 +155,12 @@ const MODULE_MEMBERSHIP_CACHE: Record<
 async function itemIsInModule(
 	config: ProcessedConfig,
 	module: string,
-	item: string,
+	item: UncategorizedItem,
 	...matchers: Matcher[]
 ): Promise<MatchInfo | null> {
 	if (!process.env.GRAPHINX_NO_CACHE) {
-		if (MODULE_MEMBERSHIP_CACHE[module]?.[item]) {
-			return MODULE_MEMBERSHIP_CACHE[module][item];
+		if (MODULE_MEMBERSHIP_CACHE[module]?.[item.name]) {
+			return MODULE_MEMBERSHIP_CACHE[module][item.name];
 		}
 	}
 
@@ -166,10 +173,19 @@ async function itemIsInModule(
 		}
 	}
 
+	if (
+		!result &&
+		config.modules.fallback &&
+		module === config.modules.fallback
+	)
+		return {
+			fallback: true,
+		};
+
 	if (!process.env.GRAPHINX_NO_CACHE)
 		MODULE_MEMBERSHIP_CACHE[module] = {
 			...MODULE_MEMBERSHIP_CACHE[module],
-			[item]: result,
+			[item.name]: result,
 		};
 
 	return result;
@@ -208,12 +224,8 @@ export async function getAllModules(
 	resolvers: ModuleItem[],
 ) {
 	console.info('🏃 Getting all modules...');
-	const order =
-		config.modules?.filesystem?.order ??
-		config.modules?.static?.map((m) => m.name) ??
-		[];
-	console.info(`📚 Module names order was resolved to ${order}`);
-	const allModuleNames = await moduleNames(config);
+	const order = config.modules.order;
+	const allModuleNames = await moduleNames(schema, config);
 	return (
 		await Promise.all(
 			allModuleNames.map(async (folder) =>
@@ -229,28 +241,43 @@ export async function getAllModules(
 		.sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name));
 }
 
-export async function moduleNames(config: ProcessedConfig): Promise<string[]> {
+export async function moduleNames(
+	schema: GraphQLSchema,
+	config: ProcessedConfig,
+): Promise<string[]> {
 	let names: string[] = [];
-	if (!config.modules) return [];
-	if (config.modules.static)
-		names = config.modules.static?.map((m) => m.name);
-	if (config.modules.filesystem?.names?.in)
-		names = [
-			...names,
-			...(
-				await readdir(
-					path.join(config._dir, config.modules.filesystem.names.in),
-				)
-			).map((f) => path.basename(f)),
-		];
+	names = [...Object.values(config.modules.mapping)];
+	if (config.modules.fallback) names.push(config.modules.fallback);
 
-	if (config.modules.filesystem?.names?.is) {
-		names = [...names, ...config.modules.filesystem.names.is];
+	// Get all @graphinx directive calls in schema, and add their value of the module argument to the list of modules
+	let items: Array<
+		GraphQLNamedType | GraphQLField<unknown, unknown> | GraphQLInputField
+	> = [...getAllTypesInSchema(schema)];
+	const queryType = schema.getQueryType();
+	const mutationType = schema.getMutationType();
+	const subscriptionType = schema.getSubscriptionType();
+	if (queryType)
+		items = [...items, ...getAllFieldsOfType(schema, queryType.name)];
+	if (mutationType)
+		items = [...items, ...getAllFieldsOfType(schema, mutationType.name)];
+	if (subscriptionType)
+		items = [
+			...items,
+			...getAllFieldsOfType(schema, subscriptionType.name),
+		];
+	for (const item of items) {
+		const moduleNameNode = item.astNode?.directives
+			?.find((d) => d.name.value === 'graphinx')
+			?.arguments?.find((a) => a.name.value === 'module')?.value;
+		if (moduleNameNode && moduleNameNode.kind === Kind.STRING)
+			names.push(moduleNameNode.value);
 	}
+
+	names = [...new Set(names)];
 
 	console.info(`🔍 Found modules: ${names.join(', ')}`);
 
-	return [...new Set(names)];
+	return names;
 }
 
 /**
@@ -264,7 +291,7 @@ export async function getAllItems(
 	schema: GraphQLSchema,
 	config: ProcessedConfig,
 ): Promise<ModuleItem[]> {
-	const names = await moduleNames(config);
+	const names = await moduleNames(schema, config);
 	const rootResolvers = getRootResolversInSchema(schema);
 	const rootTypes = getAllTypesInSchema(schema);
 	let items = [...rootResolvers, ...rootTypes];
@@ -281,24 +308,53 @@ export async function getAllItems(
 		);
 	}
 
-	console.info(`👣 Categorizing ${b(items.length)} items…`);
+	const analyzedItems: UncategorizedItem[] = items.map((schemaItem) => {
+		let item = {
+			name: schemaItem.name,
+			id:
+				'parentType' in schemaItem
+					? `${
+							{
+								query: 'Query',
+								mutation: 'Mutation',
+								subscription: 'Subscription',
+							}[schemaItem.parentType]
+						}.${schemaItem.name}`
+					: schemaItem.name,
+			type: 'parentType' in schemaItem ? schemaItem.parentType : 'type',
+			returnType: fieldReturnType(schema, schemaItem.name)?.name,
+			referencedBy: [] as string[],
+			// sourceCodeURL:
+			// 	(config.modules?.static?.find((m) => m.name === moduleName)
+			// 		?.source ??
+			// 		replacePlaceholders(
+			// 			match.filesystem?.matcher.source ?? '',
+			// 			{
+			// 				module: moduleName,
+			// 				name: schemaItem.name,
+			// 				path: match.filesystem?.path ?? '',
+			// 			},
+			// 		)) ||
+			// 	undefined,
+			// contributeURL:
+			// 	(config.modules?.mapping?.find((m) => m.name === moduleName)
+			// 		?.contribution ??
+			// 		replacePlaceholders(
+			// 			match.filesystem?.matcher.contribution ?? '',
+			// 			{
+			// 				module: moduleName,
+			// 				name: schemaItem.name,
+			// 				path: match.filesystem?.path ?? '',
+			// 			},
+			// 		)) ||
+			// 	undefined,
+		} as UncategorizedItem;
+		item = resolveRelayIntegration(schema, config, item);
+		item = resolveResultType(schema, config, item);
+		return item;
+	});
 
-	const filesystemMatchers = Object.fromEntries(
-		await Promise.all(
-			names.map(async (name) => {
-				const matcher = await createModuleFilesystemMatcher(
-					config,
-					name,
-				);
-				console.info(
-					`\x1b[F\x1b[K\r🚂 Created filesystem matcher for module ${b(
-						name,
-					)}`,
-				);
-				return [name, matcher] as const;
-			}),
-		),
-	);
+	console.info(`👣 Categorizing ${b(items.length)} items…`);
 
 	const staticMatchers = Object.fromEntries(
 		await Promise.all(
@@ -314,8 +370,22 @@ export async function getAllItems(
 		),
 	);
 
+	const schemaMatchers = Object.fromEntries(
+		await Promise.all(
+			names.map(async (name) => {
+				const matcher = await createSchemaMatcher(schema, config, name);
+				console.info(
+					`\x1b[F\x1b[K\r🚂 Created schema matcher for module ${b(
+						name,
+					)}`,
+				);
+				return [name, matcher] as const;
+			}),
+		),
+	);
+
 	const itemsToCategorize = names.flatMap((moduleName) =>
-		items.map((i) => [moduleName, i] as const),
+		analyzedItems.map((i) => [moduleName, i] as const),
 	);
 
 	// First pass, categorization of relay types and result types is done later
@@ -325,9 +395,9 @@ export async function getAllItems(
 			const match = await itemIsInModule(
 				config,
 				moduleName,
-				schemaItem.name,
+				schemaItem,
 				staticMatchers[moduleName],
-				filesystemMatchers[moduleName],
+				schemaMatchers[moduleName],
 			);
 			if (!match) {
 				// console.debug(chalk.dim(`   ${resolver.name} is not in ${moduleName}`))
@@ -336,48 +406,13 @@ export async function getAllItems(
 			console.info(
 				`\x1b[F\x1b[2K\r📕 Categorized ${schemaItem.name} into ${moduleName}`,
 			);
-			const item = {
-				name: schemaItem.name,
-				moduleName: path.basename(moduleName),
-				type:
-					'parentType' in schemaItem ? schemaItem.parentType : 'type',
-				returnType: fieldReturnType(schema, schemaItem.name)?.name,
-				referencedBy: [] as string[],
-				sourceCodeURL:
-					(config.modules?.static?.find((m) => m.name === moduleName)
-						?.source ??
-						replacePlaceholders(
-							match.filesystem?.matcher.source ?? '',
-							{
-								module: moduleName,
-								name: schemaItem.name,
-								path: match.filesystem?.path ?? '',
-							},
-						)) ||
-					undefined,
-				contributeURL:
-					(config.modules?.static?.find((m) => m.name === moduleName)
-						?.contribution ??
-						replacePlaceholders(
-							match.filesystem?.matcher.contribution ?? '',
-							{
-								module: moduleName,
-								name: schemaItem.name,
-								path: match.filesystem?.path ?? '',
-							},
-						)) ||
-					undefined,
-			} satisfies ModuleItem;
+			const item = { ...schemaItem, moduleName } satisfies ModuleItem;
 			if (item.type === 'type') {
 				item.referencedBy = getReferencesOfType(schema, item.name).map(
 					(t) => t.name,
 				);
 			}
-			return resolveResultType(
-				schema,
-				config,
-				resolveRelayIntegration(schema, config, item),
-			);
+			return item;
 		}),
 	);
 
@@ -426,66 +461,73 @@ export async function getAllItems(
 	});
 
 	if (uncategorized.length > 0) {
+		const truncated = (max: number, arr: string[]) => {
+			if (arr.length > 10) {
+				return arr.slice(0, max).concat(`… ${arr.length - max} more`);
+			}
+			return arr;
+		};
 		console.warn(
 			`⚠️ The following ${b(
 				uncategorized.length,
-			)} items were left uncategorized: \n  - ${uncategorized
-				.map((r) => r.name)
-				.join('\n  - ')}`,
+			)} items were left uncategorized: \n  - ${truncated(
+				5,
+				uncategorized.map((r) => r.name),
+			).join('\n  - ')}`,
 		);
 	}
 	return results.filter((r) => r !== null);
 }
 
-// TODO reuse getModule
-export async function indexModule(
-	config: ProcessedConfig,
-	resolvers: ModuleItem[],
-): Promise<Module> {
-	const schema = await loadSchema(config);
-	const { description, title } =
-		typeof config.modules?.index === 'object'
-			? {
-					description:
-						config.modules.index.description ??
-						'The entire GraphQL schema',
-					title: config.modules.index.title ?? 'Index',
-				}
-			: { description: 'The entire GraphQL schema', title: 'Index' };
+// // TODO reuse getModule
+// export async function indexModule(
+// 	config: ProcessedConfig,
+// 	resolvers: ModuleItem[],
+// ): Promise<Module> {
+// 	const schema = await loadSchema(config);
+// 	const { description, title } =
+// 		typeof config.modules?.index === 'object'
+// 			? {
+// 					description:
+// 						config.modules.index.description ??
+// 						'The entire GraphQL schema',
+// 					title: config.modules.index.title ?? 'Index',
+// 				}
+// 			: { description: 'The entire GraphQL schema', title: 'Index' };
 
-	const { renderedDocs, shortDescription, rawDocs } =
-		await parseDocumentation(description, resolvers, schema, config);
+// 	const { renderedDocs, shortDescription, rawDocs } =
+// 		await parseDocumentation(description, resolvers, schema, config);
 
-	return {
-		displayName: title,
-		rawDocs,
-		renderedDocs,
-		shortDescription,
-		name: 'index',
-		mutations: getAllFieldsOfType(
-			schema,
-			schema.getMutationType()?.name,
-		).map(({ name }) => name),
-		queries: getAllFieldsOfType(schema, schema.getQueryType()?.name).map(
-			({ name }) => name,
-		),
-		subscriptions: getAllFieldsOfType(
-			schema,
-			schema.getSubscriptionType()?.name,
-		).map(({ name }) => name),
-		types: getAllTypesInSchema(schema)
-			.map((t) => t.name)
-			.filter(
-				(n) =>
-					![
-						schema.getQueryType()?.name ?? '',
-						schema.getMutationType()?.name ?? '',
-						schema.getSubscriptionType()?.name ?? '',
-					].includes(n) &&
-					!BUILTIN_TYPES.includes(n) /* &&
-					!/(Connection|Edge|Success)$/.test(n) */ &&
-					!n.startsWith('__') /* &&
-					!/^(Query|Mutation|Subscription)\w+(Result|Success)$/.test(n) */,
-			),
-	} as Module;
-}
+// 	return {
+// 		displayName: title,
+// 		rawDocs,
+// 		renderedDocs,
+// 		shortDescription,
+// 		name: 'index',
+// 		mutations: getAllFieldsOfType(
+// 			schema,
+// 			schema.getMutationType()?.name,
+// 		).map(({ name }) => name),
+// 		queries: getAllFieldsOfType(schema, schema.getQueryType()?.name).map(
+// 			({ name }) => name,
+// 		),
+// 		subscriptions: getAllFieldsOfType(
+// 			schema,
+// 			schema.getSubscriptionType()?.name,
+// 		).map(({ name }) => name),
+// 		types: getAllTypesInSchema(schema)
+// 			.map((t) => t.name)
+// 			.filter(
+// 				(n) =>
+// 					![
+// 						schema.getQueryType()?.name ?? '',
+// 						schema.getMutationType()?.name ?? '',
+// 						schema.getSubscriptionType()?.name ?? '',
+// 					].includes(n) &&
+// 					!BUILTIN_TYPES.includes(n) /* &&
+// 					!/(Connection|Edge|Success)$/.test(n) */ &&
+// 					!n.startsWith('__') /* &&
+// 					!/^(Query|Mutation|Subscription)\w+(Result|Success)$/.test(n) */,
+// 			),
+// 	} as Module;
+// }

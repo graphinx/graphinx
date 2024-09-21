@@ -1,18 +1,28 @@
-"""
-Indicates exactly one field must be supplied and this field must not be `null`.
-"""
-directive @oneOf on INPUT_OBJECT
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}
+
+directive @rateLimit(
+  limit: Int!
+  duration: String!
+) on FIELD_DEFINITION | OBJECT
+
+directive @graphinx(module: String) on OBJECT | FIELD_DEFINITION | SCALAR | ENUM | UNION | INTERFACE | INPUT_OBJECT
 
 """
 Announcement is a way to get a message accross the entire site, such as for maintenance announcements.
 """
-type Announcement implements Node {
+type Announcement implements Node @graphinx(module: "announcements") {
   body: String!
   bodyHtml: String!
   by: User
   createdAt: DateTime!
   endsAt: DateTime!
   id: ID!
+  """L'identifiant local de la ressource (sans préfixe)"""
+  localID: LocalID!
   startsAt: DateTime!
   title: String!
   updatedAt: DateTime!
@@ -25,27 +35,20 @@ Une réponse à un formulaire. Les réponses peuvent être de plusieurs types di
 """
 interface Answer {
   answerString: String!
-
   """Réservation associée à la réponse"""
   booking: Registration
   checkboxIsMarked: Boolean
-
   """Date de création de la réponse"""
   createdAt: DateTime!
-
   """Utilisateur ayant répondu à la question"""
   createdBy: User
-
   """Formulaire auquel appartient la question"""
   form: Form!
-
   """Préfixe de l'identifiant: `answer:`"""
   id: ID!
   question: Question!
-
   """Section du formulaire auquel appartient la question"""
   section: FormSection!
-
   """Date de dernière mise à jour de la réponse"""
   updatedAt: DateTime!
 }
@@ -53,35 +56,25 @@ interface Answer {
 """Réponse de type `Date` (voir [`QuestionKind`](#QuestionKind))"""
 type AnswerDate implements Answer {
   answerString: String!
-
   """Réservation associée à la réponse"""
   booking: Registration
   checkboxIsMarked: Boolean
-
   """Date de création de la réponse"""
   createdAt: DateTime!
-
   """Utilisateur ayant répondu à la question"""
   createdBy: User
-
   """Formulaire auquel appartient la question"""
   form: Form!
-
   """Préfixe de l'identifiant: `answer:`"""
   id: ID!
-
   """Question à laquelle la réponse est associée"""
   question: QuestionScalar!
-
   """Réponse donnée, brute (sous forme de texte)"""
   rawValue: String
-
   """Section du formulaire auquel appartient la question"""
   section: FormSection!
-
   """Date de dernière mise à jour de la réponse"""
   updatedAt: DateTime!
-
   """Réponse donnée"""
   value: DateTime
 }
@@ -89,32 +82,23 @@ type AnswerDate implements Answer {
 """Réponse de type `FileUpload` (voir [`QuestionKind`](#QuestionKind))"""
 type AnswerFileUpload implements Answer {
   answerString: String!
-
   """Réservation associée à la réponse"""
   booking: Registration
   checkboxIsMarked: Boolean
-
   """Date de création de la réponse"""
   createdAt: DateTime!
-
   """Utilisateur ayant répondu à la question"""
   createdBy: User
-
   """Formulaire auquel appartient la question"""
   form: Form!
-
   """Préfixe de l'identifiant: `answer:`"""
   id: ID!
-
   """Question à laquelle la réponse est associée"""
   question: QuestionFileUpload!
-
   """Section du formulaire auquel appartient la question"""
   section: FormSection!
-
   """Date de dernière mise à jour de la réponse"""
   updatedAt: DateTime!
-
   """Réponse donnée"""
   value: String
 }
@@ -131,7 +115,6 @@ input AnswerInput {
         
   """
   answer: [String!]!
-
   """ID de la question à laquelle répondre"""
   question: ID!
 }
@@ -139,32 +122,23 @@ input AnswerInput {
 """Réponse de type `LongText` (voir [`QuestionKind`](#QuestionKind))"""
 type AnswerLongText implements Answer {
   answerString: String!
-
   """Réservation associée à la réponse"""
   booking: Registration
   checkboxIsMarked: Boolean
-
   """Date de création de la réponse"""
   createdAt: DateTime!
-
   """Utilisateur ayant répondu à la question"""
   createdBy: User
-
   """Formulaire auquel appartient la question"""
   form: Form!
-
   """Préfixe de l'identifiant: `answer:`"""
   id: ID!
-
   """Question à laquelle la réponse est associée"""
   question: QuestionScalar!
-
   """Section du formulaire auquel appartient la question"""
   section: FormSection!
-
   """Date de dernière mise à jour de la réponse"""
   updatedAt: DateTime!
-
   """Réponse donnée"""
   value: String
 }
@@ -172,32 +146,23 @@ type AnswerLongText implements Answer {
 """Réponse de type `Number` (voir [`QuestionKind`](#QuestionKind))"""
 type AnswerNumber implements Answer {
   answerString: String!
-
   """Réservation associée à la réponse"""
   booking: Registration
   checkboxIsMarked: Boolean
-
   """Date de création de la réponse"""
   createdAt: DateTime!
-
   """Utilisateur ayant répondu à la question"""
   createdBy: User
-
   """Formulaire auquel appartient la question"""
   form: Form!
-
   """Préfixe de l'identifiant: `answer:`"""
   id: ID!
-
   """Question à laquelle la réponse est associée"""
   question: QuestionScalar!
-
   """Section du formulaire auquel appartient la question"""
   section: FormSection!
-
   """Date de dernière mise à jour de la réponse"""
   updatedAt: DateTime!
-
   """Réponse donnée"""
   value: Float
 }
@@ -205,35 +170,25 @@ type AnswerNumber implements Answer {
 """Réponse de type `Scale` (voir [`QuestionKind`](#QuestionKind))"""
 type AnswerScale implements Answer {
   answerString: String!
-
   """Réservation associée à la réponse"""
   booking: Registration
   checkboxIsMarked: Boolean
-
   """Date de création de la réponse"""
   createdAt: DateTime!
-
   """Utilisateur ayant répondu à la question"""
   createdBy: User
-
   """Formulaire auquel appartient la question"""
   form: Form!
-
   """Préfixe de l'identifiant: `answer:`"""
   id: ID!
-
   """Réponse donnée, entre 0 et 1"""
   normalizedValue: Float
-
   """Question à laquelle la réponse est associée"""
   question: QuestionScale!
-
   """Section du formulaire auquel appartient la question"""
   section: FormSection!
-
   """Date de dernière mise à jour de la réponse"""
   updatedAt: DateTime!
-
   """Réponse donnée"""
   value: Int
 }
@@ -250,32 +205,23 @@ Réponse de type `SelectMultiple` (voir [`QuestionKind`](#QuestionKind))
 """
 type AnswerSelectMultiple implements Answer {
   answerString: String!
-
   """Réservation associée à la réponse"""
   booking: Registration
   checkboxIsMarked: Boolean
-
   """Date de création de la réponse"""
   createdAt: DateTime!
-
   """Utilisateur ayant répondu à la question"""
   createdBy: User
-
   """Formulaire auquel appartient la question"""
   form: Form!
-
   """Préfixe de l'identifiant: `answer:`"""
   id: ID!
-
   """Question à laquelle la réponse est associée"""
   question: QuestionSelectMultiple!
-
   """Section du formulaire auquel appartient la question"""
   section: FormSection!
-
   """Date de dernière mise à jour de la réponse"""
   updatedAt: DateTime!
-
   """Réponse donnée"""
   value: [String!]
 }
@@ -283,32 +229,23 @@ type AnswerSelectMultiple implements Answer {
 """Réponse de type `SelectOne` (voir [`QuestionKind`](#QuestionKind))"""
 type AnswerSelectOne implements Answer {
   answerString: String!
-
   """Réservation associée à la réponse"""
   booking: Registration
   checkboxIsMarked: Boolean
-
   """Date de création de la réponse"""
   createdAt: DateTime!
-
   """Utilisateur ayant répondu à la question"""
   createdBy: User
-
   """Formulaire auquel appartient la question"""
   form: Form!
-
   """Préfixe de l'identifiant: `answer:`"""
   id: ID!
-
   """Question à laquelle la réponse est associée"""
   question: QuestionSelectOne!
-
   """Section du formulaire auquel appartient la question"""
   section: FormSection!
-
   """Date de dernière mise à jour de la réponse"""
   updatedAt: DateTime!
-
   """Réponse donnée"""
   value: String
 }
@@ -316,32 +253,23 @@ type AnswerSelectOne implements Answer {
 """Réponse de type `Text` (voir [`QuestionKind`](#QuestionKind))"""
 type AnswerText implements Answer {
   answerString: String!
-
   """Réservation associée à la réponse"""
   booking: Registration
   checkboxIsMarked: Boolean
-
   """Date de création de la réponse"""
   createdAt: DateTime!
-
   """Utilisateur ayant répondu à la question"""
   createdBy: User
-
   """Formulaire auquel appartient la question"""
   form: Form!
-
   """Préfixe de l'identifiant: `answer:`"""
   id: ID!
-
   """Question à laquelle la réponse est associée"""
   question: QuestionScalar!
-
   """Section du formulaire auquel appartient la question"""
   section: FormSection!
-
   """Date de dernière mise à jour de la réponse"""
   updatedAt: DateTime!
-
   """Réponse donnée"""
   value: String
 }
@@ -350,35 +278,25 @@ type AnswerText implements Answer {
 type AnswerTime implements Answer {
   answer: Answer!
   answerString: String!
-
   """Réservation associée à la réponse"""
   booking: Registration
   checkboxIsMarked: Boolean
-
   """Date de création de la réponse"""
   createdAt: DateTime!
-
   """Utilisateur ayant répondu à la question"""
   createdBy: User
-
   """Formulaire auquel appartient la question"""
   form: Form!
-
   """Préfixe de l'identifiant: `answer:`"""
   id: ID!
-
   """Question à laquelle la réponse est associée"""
   question: QuestionScalar!
-
   """Réponse donnée, brute (sous forme de texte)"""
   rawValue: String
-
   """Section du formulaire auquel appartient la question"""
   section: FormSection!
-
   """Date de dernière mise à jour de la réponse"""
   updatedAt: DateTime!
-
   """Réponse donnée"""
   value: DateTime
 }
@@ -389,7 +307,6 @@ enum AnswersExportFormats {
   Format CSV (séparateur de colonnes: virgule, séparateur de lignes: saut de ligne)
   """
   CSV
-
   """
   Format TSV (séparateur de colonnes: tabulation, séparateur de lignes: saut de ligne)
   """
@@ -401,72 +318,18 @@ Représente toutes les réponses d'un·e utilisateur·ice à un formulaire. Prat
 """
 type AnswersOfUser {
   answers: [Answer!]!
-
   """Correspond à la date de dernière réponse parmis les réponses"""
   date: DateTime!
   user: User!
 }
 
-"""
-Des données temporelles pour construire des graphiques d'atteintes de rate limiting. La résolution temporelle est d'une minute.
-"""
-type ApiRateLimitHits {
-  """Le nombre d'erreurs de rate-limiting à cette date"""
-  count: Int!
-
-  """La date à laquelle les requêtes ont été faites"""
-  date: DateTime!
-
-  """Le nom de la query ou mutation ou subscription"""
-  queryName: String!
-
-  """Le type de requête effectuée"""
-  queryType: String!
-  timestamp: Int!
-  user: User
-}
-
-"""
-Des données temporelles pour construire des graphiques d'utilisation de l'API au cours du temps. La résolution temporelle est d'une minute.
-"""
-type ApiUsage {
-  """Le nombre de requêtes faites à cette date"""
-  count: Int!
-
-  """La date à laquelle les requêtes ont été faites"""
-  date: DateTime!
-
-  """Le nom de la query ou mutation ou subscription"""
-  queryName: String!
-
-  """Le type de requête effectuée"""
-  queryType: ApiUsageQueryType!
-  timestamp: Int!
-  user: User
-}
-
-"""Type de requête effectuée sur l'API"""
-enum ApiUsageQueryType {
-  """Modification de données, ou autre action diverses"""
-  Mutation
-
-  """Récupération de données"""
-  Query
-
-  """
-  Abonnement à des données pour être informé en temps réel des changements
-  """
-  Subscription
-}
-
 """An article is a post in a group"""
-type Article implements Commentable & Node & Pictured & Reactable {
+type Article implements Commentable & Node & Pictured & Reactable & Shareable {
   author: User
   authorId: ID
   body: String!
   bodyHtml: String!
   bodyPreview: String!
-
   """
   Vrai si l'utilisateur·ice connecté·e peut éditer le post (en considérant qu'iel ne va pas changer l'auteur·ice ou le groupe du post)
   """
@@ -477,26 +340,38 @@ type Article implements Commentable & Node & Pictured & Reactable {
   eventId: ID
   group: Group!
   groupId: ID!
+  """
+  Si la ressource supported d'avoir une image en thème sombre différente de celle en thème clair
+  """
+  hasSeparateDarkPicture: Boolean!
   id: ID!
   links: [Link!]!
+  """L'identifiant local de la ressource (sans préfixe)"""
+  localID: LocalID!
   myReactions: BooleanMap!
   notifiedAt: DateTime
+  """Texte alternatif de l'image"""
+  pictureAltText: String!
   pictureFile: String!
-
   """Le nom du fichier de l'image, en thème sombre"""
   pictureFileDark: String!
-
   """L'URL publique de l'image"""
   pictureURL(
     """Utiliser l'image en thème sombre"""
     dark: Boolean! = false
+    """
+    Ajouter un timestamp à la fin de l'URL pour forcer le navigateur à recharger l'image. Le timestamp correspond à la date de dernière mise à jour de la ressource (si disponible), ou à l'heure actuelle.
+    """
+    timestamp: Boolean! = true
   ): String!
   published: Boolean!
   publishedAt: DateTime!
+  """Vrai si l’utilisateur·ice connecté·e a réagi avec cet emoji"""
   reacted(emoji: String!): Boolean!
   reactionCounts: Counts!
+  """Nombre total de réactions avec cet emoji"""
   reactions(emoji: String!): Int!
-
+  shares: Int!
   """Un nom lisible sans espaces, adaptés pour des URLs."""
   slug: String!
   title: String!
@@ -523,11 +398,43 @@ type BarWeek implements Node {
   endsAt: DateTime!
   groups: [Group!]!
   id: ID!
-
+  """L'identifiant local de la ressource (sans préfixe)"""
+  localID: LocalID!
   """Un nom lisible sans espaces, adaptés pour des URLs."""
   slug: String!
   startsAt: DateTime!
   uid: String! @deprecated(reason: "Use `slug` instead. This field was never universally unique.")
+}
+
+enum BookingState {
+  """Payée"""
+  Paid
+  """Non payée et non scannée"""
+  Unpaid
+  """Scannée"""
+  Verified
+}
+
+"""
+Une page épinglée pour en faire un accès rapide pour un·e utilisateur·rice
+"""
+type Bookmark implements Node {
+  id: ID!
+  """L'identifiant local de la ressource (sans préfixe)"""
+  localID: LocalID!
+  """Chemin de la page"""
+  path: String!
+  user: User!
+}
+
+"""Contrainte booléenne, à trois états"""
+enum BooleanConstraint {
+  """Ne pas prendre en compte la contrainte"""
+  DontCare
+  """Obliger la contrainte à ne pas être remplie"""
+  Not
+  """Obliger la contrainte à être remplie"""
+  Only
 }
 
 scalar BooleanMap
@@ -535,28 +442,31 @@ scalar BooleanMap
 type BuildInfo {
   """Le hash du commit utilisé pour build l'API"""
   commit: String!
-
   """La version actuelle de l'API (et de l'application)"""
   version: String!
 }
 
+"""Un entier positif ou 'Unlimited' pour une capacité sans limite"""
+scalar Capacity
+
 """A release in the changelog"""
-type ChangelogRelease {
+type ChangelogRelease @graphinx(module: "changelogs") {
   """The changes of the release, grouped by category"""
   changes: ReleaseChangesMaps!
-
   """The date of the release"""
   date: DateTime
-
   """A short description of the release"""
   description: String!
-
   """A short description of the release, in HTML. Safe from XSS."""
   descriptionHtml: String!
-
   """The version of the release"""
   version: String!
 }
+
+"""
+Une couleur. En entrée, un code héxadécimal avec '#', ou un nom de couleur CSS. En sortie, un code héxadécimal avec '#' présent. La transparence n'est pas supportée.
+"""
+scalar Color
 
 type Comment implements Node & Reactable {
   author: User
@@ -569,7 +479,11 @@ type Comment implements Node & Reactable {
   id: ID!
   inReplyTo: Comment
   inReplyToId: ID
+  """L'identifiant local de la ressource (sans préfixe)"""
+  localID: LocalID!
+  """Vrai si l’utilisateur·ice connecté·e a réagi avec cet emoji"""
   reacted(emoji: String!): Boolean!
+  """Nombre total de réactions avec cet emoji"""
   reactions(emoji: String!): Int!
   replies: [Comment!]!
   updatedAt: DateTime!
@@ -578,7 +492,6 @@ type Comment implements Node & Reactable {
 """Une resource pouvant être commentée par les utilisateur·ice·s"""
 interface Commentable {
   comments(after: String, before: String, first: Int, last: Int): CommentsConnection!
-
   """L’identifiant de la resource commentée"""
   id: ID!
 }
@@ -594,13 +507,20 @@ type CommentsEdge {
   node: Comment!
 }
 
-union CompleteSignupResult = User | UserCandidate
-
-type ContributionOption {
+type ContributionOption implements Node {
+  """On peut marquer une cotisation de cette option comme payée"""
+  canMarkAsPaid: Boolean!
   descriptionHtml: String!
   id: ID!
+  """L'identifiant local de la ressource (sans préfixe)"""
+  localID: LocalID!
   name: String!
   offeredIn: School!
+  """Une personne paye une cotisation avec cette option"""
+  paidBy(
+    """UID de l'utilisateur·ice"""
+    uid: String!
+  ): Boolean!
   paysFor: [StudentAssociation!]!
   price: Float!
 }
@@ -622,12 +542,33 @@ type Credential {
 
 enum CredentialType {
   Google
+  GroupAccessToken
   Password
   Token
 }
 
+"""Le dialecte CSV à utiliser"""
+enum CsvDialect {
+  """
+  Dialecte CSV pour Excel: séparé par des point-virgules, et toujours guillemeté.
+  """
+  Excel
+  """
+  Dialecte CSV standard: séparé par des virgules, avec des guillemets quand nécéssaire seulement. S'ouvre sans soucis dans la plupart des logiciels de tableur, excepté Excel.
+  """
+  Standard
+}
+
 type DatabaseHealthCheck {
   prisma: Boolean!
+}
+
+"""Un intervalle valide de dates"""
+input DateRangeInput {
+  """Date de fin de l'intervalle"""
+  end: DateTime!
+  """Date de début de l'intervalle"""
+  start: DateTime!
 }
 
 """
@@ -641,18 +582,19 @@ type Document implements Commentable & Node & Reactable {
   description: String!
   descriptionHtml: String!
   id: ID!
-
+  """L'identifiant local de la ressource (sans préfixe)"""
+  localID: LocalID!
   """
   Liste de chemins vers les fichiers représentant le sujet (ou la fiche de révision)
   """
   paperPaths: [String!]!
+  """Vrai si l’utilisateur·ice connecté·e a réagi avec cet emoji"""
   reacted(emoji: String!): Boolean!
+  """Nombre total de réactions avec cet emoji"""
   reactions(emoji: String!): Int!
   schoolYear: Int!
-
   """Un nom lisible sans espaces, adaptés pour des URLs."""
   slug: String!
-
   """Liste de chemins vers les fichiers représentant la correction."""
   solutionPaths: [String!]!
   subject: Subject
@@ -684,11 +626,25 @@ enum DocumentType {
   Summary
 }
 
+enum DuplicateLinksAction {
+  """Provoquer une erreur"""
+  Error
+  """Remplacer l'ancien lien"""
+  Replace
+  """Ne pas ajouter"""
+  Skip
+}
+
+"""Adresse e-mail"""
+scalar Email
+
 """A email validation request"""
-type EmailChange {
+type EmailChange implements Node {
   createdAt: DateTime!
   email: String!
   id: ID!
+  """L'identifiant local de la ressource (sans préfixe)"""
+  localID: LocalID!
   pending: Boolean!
   updatedAt: DateTime!
   user: User!
@@ -716,95 +672,148 @@ type EvenSearchResult {
 }
 
 """An event is a date, time and place, as well as an optional ticket"""
-type Event implements Node & Pictured & Reactable {
+type Event implements Node & Pictured & Reactable & Shareable {
+  """Les promotions applicables à cet évènement"""
+  applicableOffers: [PromotionType!]!
   articles: [Article!]!
   author: User
   authorId: ID
-  bannedUsers: [User!]!
+  banned: [User!]!
   beneficiary: LydiaAccount
-  bookings(after: String, before: String, first: Int, last: Int): EventBookingsConnection!
+  bookings(
+    after: String
+    before: String
+    first: Int
+    last: Int
+    """Ne montre que les réservations d'un certain statut"""
+    only: BookingState!
+  ): EventBookingsConnection!
   bookingsCounts: RegistrationsCounts!
-
   """
-  Renvoie un texte au format CSV contenant un export des réservations de l'évènement.
+  Renvoie un texte à un format demandé contentant un export des réservations de l'évènement.
   """
-  bookingsCsv: EventBookingsCsvResult!
-
+  bookingsCsv(
+    """
+    Un texe représentant les URLs des pages de réservation individuelles. Dans ce texte, les occurences de '[code]' seront remplacées par le code de réservation.
+    """
+    bookingURL: URL!
+    dialect: CsvDialect! = Standard
+  ): EventBookingsCsvResult!
   """L'utilisateur·ice connecté·e peut modifier cet évènement"""
-  canEdit: Boolean!
-
+  canEdit(
+    """
+    Lève une erreur avec ce message si l'utilisateur·ice n'a pas les droits
+    """
+    assert: String
+  ): Boolean!
   """
   L'utilisateur·ice connecté·e peut ajouter, enlever ou modifier les droits des managers de cet évènement
   """
   canEditManagers: Boolean!
-
   """
   L'utilisateur·ice connecté·e peut scanner les réservations de cet évènement
   """
-  canSeeBookings: Boolean!
-
+  canScanBookings(
+    """
+    Erreur à lever si jamais la permission n'est pas donnée à l'utilisateur.ice connecté.e
+    """
+    assert: String
+  ): Boolean!
+  """
+  L'utilisateur·ice connecté·e peut voir la liste des réservations de cet évènement
+  """
+  canSeeAllBookings(
+    """
+    Lève une erreur si l'utilisateur·ice n'a pas les permissions, au lieu de juste renvoyer `false`. La valeur est le message d'erreur à renvoyer
+    """
+    assert: String
+  ): Boolean!
   """L'utilsateur·ice connecté·e peut voir les logs de cet évènement"""
   canSeeLogs: Boolean!
   capacity: Int!
   coOrganizers: [Group!]!
   contactMail: String!
+  createdAt: DateTime!
   description: String!
-  descriptionHtml: String!
+  descriptionHtml: HTML!
   descriptionPreview: String!
-  endsAt: DateTime!
-
+  """Liste des promotions activées pour tout les billets de l'évènement."""
+  enabledSpecialOffers: [PromotionType!]
+  endsAt: DateTime
+  """
+  URL vers une billetterie externe. Null si l'évènement possède un lien à URL valide, non dynamique, nommé "billetterie" et n'a pas de billets
+  """
+  externalTicketing: URL
   """Formulaires associés à l'événement"""
   forms: [Form!]!
   frequency: EventFrequency!
-  group: Group!
+  globalCapacity: Capacity
+  group: Group! @deprecated(reason: "Use `organizer` instead.")
   groupId: ID!
+  """
+  Si la ressource supported d'avoir une image en thème sombre différente de celle en thème clair
+  """
+  hasSeparateDarkPicture: Boolean!
   id: ID!
-
   """Vrai si l'évènement doit apparaître dans le mode kiosque"""
   includeInKiosk: Boolean!
   links: [Link!]!
+  """L'identifiant local de la ressource (sans préfixe)"""
+  localID: LocalID!
   location: String!
-
   """
   Logs concernant cet évènement. Ne contient pas les logs concernant les réservations.
   """
   logs(after: String, before: String, first: Int, last: Int): EventLogsConnection!
   lydiaAccountId: ID
   managers: [EventManager!]!
-
-  """Réservations faites par et/ou pour l'utilisateur.ice connecté.e"""
-  myBookings: EventMyBookingsResult!
+  """
+  Réservations faites par et/ou pour l'utilisateur.ice connecté.e. Triée par bénéficiaire (soi-même d'abord), puis par date de création. Renvoie au maximum 100 réservations.
+  """
+  myBookings(
+    """Nombre de réservations à récupérer"""
+    count: Int
+  ): [Registration!]!
   myReactions: BooleanMap!
-  mySoonestShotgunOpensAt: DateTime
+  mySoonestShotgunOpensAt: DateTime @deprecated(reason: "Use first ticket's opensAt instead. Event.tickets is now sorted such that if the user has access to tickets with soon-to-open or opened shotguns, the earliest one will be first.")
+  organizer: Group!
+  """Texte alternatif de l'image"""
+  pictureAltText: String!
   pictureFile: String!
-
   """Le nom du fichier de l'image, en thème sombre"""
   pictureFileDark: String!
-
   """L'URL publique de l'image"""
   pictureURL(
     """Utiliser l'image en thème sombre"""
     dark: Boolean! = false
+    """
+    Ajouter un timestamp à la fin de l'URL pour forcer le navigateur à recharger l'image. Le timestamp correspond à la date de dernière mise à jour de la ressource (si disponible), ou à l'heure actuelle.
+    """
+    timestamp: Boolean! = true
   ): String!
   placesLeft: Int
   profitsBreakdown: ProfitsBreakdown!
+  """Vrai si l’utilisateur·ice connecté·e a réagi avec cet emoji"""
   reacted(emoji: String!): Boolean!
   reactionCounts: Counts!
+  """Nombre total de réactions avec cet emoji"""
   reactions(emoji: String!): Int!
   recurringUntil: DateTime
   searchBookings(q: String!): [RegistrationSearchResult!]!
-
+  shares: Int!
   """Vrai si le nombre de places restantes doit être affiché"""
   showPlacesLeft: Boolean!
-
   """Un nom lisible sans espaces, adaptés pour des URLs."""
   slug: String!
-  startsAt: DateTime!
-  ticket(id: ID, slug: String): Ticket!
+  startsAt: DateTime
+  ticket(id: LocalID!): Ticket
+  """Récupérer un groupe de billets de l'évènement"""
+  ticketGroup(id: LocalID!): TicketGroup
   ticketGroups: [TicketGroup!]!
   tickets: [Ticket!]!
   title: String!
   uid: String! @deprecated(reason: "Use `slug` instead. This field was never universally unique.")
+  updatedAt: DateTime
   visibility: Visibility!
 }
 
@@ -819,7 +828,7 @@ type EventBookingsConnectionEdge {
   node: Registration!
 }
 
-union EventBookingsCsvResult = Error | EventBookingsCsvSuccess
+union EventBookingsCsvResult = Error | EventBookingsCsvSuccess | ZodError
 
 type EventBookingsCsvSuccess {
   data: String!
@@ -846,11 +855,14 @@ type EventLogsConnectionEdge {
 """
 An event manager is a user that can scan tickets, and may be able to manage the event
 """
-type EventManager {
+type EventManager implements Node {
   canEdit: Boolean!
   canEditPermissions: Boolean!
   canVerifyRegistrations: Boolean!
   event: Event!
+  id: ID!
+  """L'identifiant local de la ressource (sans préfixe)"""
+  localID: LocalID!
   power: EventManagerPowerLevel!
   user: User!
 }
@@ -862,18 +874,10 @@ enum EventManagerPowerLevel {
   ScanTickets
 }
 
-union EventMyBookingsResult = Error | EventMyBookingsSuccess
-
-type EventMyBookingsSuccess {
-  data: [Registration!]!
-}
-
 type EventsByDay {
   date: DateTime!
-
   """Évènements qui ont lieu (commencent) à ce jour"""
   happening: [Event!]!
-
   """Évènements qui ont leur premier shotgun à ce jour"""
   shotgunning: [Event!]!
 }
@@ -886,13 +890,11 @@ type FamilyTree {
 scalar File
 
 """Un formulaire"""
-type Form implements Node {
+type Form implements Node @graphinx(module: "forms") {
   """Nombre de réponses au formulaire"""
   answerCount: Int!
-
   """Réponses au formulaire"""
   answers(after: String, before: String, first: Int, last: Int): FormAnswersConnection!
-
   """
   Réponses au formulaire, groupées par utilisateur·ice. Ne contient pas de réponses dont l'utilisateur·ice est inconnu·e.
   """
@@ -901,81 +903,61 @@ type Form implements Node {
     before: String
     first: Int
     last: Int
-
     """Recherche par utilisateur·ice"""
     q: String
   ): FormAnswersByUserConnection!
-
   """Export des réponses au formulaires dans un format"""
   answersExport(
     """Format à utiliser"""
     format: AnswersExportFormats! = CSV
   ): String!
-
   """Indique si l'utilisateur peut répondre au formulaire."""
   canAnswer: Boolean!
-
   """Indique si l'utilisateur peut éditer le formulaire."""
   canEdit: Boolean!
-
   """Indique si l'utilisateur·ice peut modifier ses réponses au formulaire."""
   canModifyAnswers: Boolean!
-
   """
   Indique si l'utilisateur peut voir les statistiques des réponses au formulaire.
   """
   canSeeAnswerStats: Boolean!
-
   """Indique si l'utilisateur peut voir les réponses au formulaire."""
   canSeeAnswers: Boolean!
-
   """
   Indique si l'utilisateur peut cocher ou décocher les cases à cocher à côté des réponses au formulaire.
   """
   canSetCheckboxes: Boolean!
   checkboxesAreEnabled: Boolean!
-
   """Date de fermeture du formulaire."""
   closesAt: DateTime
-
   """Date de création du formulaire"""
   createdAt: DateTime!
-
   """Utilisateur ayant créé le formulaire"""
   createdBy: User
-
   """Description en Markdown du formulaire."""
   description: String
-
   """Description en HTML du formulaire."""
   descriptionHtml: String!
-
   """Événement associé au formulaire"""
   event: Event
-
   """Groupe auquel le formulaire est associé"""
   group: Group
-
   """Vrai si le formulaire comporte des sections"""
   hasSections: Boolean!
-
   """Préfixe de l'identifiant: `form:`"""
   id: ID!
-
   """
   L'URL du Google Sheet des réponses lié à ce formulaire. Voir `createLinkedGoogleSheet` pour créer un Google Sheet lié au formulaire.
   """
   linkedGoogleSheetUrl: String
-
+  """L'identifiant local de la ressource (sans préfixe)"""
+  localID: LocalID!
   """Identifiant local du formulaire"""
   localId: String!
-
   """Réponses de l'utilisateur·ice connecté·e à ce formulaire"""
   myAnswers: [Answer!]!
-
   """Date d'ouverture du formulaire."""
   opensAt: DateTime
-
   """
   Questions du formulaire. Liste de toutes les questions, peut importe la section dans laquelle elles se trouvent.
   """
@@ -985,22 +967,18 @@ type Form implements Node {
     q: String!
     similarityCutoff: Float
   ): [AnswerSearchResult!]!
-
   """Une section du formulaire."""
   section(
     """Identifiant (local ou global) de la section"""
     id: String
   ): FormSection!
-
   """
   Sections du formulaire. Un formulaire contient toujours au moins une section (sauf s'il n'y a aucune question). Uniquement accessible par celleux qui peuvent modifier le formulaire. Utiliser `nextSection` pour afficher une section dans le but d'y répondre.
   """
   sections: [FormSection!]!
   title: String!
-
   """Date de dernière mise à jour du formulaire"""
   updatedAt: DateTime!
-
   """Visibilité du formulaire"""
   visibility: Visibility!
 }
@@ -1052,36 +1030,27 @@ Une section d'un formulaire. Les sections sont utiles pour séparer les question
 type FormSection {
   """Réponses à cette section"""
   answers(after: String, before: String, first: Int, last: Int): FormSectionAnswersConnection!
-
   """Description en Markdown de la section"""
   description: String!
-
   """Description en HTML de la section"""
   descriptionHtml: String!
-
   """Formulaire auquel appartient la section"""
   form: Form!
   id: ID!
-
   """Identifiant local de la section du formulaire"""
   localId: String!
-
   """
   Section suivante dans le formulaire, si il y en a une. (Sinon, c'est que c'est la dernière section). Dépend du fait que des sections soit cachées à l'utilisateur (voir `restrictedToGroups`), ou que une répond à une question provoque le passaage à une autre section (voir `goToSection`) 
   """
   nextSection: FormSection
-
   """Ordre de la section dans le formulaire"""
   order: Int!
-
   """Questions dans section"""
   questions: [Question!]!
-
   """
   Si non vide, seul·e·s les membres des groupes spécifiés peuvent accéder à cette section. 
   """
   restrictedToGroups: [Group!]!
-
   """Titre de la section"""
   title: String!
 }
@@ -1111,50 +1080,127 @@ type GodparentRequest {
 """A group is a collection of users"""
 type Group implements Node & Pictured {
   address: String!
-
   """All the ancestors of this group, from the current group to the root."""
   ancestors: [Group!]!
   articles: [Article!]!
   boardMembers: [GroupMember!]!
-
+  """
+  Si l'utilisateur·ice connecté·e peut créer des thèmes au nom de ce groupe
+  """
+  canCreateThemes: Boolean!
   """
   Vrai si l'utilisateur·ice connecté·e peut modifier les informations du groupe
   """
-  canEditDetails: Boolean!
-
+  canEditDetails(
+    """
+    Lève une erreur avec le message donné si la permission n'est pas accordée
+    """
+    assert: String
+  ): Boolean!
+  """
+  On peut changer la politique d'adhésion au groupe (inscription libre ou non)
+  """
+  canEditJoinPolicy(
+    """
+    Lève une erreur avec le message donné si la permission n'est pas accordée
+    """
+    assert: String
+  ): Boolean!
+  """On peut changer les comptes Lydias du groupe"""
+  canEditLydiaAccounts(
+    """
+    Lève une erreur avec le message donné si la permission n'est pas accordée
+    """
+    assert: String
+  ): Boolean!
+  """
+  Vrai si l'utilisateur·ice connecté·e peut modifier les membres du groupe
+  """
+  canEditMembers(
+    """
+    Lève une erreur avec le message donné si la permission n'est pas accordée
+    """
+    assert: String
+  ): Boolean!
   """
   L'utilisateur·ice connecté·e peut éditer (créer ou modifier) les pages du groupe
   """
   canEditPages: Boolean!
-
+  """On peut changer le groupe parent"""
+  canEditParent(
+    """
+    Lève une erreur avec le message donné si la permission n'est pas accordée
+    """
+    assert: String
+  ): Boolean!
+  """On peut modifier l'AE de rattachement"""
+  canEditStudentAssociation(
+    """
+    Lève une erreur avec le message donné si la permission n'est pas accordée
+    """
+    assert: String
+  ): Boolean!
+  """On peut changer le type de groupe"""
+  canEditType(
+    """
+    Lève une erreur avec le message donné si la permission n'est pas accordée
+    """
+    assert: String
+  ): Boolean!
+  """On peut changer le statut de liste de groupe"""
+  canEditUnlisted(
+    """
+    Lève une erreur avec le message donné si la permission n'est pas accordée
+    """
+    assert: String
+  ): Boolean!
   """L'utilisateur·ice connecté·e peut lister les pages du groupe"""
   canListPages: Boolean!
+  """L'utilisater.ice connecté.e a le droit de mettre à jour roomIsOpen"""
+  canSetGroupRoomOpenState: Boolean!
   children: [Group!]!
   coOrganizedEvents: [Event!]!
-  color: String!
-  description: String!
-  email: String!
+  color: Color
+  createdAt: DateTime!
+  description: String! @deprecated(reason: "Use `shortDescription` instead")
+  email: Email
   events(after: String, before: String, first: Int, last: Int): GroupEventsConnection!
   familyChildren: [Group!]!
-
   """
   Helper field to get a whole tree without processing all groups\nTo be set to the group's id itself for root groups.
   """
   familyId: ID
-
   """Formulaires associés au groupe"""
   forms: [Form!]!
   groupId: ID!
+  """
+  Si la ressource supported d'avoir une image en thème sombre différente de celle en thème clair
+  """
+  hasSeparateDarkPicture: Boolean!
   id: ID!
+  """L'utilisateur.ice connecté.e est membre de ce groupe"""
+  isMember: Boolean!
   ldapUid: String!
   links: [Link!]!
+  """L'identifiant local de la ressource (sans préfixe)"""
+  localID: LocalID!
   longDescription: String!
-  longDescriptionHtml: String!
+  longDescriptionHtml: HTML!
+  """Comptes Lydia du groupe"""
+  lydiaAccounts: [LydiaAccount!]!
   mailingList: String!
   members: [GroupMember!]!
+  """Nombre de membres"""
+  membersCount(
+    """
+    Limiter aux membres de certaines promos (pratique par exemple pour avoir le nombre d'actif.ve.s)
+    """
+    yearTiers: [Int!]! = []
+  ): Int!
+  """L'adhésion de l'utilisateur.ice connecté.e à ce groupe"""
+  membership: GroupMember
   name: String!
   ownEvents: [Event!]!
-
   """La page associée au groupe"""
   page(
     """
@@ -1162,38 +1208,46 @@ type Group implements Node & Pictured {
     """
     path: String!
   ): Page
-
   """Les pages associées au groupe"""
   pages(after: String, before: String, first: Int, last: Int): PagesConnection!
-
+  """Nombre de pages associées au groupe"""
+  pagesCount: Int!
   """Parent group, from which this group inherits its permissions"""
   parent: Group
   parentId: ID
+  """Texte alternatif de l'image"""
+  pictureAltText: String!
   pictureFile: String!
   pictureFileDark: String!
-
   """L'URL publique de l'image"""
   pictureURL(
     """Utiliser l'image en thème sombre"""
     dark: Boolean! = false
+    """
+    Ajouter un timestamp à la fin de l'URL pour forcer le navigateur à recharger l'image. Le timestamp correspond à la date de dernière mise à jour de la ressource (si disponible), ou à l'heure actuelle.
+    """
+    timestamp: Boolean! = true
   ): String!
   president: GroupMember
-
   """Related clubs"""
   related: [Group!]!
   roomIsOpen: Boolean!
-
   """Family root, only created for performance reasons"""
   root: Group
   secretaries: [GroupMember!]!
   selfJoinable: Boolean!
   services: [Service!]!
+  """Article de la boutique du groupe"""
+  shopItem(id: LocalID!): ShopItem
   shopItems(after: String, before: String, first: Int, last: Int): GroupShopItemsConnection!
   shopOrders: [ShopPayment!]!
-  studentAssociation: StudentAssociation
+  shortDescription: String!
+  studentAssociation: StudentAssociation!
   treasurers: [GroupMember!]!
   type: GroupType!
   uid: String!
+  """Le groupe doit être caché des listes de groupes"""
+  unlisted: Boolean!
   vicePresidents: [GroupMember!]!
   website: String!
 }
@@ -1207,6 +1261,15 @@ type GroupEventsConnection {
 type GroupEventsConnectionEdge {
   cursor: String!
   node: Event!
+}
+
+enum GroupJoinPolicy {
+  """
+  Seul le bureau (et autres ayant les permissions) peut ajouter des membres
+  """
+  Closed
+  """Tout le monde peut rejoindre le groupe"""
+  Open
 }
 
 """The intermediate model between users and groups"""
@@ -1225,6 +1288,21 @@ type GroupMember {
   title: String!
   treasurer: Boolean!
   vicePresident: Boolean!
+}
+
+"""Les champs du profil d'un groupe"""
+input GroupProfileInput {
+  color: Color
+  email: Email
+  longDescription: Markdown
+  name: String
+  relatedGroups: [UID!]
+  room: String
+  shortDescription: String
+  """Supprimer la couleur du groupe"""
+  unsetColor: Boolean
+  """Supprimer l’adresse email du groupe"""
+  unsetEmail: Boolean
 }
 
 type GroupSearchResult {
@@ -1255,6 +1333,10 @@ enum GroupType {
   StudentAssociationSection
 }
 
+scalar HTML
+
+union HasLinks = Article | Event | Group | Ticket | User
+
 """Results of a health self-check"""
 type HealthCheck {
   database: DatabaseHealthCheck!
@@ -1269,16 +1351,13 @@ type Issue {
   bodyHtml: String!
   comments: [IssueComment!]!
   deployedIn: String!
-
   """Expressed from 0 to 1"""
   difficulty: Float
   duplicatedFrom: Int
-
   """Expressed from 0 to 1"""
   importance: Float
   number: Int!
   state: IssueState!
-
   """The date at which the issue was submitted"""
   submittedAt: DateTime!
   title: String!
@@ -1305,24 +1384,36 @@ enum IssueState {
 type LdapHealthCheck {
   """Whether the LDAP internal client is ready"""
   internal: Boolean!
-
   """Whether the LDAP school client is ready"""
   school: Boolean!
 }
 
-"""A single external link"""
+"""
+Un lien avec un texte à afficher. Pour changer les liens d'une ressource, voir la mutation `setLinks` (valable pour tout les types implémentant `HasLinks`)
+"""
 type Link implements Node {
-  computedValue: String!
+  computedValue: String! @deprecated(reason: "Use `url` instead.")
   createdAt: DateTime!
   id: ID!
-  name: String!
-  value: String!
+  """L'identifiant local de la ressource (sans préfixe)"""
+  localID: LocalID!
+  name: String! @deprecated(reason: "Use `text` instead.")
+  rawURL: String!
+  text: String!
+  url: URL
+  value: String! @deprecated(reason: "Use `rawURL` instead.")
 }
 
 input LinkInput {
-  name: String!
-  value: String!
+  """Texte à afficher pour le lien"""
+  text: String!
+  url: LooseURL!
 }
+
+"""
+Un identifiant, dont le préfixe (par exemple, `a:` dans `a:627dgfd87ccc`) est optionnel.
+"""
+scalar LocalID
 
 """A log entry is a log of an action that happened on the website"""
 type LogEntry implements Node {
@@ -1330,6 +1421,8 @@ type LogEntry implements Node {
   area: String!
   happenedAt: DateTime!
   id: ID!
+  """L'identifiant local de la ressource (sans préfixe)"""
+  localID: LocalID!
   message: String!
   target: String
   user: User
@@ -1342,12 +1435,19 @@ enum LogoSourceType {
   InternalLink
 }
 
+"""
+Une adresse internet (URL). Si le protocole n'est pas spécifié, https:// sera ajouté (par exemple, net7.dev est valide en entrée et est interprété comme https://net7.dev). Les éventuels espaces autours de l'URL sont ignorés. Les protocoles autorisés sont: http:, https:, mailto:, tel:
+"""
+scalar LooseURL
+
 """A Lydia account"""
-type LydiaAccount {
+type LydiaAccount implements Node {
   events: [Event!]!
   group: Group
   groupId: ID
   id: ID!
+  """L'identifiant local de la ressource (sans préfixe)"""
+  localID: LocalID!
   name: String!
   studentAssociation: StudentAssociation
   studentAssociationId: ID
@@ -1358,14 +1458,38 @@ type MailHealthCheck {
   smtp: Boolean!
 }
 
-"""A school syllabus"""
-type Major {
+"""
+Une filière (division de premier niveau du cursus scolaire d'une école). Peut être reliée à plusieurs écoles
+"""
+type Major implements Pictured {
+  """Ancienne filière n'existant plus dans les cursus actuels"""
+  discontinued: Boolean!
+  fullName: String!
+  """
+  Si la ressource supported d'avoir une image en thème sombre différente de celle en thème clair
+  """
+  hasSeparateDarkPicture: Boolean!
   id: ID!
   ldapSchool: School
   minors: [Minor!]!
   name: String!
+  """Texte alternatif de l'image"""
+  pictureAltText: String!
+  """Le nom du fichier de l'image"""
+  pictureFile: String!
+  """Le nom du fichier de l'image, en thème sombre"""
+  pictureFileDark: String!
+  """L'URL publique de l'image"""
+  pictureURL(
+    """Utiliser l'image en thème sombre"""
+    dark: Boolean! = false
+    """
+    Ajouter un timestamp à la fin de l'URL pour forcer le navigateur à recharger l'image. Le timestamp correspond à la date de dernière mise à jour de la ressource (si disponible), ou à l'heure actuelle.
+    """
+    timestamp: Boolean! = true
+  ): String!
   schools: [School!]!
-  shortName: String!
+  shortName: String! @deprecated(reason: "Use 'name' instead")
   subjects(forApprentices: Boolean, yearTier: Int): [Subject!]!
   uid: String!
 }
@@ -1377,12 +1501,16 @@ input ManagerOfEventInput {
   userUid: String!
 }
 
+"""Du texte au format Markdown. (https://commonmark.org/help/)"""
+scalar Markdown
+
 type Minor implements Node {
   id: ID!
+  """L'identifiant local de la ressource (sans préfixe)"""
+  localID: LocalID!
   majors: [Major!]!
   name: String!
   shortName: String!
-
   """Un nom lisible sans espaces, adaptés pour des URLs."""
   slug: String!
   subjects: [Subject!]!
@@ -1391,102 +1519,131 @@ type Minor implements Node {
   yearTier: Int!
 }
 
-"""- **Rate limit:** 1200 / 10 minutes"""
-type Mutation {
+type Mutation @rateLimit(limit: 1200, duration: 600) {
   acceptRegistration(email: String!): MutationAcceptRegistrationResult!
-
   """Marks the user as having seen the given version's changelog."""
   acknowledgeChangelog(version: String! = "dev"): Boolean!
-
-  """Activate a third-party app. Only admins can do this."""
-  activateApp(
-    """The app's ID"""
-    id: ID!
-  ): Boolean!
-
   """
   Ajouter un fichier à une page. Permet notamment d'ajouter des images pour s'en servir dans le contenu de la page.
   """
   addFileToPage(file: File!, page: ID!): MutationAddFileToPageResult!
   addGroupMember(groupUid: String!, title: String!, uid: String!): MutationAddGroupMemberResult!
-
+  """Ajouter des liens à une ressource implémentant `HasLinks`"""
+  addLinks(
+    """
+    Que faire pour un lien si la ressource en possède déjà un autre avec la même URL
+    """
+    duplicates: DuplicateLinksAction! = Replace
+    """ID complet de la ressource (AVEC le préfixe)"""
+    id: ID!
+    links: [LinkInput!]!
+  ): MutationAddLinksResult!
   """Répondre à une question de type `FileUpload` en uploadant un fichier"""
   answerFileQuestion(
     """Fichier à uploader"""
     answer: File!
-
     """ID de la question à laquelle répondre"""
     question: ID!
   ): AnswerFileUpload!
   answerFormSection(
     answers: [AnswerInput!]!
-
     """ID de la section du formulaire"""
     section: ID!
   ): MutationAnswerFormSectionResult!
-
   """
-  
-  Authorize a third-party client to access the user's data. 
-  Returns an access code. 
-  
-  Use the frontend's /authorize endpoint instead of this, as it requires already being logged-in.
-  
-  Do a `GET` request to `http://localhost:5173/authorize?client_id=<clientId>&redirect_uri=<redirectUri>&response_type=code&state=<state>` with:
-  
-  - `<clientId>`: The client ID of the app. See registerApp to get this.
-  - `<redirectUri>`: The URL that you want to redirect the user to. The frontend uses this on /authorize to redirect users to `<redirectUri>?code=<return value of this mutation>`
-  - `<state>`: A random string generated from personal information used to prevent CSRF attacks.
-  
-  Use that code to get an access token with /token:
-  
-  Do a `POST` request to `http://localhost:5173/token` with a `application/x-www-form-urlencoded` body with the following fields:
-  
-  - `grant_type`: `authorization_code`
-  - `code`: The code returned by this endpoint
-  - `client_id`: The client ID of the app
-  - `client_secret`: The client secret of the app
-  - `redirect_uri`: The redirect URI used in this request
-        
+  Deletes a pending godparent request. If accept is true, the request will be accepted (and the godparent of the requester will be changed), otherwise it will be rejected (the godparent of the requester won't be changed)
   """
-  authorize(
-    """The client ID of the app. See registerApp to get this."""
-    clientId: String!
-
+  answerGodparentRequest(accept: Boolean!, id: LocalID!): MutationAnswerGodparentRequestResult!
+  """
+  Bannir un·e utilisateur·rice d'un événement. Iel ne pourra plus prendre de place (que ce soit pour iel ou pour une autre personne, dans le cas des billets à parrainages)
+  """
+  banFromEvent(id: LocalID!, user: UID!): MutationBanFromEventResult!
+  """
+  Bloquer un thème pour empêcher qu'il soit automatiquement déployé à l'utilisateur·ice connecté·e
+  """
+  blockTheme(
+    """ID du thème"""
+    id: LocalID!
+  ): Theme!
+  """Réserver une place sur un évènement"""
+  bookEvent(
     """
-    The URL that you want to redirect the user to. The frontend uses this on /authorize to redirect users to `<redirectUri>?code=<return value of this mutation>`
+    Adresse mail à laquelle envoyer le billet. Nécéssaire quand on est pas connecté.e
     """
-    redirectUri: String!
-  ): MutationAuthorizeResult!
-  cancelPendingContribution(optionId: ID!): Boolean!
-  cancelRegistration(id: ID!): MutationCancelRegistrationResult!
-  checkIfRegistrationIsPaid(id: ID!): Boolean!
+    authorEmail: Email
+    """
+    Nom de la personne pour qui on réserve la place. Préférer churrosBeneficiary quand c'est possible
+    """
+    beneficiary: String
+    """Identifiant (@) de la personne qui recevra la place"""
+    churrosBeneficiary: UID
+    ticket: LocalID!
+  ): MutationBookEventResult!
+  """
+  Épingle une page pour en faire un accès rapide. Si la page est déjà épinglée, ne fait rien. Voir `unpin` pour retirer une page épinglée.
+  """
+  bookmark(
+    """Chemin de la page à épingler"""
+    path: String!
+  ): Bookmark!
+  cancelBooking(
+    """Code de réservation"""
+    code: String!
+  ): MutationCancelBookingResult!
+  cancelPendingContribution(optionId: ID!): MutationCancelPendingContributionResult!
+  """Changer le groupe organisateur (principal) de l'événement"""
+  changeEventOrganizer(group: UID!, id: LocalID!): MutationChangeEventOrganizerResult!
+  checkIfBookingIsPaid(code: String!): Boolean!
   claimPromotionCode(code: String!): Boolean!
-  completeRegistration(address: String!, apprentice: Boolean!, birthday: DateTime, cededImageRightsToTVn7: Boolean!, firstName: String!, graduationYear: Int!, lastName: String!, majorId: ID, password: String!, passwordConfirmation: String!, phone: String!, token: String!, uid: UID!): MutationCompleteRegistrationResult!
+  completeSignup(token: String!): SignupCompletionResult!
   contribute(optionId: ID!, phone: String!): MutationContributeResult!
+  """
+  Crée un pass Apple Wallet pour une réservation donnée. Renvoie l'URL à utiliser pour ajouter le pass à Apple Wallet.
+  """
+  createAppleWalletPass(
+    """Code de la réservation"""
+    code: String!
+  ): MutationCreateAppleWalletPassResult!
   createBot(
     """UID de la filière"""
     major: String
-
     """Nom du compte bot"""
     name: String!
-
     """Mot de passe du compte bot"""
     password: String!
-
     """UID du compte bot"""
     uid: String!
   ): User!
+  """Créer un nouvel évènement"""
+  createEvent(
+    """
+    Dates de l'évènement. Si non précisé, l'évènement est créé sans dates, ce qui l'empêche d'avoir une visibilité autre que `Private` ou `Unlisted`.
+    """
+    dates: DateRangeInput
+    """Groupe organisateur principal"""
+    group: UID!
+    title: ShortString!
+  ): MutationCreateEventResult!
   createGitlabIssue(description: String!, isBug: Boolean!, title: String!): Int!
-
   """
   Créer un pass Google Wallet pour une réservation donnée. Renvoie l'URL a utiliser pour ajouter le pass à Google Wallet.
   """
   createGoogleWalletPass(
     """Code de la réservation"""
     code: String!
-  ): String!
-
+  ): MutationCreateGoogleWalletPassResult!
+  """Créer un nouveau groupe"""
+  createGroup(
+    name: String!
+    """AE de rattachement du groupe"""
+    studentAssociation: UID!
+    type: GroupType! = Group
+    uid: UID!
+  ): MutationCreateGroupResult!
+  """
+  Créer un token d'accès pour un groupe. Les requêtes effectuées avec ce token auront des permissions différentes, et permettent d'effectuer certaines actions en tant qu'un groupe au lieu d'une personne
+  """
+  createGroupAccessToken(group: UID!): MutationCreateGroupAccessTokenResult!
   """
   Crée une feuille Google Sheets (si elle n'existe pas déjà) qui contiendra les réponses au formulaire (et sera mise à jour automatiquement). Renvoie l'URL de la feuille Google Sheets.
   """
@@ -1494,90 +1651,76 @@ type Mutation {
     """L'identifiant du formulaire"""
     form: ID!
   ): String!
-
   """
   Démarre une procédure de réinitialisation de mot de passe pour l'utilisateur associé à l'adresse e-mail ou l'uid fournie. Renvoie `true` même si l'utilisateur n'existe pas.
   """
   createPasswordReset(email: String!): MutationCreatePasswordResetResult!
-
+  """Créer un post en privé"""
+  createPost(body: String! = "", event: LocalID!, group: UID!, title: String! = ""): MutationCreatePostResult!
   """Créer un lien d'inscription rapide"""
   createQuickSignup(
     """UID de l'école"""
     school: String!
-
     """Date de validité du lien"""
     validUntil: DateTime!
   ): QuickSignup!
-
-  """Deactivate a third-party app. Only admins can do this."""
-  deactivateApp(
-    """The app's ID"""
-    id: ID!
-  ): Boolean!
-  deleteAnnouncement(id: ID!): Boolean!
+  """Créer un nouveau billet sur un évènement existant"""
+  createTicket(
+    event: LocalID!
+    """Groupe de billet dans lequel mettre ce billet"""
+    group: LocalID
+    name: String
+    shotgun: DateRangeInput!
+  ): MutationCreateTicketResult!
+  deleteAnnouncement(id: ID!): Boolean! @graphinx(module: "announcements")
   deleteArticle(id: ID!): Boolean!
   deleteArticlePicture(id: ID!): Boolean!
   deleteBarWeek(id: ID!): Boolean!
   deleteComment(id: ID!): Comment!
+  """Supprimer une cotisation"""
+  deleteContribution(option: LocalID!, user: String!): MutationDeleteContributionResult!
   deleteDocument(id: ID!): Boolean!
   deleteDocumentFile(documentId: ID!, filename: String!): Boolean!
-  deleteEvent(id: ID!): Boolean!
-  deleteEventManager(eventId: ID!, user: String!): Boolean!
-  deleteEventPicture(id: ID!): Boolean!
-  deleteGodchild(godchildUid: String!, parentUid: String!): Boolean!
-
+  deleteEvent(id: LocalID!): MutationDeleteEventResult!
+  deleteEventManager(eventId: ID!, user: String!): Boolean! @deprecated(reason: "Use 'removeEventManager' instead")
+  deleteEventPicture(id: ID!): Event!
+  deleteGodchild(child: UID!, parent: UID!): MutationDeleteGodchildResult!
   """
-  Deletes a pending godparent request. If accept is true, the request will be accepted (and the godparent of the requester will be changed), otherwise it will be rejected (the godparent of the requester won't be changed)
+  Supprime le parrain ou la marraine, que ce soit une demande de parrainage en cours ou simplement un·e parrain/marraine existant·e. Renvoie lea fillo·t·e
   """
-  deleteGodparentRequest(accept: Boolean!, id: ID!): GodparentRequest!
+  deleteGodparent(child: UID!, parent: UID!): MutationDeleteGodparentResult!
   deleteGroup(uid: String!): Boolean!
   deleteGroupMember(groupId: ID!, memberId: ID!): Boolean!
-  deleteGroupPicture(dark: Boolean!, uid: String!): Boolean!
+  deleteGroupPicture(dark: Boolean!, uid: String!): Boolean! @deprecated(reason: "Use setPicture instead")
   deleteItemPicture(groupUid: String!, itemId: String!, pictureId: String!): Boolean!
-  deleteNotificationSubscription(endpoint: String!): Boolean!
-
+  """Supprimer un lien existant"""
+  deleteLink(id: LocalID!): MutationDeleteLinkResult!
   """
   Supprime une page existante. On peut renseigner l'identifiant de la page ou son chemin ainsi que son groupe ou AE d'appartenance.
   """
   deletePage(
     """L'UID du groupe auquel la page appartient"""
     group: String
-
     """L'identifiant de la page à supprimer"""
     id: ID
-
     """Le chemin de la page à supprimer"""
     path: String
-
     """L'UID de l'AE à laquelle la page appartient"""
     studentAssociation: String
   ): MutationDeletePageResult!
   deleteQuickSignup(code: String!): QuickSignup!
   deleteReaction(articleId: ID, commentId: ID, documentId: ID, emoji: String!, eventId: ID): Boolean!
-  deleteRegistration(id: ID!): Boolean!
   deleteSchoolPicture(id: String!): String!
   deleteShopItem(groupUid: String!, itemId: ID!): MutationDeleteShopItemResult!
   deleteShopOption(optionIds: [String!]!): Boolean!
   deleteTicket(
     """Supprimer le billet même s'il existe des réservations"""
     force: Boolean! = false
-    id: ID!
-  ): Boolean!
-  deleteTicketGroup(id: ID!): Boolean!
+    id: LocalID!
+  ): MutationDeleteTicketResult!
+  deleteTicketGroup(id: LocalID!): MutationDeleteTicketGroupResult!
   deleteToken(id: ID!): Boolean!
   deleteUserPicture(uid: String!): Boolean!
-
-  """Update a third-party app's details"""
-  editApp(
-    allowedRedirectUris: [String!]
-    description: String
-
-    """The app's ID"""
-    id: ID!
-    name: String
-    ownerGroupUid: String
-    website: String
-  ): ThirdPartyApp!
   finishPaypalRegistrationPayment(orderId: String!): MutationFinishPaypalRegistrationPaymentResult!
   kioskReload(
     """
@@ -1585,13 +1728,10 @@ type Mutation {
     """
     studentAssociation: String!
   ): Boolean!
-
   """Logs a user in and returns a session token."""
   login(clientId: String, email: String!, password: String!): MutationLoginResult!
-
   """Logs a user out and invalidates the session token."""
   logout: Boolean!
-
   """
   Envoie une copie des réponses de l'utilisateur·ice connecté·e à ce formulaire par email. Renvoie l'adresse mail à laquelle les réponses ont été envoyées.
   """
@@ -1599,123 +1739,297 @@ type Mutation {
     """ID du formulaire"""
     formId: ID!
   ): MutationMailFormAnswersResult!
+  """Marquer une réservation comme payée"""
+  markBookingAsPaid(
+    """Code de la réservation"""
+    code: String!
+    """Aussi marquer la réservation comme vérifiée (scannée)"""
+    verify: Boolean
+  ): MutationMarkBookingAsPaidResult!
+  """Marquer une cotisation comme payée."""
+  markContributionAsPaid(
+    """
+    Créer la cotisation si elle n'existe pas (et immédiatement la marquer comme payée)
+    """
+    create: Boolean! = false
+    option: LocalID!
+    user: UID!
+  ): MutationMarkContributionAsPaidResult!
   mergeDocuments(from: [ID!]!, into: ID!): Document!
   opposeRegistration(id: ID!): MutationOpposeRegistrationResult!
-
-  """
-  When paying with Paypal, returns the order id for a capture to finish the payment
-  """
-  paidRegistration(beneficiary: String, paymentMethod: PaymentMethod, phone: String, regId: ID!): MutationPaidRegistrationResult!
   paidShopPayment(paymentMethod: PaymentMethod, phone: String, shopPaymentId: ID!): MutationPaidShopPaymentResult!
+  payBooking(
+    """
+    Montant que l'on souhaite payer. Par défaut, le prix du billet. Peut être supérieur si l'on souhaite payer plus
+    """
+    amount: Float
+    """Code de réservation"""
+    code: String!
+    """
+    URL ou chemin où renvoyer l'utilisateur.ice après confirmation du paiement. Sert par exemple pour l'URL de la notification de confirmation de paiement de la part de Lydia.
+    """
+    paidCallback: String
+    paymentMethod: PaymentMethod
+    phone: String
+  ): MutationPayBookingResult!
+  react(
+    emoji: String!
+    """La ressource à laquelle réagir. ID global, avec préfixe."""
+    target: ID!
+  ): Reactable!
   refuseRegistration(email: String!, reason: String!): Boolean!
-
-  """
-  Register a third-party OAuth2 client. Returns the client secret. The client secret cannot be retrieved at any other time. Use refreshAppSecret to rotate your client secret.
-  """
-  registerApp(
-    """Allowed redirect URIs."""
-    allowedRedirectUris: [String!]!
-
-    """The app's description"""
-    description: String!
-
-    """The app's name"""
-    name: String!
-
-    """The UID of  the group that made this app"""
-    ownerGroupUid: String!
-
-    """
-    URL to the website of the app. Used, amongst other things, to get the icon.
-    """
-    website: String!
-  ): ThirdPartyAppRegistrationResponse!
-
   """Enregistrer un token OAuth2 Google pour l'utilisateur connecté."""
   registerGoogleCredential(
     """Le code d'authorisation"""
     code: String!
   ): MutationRegisterGoogleCredentialResult!
-
+  """Enlever un manager d'un événement"""
+  removeEventManager(event: LocalID!, user: UID!): MutationRemoveEventManagerResult!
   """Supprimer un fichier d'une page."""
   removeFileFromPage(filename: String!, page: ID!): MutationRemoveFileFromPageResult!
   renameSession(id: ID!, name: String!): Boolean!
-  requestEmailChange(email: String!): MutationRequestEmailChangeResult!
+  requestEmailChange(
+    """
+    URL vers laquelle faire pointer le lien de validation de la nouvelle adresse email. [token] sera remplacé par le token d'activation.
+    """
+    callbackURL: URL!
+    email: Email!
+  ): MutationRequestEmailChangeResult!
   resetPassword(disconnectAll: Boolean!, newPassword: String!, oldPassword: String!, uid: String!): MutationResetPasswordResult!
-
   """
-  Révoque l'accès d'une application au compte utilisateur connecté. Renvoie `true` si l'opération a réussi.
+  Sauvegarder le numéro de téléphone pour les paiements Lydia de l'utilisateur.ice
   """
-  revokeAuthorization(
-    """Identifiant de l'application"""
-    clientId: String!
-  ): Boolean!
-
-  """Rotate a third-party app's secret"""
-  rotateAppSecret(
-    """The app's ID"""
-    id: ID!
-  ): String!
-  selfJoinGroup(groupUid: String!, uid: String!): GroupMember!
-
+  saveLydiaPhoneNumber(phoneNumber: String!): MutationSaveLydiaPhoneNumberResult!
+  selfJoinGroup(uid: UID!): MutationSelfJoinGroupResult!
   """
   Envoie une notification à l'utilisateur connecté. Limité à une notification par heure. Si l'utilisateur a désactivé les notifications de type “Autres” pour le groupe responsable du [client OAuth](/oauth) faisant la requête, la notification ne lui sera pas envoyée.
-  
-  - **Rate limit:** 1/heure
   """
   sendNotification(
     """Corps de la notification."""
     body: String!
-
     """
     Titre de la notification. Sera préfixé par “[Nom de l'application]” quand la mutation est appelée par un [client OAuth](/oauth).
     """
     title: String!
-  ): Boolean!
+  ): Boolean! @rateLimit(duration: 3600, limit: 1)
   setDocumentFileIsSolution(documentId: ID!, filename: String!, isSolution: Boolean!): Boolean!
-
+  """Définir les promotions applicables pour cet évènement."""
+  setEventApplicableOffers(event: LocalID!, offers: [PromotionType!]!): MutationSetEventApplicableOffersResult!
+  setEventBeneficiary(
+    event: LocalID!
+    """
+    Identifiant du compte Lydia. Null pour enlever le bénéficiaire de l'évènement
+    """
+    lydiaAccount: LocalID
+  ): MutationSetEventBeneficiaryResult!
+  """Changer les groupes co-organisateurs d'un événement"""
+  setEventCoOrganizers(coOrganizers: [UID!]!, id: LocalID!): MutationSetEventCoOrganizersResult!
+  """Définir les dates d'un évènement"""
+  setEventDates(
+    """Dates de l'évènement. Null pour supprimer les dates"""
+    dates: DateRangeInput
+    id: LocalID!
+  ): MutationSetEventDatesResult!
+  """
+  Changer la visibilité d'un événement. Un évènement dont les dates ne sont pas encore déclarées ne peut pas avoir une visiblité autre que Unlisted ou Private.
+  """
+  setEventVisibility(id: LocalID!, visibility: Visibility!): MutationSetEventVisibilityResult!
   """
   Coche ou décoche la case à cocher à côté des réponses à un formulaire pour un·e utilisateur·ice.
   """
   setFormAnswersCheckbox(
     """Vrai pour cocher la case, faux pour la décocher"""
     checked: Boolean!
-
     """L'ID du formulaire"""
     form: String!
-
     """ID de l'utilisateur·ice"""
     userId: ID!
   ): Form!
-  startRegistration(
-    email: String!
-
+  """Changer si la salle d'un groupe est fermée ou ouverte"""
+  setGoupRoomOpenState(
+    """L'uid du groupe"""
+    group: UID!
+    """Vrai si on veut indiquer que le local est maintenant ouvert """
+    open: Boolean!
+  ): Group!
+  """Définir comment l'on peut rejoindre un groupe"""
+  setGroupJoinPolicy(policy: GroupJoinPolicy!, uid: UID!): MutationSetGroupJoinPolicyResult!
+  """Changer l'AE liée à un groupe"""
+  setGroupStudentAssociation(group: UID!, studentAssociation: UID!): MutationSetGroupStudentAssociationResult!
+  """Changer le type d'un groupe"""
+  setGroupType(
+    type: GroupType
+    uid: UID!
+    """Si le groupe doit être caché des listes de groupes"""
+    unlisted: Boolean
+  ): MutationSetGroupTypeResult!
+  """Changer le groupe parent d'un groupe"""
+  setParentGroup(
+    child: UID!
+    """Le groupe parent. Null pour déconnecter d'un groupe parent"""
+    parent: UID
+  ): MutationSetParentGroupResult!
+  setPicture(
+    """Le fichier de l'image. Si null, l'image sera supprimée."""
+    file: File
+    """Identifiant global de la resource sur laquelle on veut changer l'image"""
+    resource: ID!
+    """
+    Pour quelle variante de thème changer l'image. Voir `Pictured.hasSeparateDarkPicture`.
+    """
+    variant: ThemeVariant! = Light
+  ): MutationSetPictureResult!
+  """Changer la valeur d'une variable d'un thème"""
+  setThemeValue(
+    """ID du thème"""
+    theme: LocalID!
+    """Valeur à utiliser. Doit être une valeur CSS valide"""
+    value: String!
+    variable: ThemeVariable!
+    """Variante du thème"""
+    variant: ThemeVariant!
+  ): Theme!
+  """
+  Changer la visibilité d'un thème. Voir `Theme.canSetVisibility` pour déterminer si l'utilisateur·ice connecté·e peut changer la visibilité d'un thème à une certaine valeur
+  """
+  setThemeVisibility(
+    """ID du thème"""
+    theme: LocalID!
+    """Visibilité à utiliser"""
+    visibility: Visibility!
+  ): Theme!
+  """Définir le groupe d'un billet"""
+  setTicketGroup(
+    """
+    Le groupe de billet dans lequel mettre ce billet. Null pour le retirer de tout groupe.
+    """
+    group: LocalID
+    ticket: LocalID!
+  ): MutationSetTicketGroupResult!
+  startSignup(
+    email: Email!
+    """Prénom"""
+    firstName: String!
+    """Promo de la personne"""
+    graduationYear: Int!
+    """Nom de famille"""
+    lastName: String!
+    """
+    Template d'URL à utliser pour le lien de validation d'adresse e-mail envoyé. [token] est remplacé par le token de validation dans l'URL donnée. La page à cette URL doit appeler Mutation.finishSignup.
+    """
+    mailVerificationCallbackURL: URL!
+    """Filière à laquelle la personne se déclare étudiant.e"""
+    major: UID
+    """Mot de passe"""
+    password: String!
+    """Confirmation du mot de passe"""
+    passwordConfirmation: String!
     """
     Code d'inscription rapide, pour s'inscrire sans mail étudiant et sans validation manuelle. Voir QuickSignupType.
     """
     quickSignupCode: String
-  ): MutationStartRegistrationResult!
+  ): MutationStartSignupResult!
+  subscribeToNotifications(endpoint: String!, expiresAt: DateTime, keys: NotificationSubscriptionKeysInput!, name: String!): MutationSubscribeToNotificationsResult!
   syncUserLdap(uid: String!): Boolean!
   testNotification(subscriptionEndpoint: String!): Boolean!
   toggleReaction(articleId: ID, commentId: ID, documentId: ID, emoji: String!, eventId: ID): Reactable!
-  updateArticlePicture(file: File!, id: ID!): String!
-  updateEventPicture(file: File!, id: ID!): String!
-  updateGroupPicture(dark: Boolean!, file: File!, uid: String!): String!
-  updateItemPicture(file: File!, groupUid: String!, itemId: String!): Picture!
-  updateNotificationSettings(enabledChannels: [NotificationChannel!]!, uid: String!): [NotificationChannel!]!
-
-  """Changer si la salle d'un groupe est fermée ou ouvert"""
-  updateRoomOpenState(
-    """L'uid du groupe"""
-    groupUid: String!
-
-    """Vrai si on veut indiquer que le local est maintenant ouvert """
-    openRoom: Boolean!
+  """Marque une ressource comme partagée par l'utilisateur·ice connecté·e"""
+  trackShare(
+    """ID (global) de la ressource"""
+    resource: ID!
   ): Boolean!
+  """
+  Débannir un·e utilisateur·rice d'un événement. Si l'utilisateur·ice n'était pas banni·e, cette mutation n'aura aucun effet (mais ne fait pas d'erreur).
+  """
+  unbanFromEvent(id: LocalID!, user: UID!): MutationUnbanFromEventResult!
+  """Enlève une page de l'accès rapide"""
+  unbookmark(
+    """Chemin de la page à désépingler"""
+    path: String!
+  ): Bookmark
+  unreact(
+    emoji: String!
+    """La ressource à laquelle enlever la réaction. ID global, avec préfixe."""
+    target: ID!
+  ): Reactable!
+  unsubscribeFromNotifications(endpoint: String!): MutationUnsubscribeFromNotificationsResult!
+  updateArticlePicture(file: File!, id: ID!): String!
+  """Mettre à jour les informations de base d'un évènement"""
+  updateEvent(
+    """
+    Liste d'identifiants de promotions applicables à tout les billets de l'évènement
+    """
+    applicableOffers: [PromotionType!]
+    """E-mail de contact de l'orga de l'évènement"""
+    contactMail: String
+    description: Markdown
+    """Capacité globale de l'évènement"""
+    globalCapacity: Capacity
+    id: LocalID!
+    """Vrai si l'évènement doit apparaître dans le mode kiosque"""
+    includeInKiosk: Boolean
+    """Lieu de l'évènement"""
+    location: String
+    """Afficher le nombre de places restantes sur les billets"""
+    showPlacesLeft: Boolean = true
+    """Titre de l'évènement"""
+    title: String
+  ): MutationUpdateEventResult!
+  updateEventPicture(file: File!, id: ID!): Event!
+  """Changer les caractéristiques de récurrence d'un évènement"""
+  updateEventRecurrence(
+    """Fréquence de récurrence de l'évènement"""
+    frequency: EventFrequency! = Once
+    """Identifiant de l'évènement"""
+    id: LocalID!
+    """
+    Date de fin de la récurrence. Si non précisé, ne modifie pas la date. Il faut passer `frequency` à `Once` pour supprimer la date de fin de récurrence
+    """
+    recurringUntil: DateTime
+  ): MutationUpdateEventRecurrenceResult!
+  updateGroupPicture(dark: Boolean!, file: File!, uid: String!): String! @deprecated(reason: "Use setPicture instead")
+  """Mettre à jour le profil d'un groupe"""
+  updateGroupProfile(profile: GroupProfileInput!, uid: UID!): MutationUpdateGroupProfileResult!
+  updateItemPicture(file: File!, groupUid: String!, itemId: String!): Picture!
+  """Mettre à jour un lien existant"""
+  updateLink(
+    id: LocalID!
+    """Texte à afficher pour le lien"""
+    text: String
+    url: LooseURL
+  ): MutationUpdateLinkResult!
+  updateNotificationSettings(enabledChannels: [NotificationChannel!]!, uid: String!): [NotificationChannel!]!
   updateSchool(address: String, aliasMailDomains: [String!]!, description: String, name: String!, studentMailDomain: String!, uid: String!): School!
   updateSchoolPicture(file: File!, id: String!): String!
   updateStudentAssociationPicture(file: File!, uid: String!): String!
   updateSubjectsExamDates: Boolean!
+  """Mettre à jour un billet"""
+  updateTicket(
+    """Moyens de paiement acceptés pour ce billet"""
+    allowedPaymentMethods: [PaymentMethod!]
+    capacity: Capacity
+    countingPolicy: TicketCountingPolicy! = OnBooked
+    """
+    Nombre maximum de parrainages par billet (0 pour désactiver les parrainages)
+    """
+    godsonLimit: Int
+    """Prix maximum en euros du billet"""
+    maximumPrice: Float
+    """Prix minimum en euros du billet"""
+    minimumPrice: Float
+    name: String
+    """Prix en euros du billet. Met à jour les prix minimum et maximum"""
+    price: Float
+    shotgun: DateRangeInput
+    ticket: LocalID!
+  ): MutationUpdateTicketResult!
+  updateTicketConstraints(
+    """
+    Contraintes pour limiter la réservation du billet. Les différentes contraintes sont appliquées avec un “ET logique”: il faut que chacune des contraintes spécificées soient remplies par la personne voulant réserver.
+    """
+    constraints: TicketConstraintsInput!
+    ticket: LocalID!
+  ): MutationUpdateTicketConstraintsResult!
   updateUser(
     address: String!
     apprentice: Boolean!
@@ -1725,23 +2039,20 @@ type Mutation {
     description: String!
     email: String!
     firstName: String!
-
     """
     An empty string removes the godparent. Passing null (or undefined) does not update the godparent. An uid sets the godparent to that uid.
     """
     godparentUid: String
     graduationYear: Int
     lastName: String!
-    links: [LinkInput!]!
     majorId: ID
     minorId: ID
     nickname: String!
     otherEmails: [String!]!
     phone: String!
     uid: UID!
-  ): MutationUpdateUserResult!
+  ): MutationUpdateUserResult! @deprecated(reason: "Use `updateUserProfile`, `requestEmailChange` and other `updateUser*` mutations instead")
   updateUserCandidate(
-    address: String!
     birthday: DateTime
     cededImageRightsToTVn7: Boolean!
     email: String!
@@ -1749,109 +2060,94 @@ type Mutation {
     graduationYear: Int!
     lastName: String!
     majorId: ID!
-    phone: String!
-
     """
     Inscrire définitivement l'utilisateur·ice si vrai. Si faux, mettre à jour la demande d'inscription sans créer de compte
     """
     register: Boolean!
-
     """Le @ souhaité"""
     uid: UID!
   ): MutationUpdateUserCandidateResult!
-  updateUserPermissions(canAccessDocuments: Boolean!, uid: String!): User!
+  """Met à jour les infos sur le cursus scolaire de l'utilisateur.ice"""
+  updateUserCurriculum(
+    apprentice: Boolean
+    """
+    Vrai pour déconnecter la personne de sa filière (et donc faire du compte un compte exté)
+    """
+    external: Boolean
+    graduationYear: PositiveInt
+    major: UID
+    uid: UID!
+  ): MutationUpdateUserCurriculumResult!
+  updateUserPermissions(adminOf: [UID!], canAccessDocuments: Boolean, canEditGroupsOf: [UID!], user: UID!): MutationUpdateUserPermissionsResult!
   updateUserPicture(file: File!, uid: String!): String!
+  """Met à jour le profil de l'utilisateur"""
+  updateUserProfile(profile: UserProfileInput!, uid: UID!): MutationUpdateUserProfileResult!
   uploadDocumentFile(documentId: ID!, file: File!, solution: Boolean!): String!
-  upsertAnnouncement(body: String!, endsAt: DateTime!, id: ID, startsAt: DateTime!, title: String!, warning: Boolean!): MutationUpsertAnnouncementResult!
-  upsertArticle(body: String!, event: ID, group: UID!, id: ID, links: [LinkInput!]! = [], publishedAt: DateTime, title: String!, visibility: Visibility!): MutationUpsertArticleResult!
+  upsertAnnouncement(body: String!, endsAt: DateTime!, id: ID, startsAt: DateTime!, title: String!, warning: Boolean!): MutationUpsertAnnouncementResult! @graphinx(module: "announcements")
+  """Crée ou met à jour un post"""
+  upsertArticle(body: String!, event: ID, group: UID!, id: ID, publishedAt: DateTime, title: String!, visibility: Visibility!): MutationUpsertArticleResult!
   upsertBarWeek(description: String!, endsAt: DateTime!, groupsUids: [String!]!, id: ID, startsAt: DateTime!): MutationUpsertBarWeekResult!
   upsertComment(body: String!, id: ID, inReplyToId: ID, resourceId: ID): Comment!
   upsertDocument(description: String!, id: ID, schoolYear: Int!, subject: ID!, title: String!, type: DocumentType!): MutationUpsertDocumentResult!
-  upsertEvent(
-    """List of user uids"""
-    bannedUsers: [String!]!
-
-    """List of group uids"""
-    coOrganizers: [String!]!
-    contactMail: String!
-    description: String!
-    endsAt: DateTime!
-    frequency: EventFrequency!
-    groupUid: String!
-    id: String
-
-    """Include l'évènement dans l'affichage du mode kiosque"""
-    includeInKiosk: Boolean
-    links: [LinkInput!]!
-    location: String!
-    lydiaAccountId: String
-    managers: [ManagerOfEventInput!]!
-    recurringUntil: DateTime
-
-    """Affiche le nombre de places restantes dans l'évènement"""
-    showPlacesLeft: Boolean
-    startsAt: DateTime!
-    ticketGroups: [TicketGroupInput!]!
-    tickets: [TicketInput!]!
-    title: String!
-    visibility: Visibility!
-  ): MutationUpsertEventResult!
-
+  upsertEventManager(event: LocalID!, powerlevel: EventManagerPowerLevel!, user: UID!): MutationUpsertEventManagerResult!
   """
   Crée ou met à jour un formulaire. À la création, une section de formulaire vide sans titre est automatiquement créée. C'est pratique pour les formulaires sans section.
   """
   upsertForm(input: MutationUpsertFormInput!): Form!
-
   """Crée ou met à jour une section de formulaire."""
   upsertFormSection(input: MutationUpsertFormSectionInput!): FormSection!
   upsertGodparentRequest(godchildUid: String!, godparentUid: String!, id: ID): MutationUpsertGodparentRequestResult!
-  upsertGroup(input: UpsertGroupInput!, uid: UID): MutationUpsertGroupResult!
+  upsertGroup(input: UpsertGroupInput!, uid: UID): MutationUpsertGroupResult! @deprecated(reason: "Mutation séparée en plusieurs mutations plus spécifiques. Voir la documentation du module groups")
   upsertGroupMember(canEditArticles: Boolean!, canEditMembers: Boolean!, canScanEvents: Boolean!, groupId: ID!, isDeveloper: Boolean!, memberId: ID!, president: Boolean!, secretary: Boolean!, title: String!, treasurer: Boolean!, vicePresident: Boolean!): GroupMember!
   upsertLydiaAccount(groupUid: String!, id: ID, name: String!, privateToken: String!, vendorToken: String!): LydiaAccount!
-  upsertManagersOfEvent(eventId: ID!, managers: [ManagerOfEventInput!]!): [EventManager!]!
-  upsertNotificationSubscription(endpoint: String!, expiresAt: DateTime, keys: NotificationSubscriptionKeysInput!, name: String!): NotificationSubscription!
-
+  upsertManagersOfEvent(eventId: ID!, managers: [ManagerOfEventInput!]!): [EventManager!]! @deprecated(reason: "Use 'upsertEventManager' and 'removeEventManager' instead")
   """Crée ou met à jour une page."""
   upsertPage(
     """Le corps de la page. Supporte le markdown"""
     body: String!
-
     """L'UID du groupe auquel la page appartient"""
     group: String
-
     """
     Le chemin de la page. Si la page existe déjà, elle sera mise à jour. Sinon, une nouvelle page sera créée. Ne peut contenir que des caractères alphanumériques, des tirets, des tirets du bas et des slashes. Fait pour être utilisé dans des URLs.
     """
     path: String!
-
     """L'UID de l'AE à laquelle la page appartient"""
     studentAssociation: String
-
     """Le titre de la page"""
     title: String!
   ): MutationUpsertPageResult!
-
   """Crée ou met à jour une question."""
   upsertQuestion(input: MutationUpsertQuestionInput!): Question!
-  upsertReaction(articleId: ID, commentId: ID, documentId: ID, emoji: String!, eventId: ID, id: ID): Int!
-  upsertRegistration(authorEmail: String, beneficiary: String, id: ID, paid: Boolean!, paymentMethod: PaymentMethod, ticketId: ID!): MutationUpsertRegistrationResult!
+  upsertReaction(articleId: ID, commentId: ID, documentId: ID, emoji: String!, eventId: ID, id: ID): Int! @deprecated(reason: "Use 'react' instead")
+  upsertRegistration(authorEmail: String, beneficiary: String, id: ID, paid: Boolean!, paymentMethod: PaymentMethod, ticketId: ID!): MutationUpsertRegistrationResult! @deprecated(reason: "Use bookEvent instead")
   upsertService(description: String!, groupUid: String, id: ID, importance: Int = 0, logo: String!, logoSourceType: LogoSourceType!, name: String!, schoolUid: String, studentAssociationUid: String, url: String!): MutationUpsertServiceResult!
   upsertShopItem(description: String!, endsAt: DateTime, groupUid: String!, id: ID, lydiaAccounId: String, max: Int!, name: String!, paymentMethods: [PaymentMethod!]!, price: Float!, startsAt: DateTime, stock: Int!, visibility: Visibility!): MutationUpsertShopItemResult!
   upsertShopOptions(itemOptions: [ShopItemOptionInput!]!, shopItemId: String!): Boolean!
   upsertShopPayment(answers: [String!]!, id: ID, paymentMethod: String, phone: String, quantity: Int!, shopItemId: String!, userUid: String!): MutationUpsertShopPaymentResult!
-  upsertTicketGroup(capacity: Int!, eventId: ID!, id: ID, name: String!, tickets: [ID!]!): TicketGroup!
+  """Créer ou modifier un thème"""
+  upsertTheme(autodeploy: Boolean!, endsAt: DateTime!, group: UID!, id: LocalID, name: String!, startsAt: DateTime!): MutationUpsertThemeResult!
+  upsertTicketGroup(
+    capacity: Int
+    """Ne sert qu'à la création."""
+    event: LocalID
+    id: LocalID
+    name: String
+  ): MutationUpsertTicketGroupResult!
   usePasswordReset(newPassword: String!, token: String!): MutationUsePasswordResetResult!
   validateEmail(token: String!): MutationValidateEmailResult!
   verifyBooking(
+    """
+    URL vers la page du billet, permet d'extraire le code de réservation depuis le contenu du QR Code, qui peut alors être une URL vers le billet plutôt qu'un simple code. `[code]` correspond au code de réservation dans cette URL.
+    """
+    bookingURLTemplate: URL
     """Identifiant de l’événement"""
-    event: ID!
-
-    """Identifiant de la place ou code de réservation"""
-    id: ID!
+    event: LocalID!
+    """Contenu du QR Code décodé"""
+    qrcode: String!
   ): MutationVerifyBookingResult!
 }
 
-union MutationAcceptRegistrationResult = Error | MutationAcceptRegistrationSuccess
+union MutationAcceptRegistrationResult = Error | MutationAcceptRegistrationSuccess | ZodError
 
 type MutationAcceptRegistrationSuccess {
   data: User!
@@ -1863,46 +2159,146 @@ type MutationAddFileToPageSuccess {
   data: Page!
 }
 
-union MutationAddGroupMemberResult = Error | MutationAddGroupMemberSuccess
+union MutationAddGroupMemberResult = Error | MutationAddGroupMemberSuccess | ZodError
 
 type MutationAddGroupMemberSuccess {
   data: GroupMember!
 }
 
-union MutationAnswerFormSectionResult = Error | MutationAnswerFormSectionSuccess
+union MutationAddLinksResult = Error | MutationAddLinksSuccess | ZodError
+
+type MutationAddLinksSuccess {
+  data: HasLinks!
+}
+
+union MutationAnswerFormSectionResult = Error | MutationAnswerFormSectionSuccess | ZodError
 
 type MutationAnswerFormSectionSuccess {
   data: [Answer!]!
 }
 
-union MutationAuthorizeResult = Error | MutationAuthorizeSuccess | OAuth2Error
+union MutationAnswerGodparentRequestResult = Error | MutationAnswerGodparentRequestSuccess | ZodError
 
-type MutationAuthorizeSuccess {
-  data: String!
+type MutationAnswerGodparentRequestSuccess {
+  data: GodparentRequest!
 }
 
-union MutationCancelRegistrationResult = Error | MutationCancelRegistrationSuccess
+union MutationBanFromEventResult = Error | MutationBanFromEventSuccess | ZodError
 
-type MutationCancelRegistrationSuccess {
+type MutationBanFromEventSuccess {
+  data: Event!
+}
+
+union MutationBookEventResult = Error | MutationBookEventSuccess | ZodError
+
+type MutationBookEventSuccess {
+  data: Registration!
+}
+
+union MutationCancelBookingResult = Error | MutationCancelBookingSuccess | ZodError
+
+type MutationCancelBookingSuccess {
+  data: Registration!
+}
+
+union MutationCancelPendingContributionResult = Error | MutationCancelPendingContributionSuccess | ZodError
+
+type MutationCancelPendingContributionSuccess {
   data: Boolean!
 }
 
-union MutationCompleteRegistrationResult = Error | MutationCompleteRegistrationSuccess | ZodError
+union MutationChangeEventOrganizerResult = Error | MutationChangeEventOrganizerSuccess | ZodError
 
-type MutationCompleteRegistrationSuccess {
-  data: CompleteSignupResult!
+type MutationChangeEventOrganizerSuccess {
+  data: Event!
 }
 
-union MutationContributeResult = Error | MutationContributeSuccess
+union MutationContributeResult = Error | MutationContributeSuccess | ZodError
 
 type MutationContributeSuccess {
   data: Boolean!
 }
 
-union MutationCreatePasswordResetResult = Error | MutationCreatePasswordResetSuccess
+union MutationCreateAppleWalletPassResult = Error | MutationCreateAppleWalletPassSuccess | ZodError
+
+type MutationCreateAppleWalletPassSuccess {
+  data: String!
+}
+
+union MutationCreateEventResult = Error | MutationCreateEventSuccess | ZodError
+
+type MutationCreateEventSuccess {
+  data: Event!
+}
+
+union MutationCreateGoogleWalletPassResult = Error | MutationCreateGoogleWalletPassSuccess | ZodError
+
+type MutationCreateGoogleWalletPassSuccess {
+  data: String!
+}
+
+union MutationCreateGroupAccessTokenResult = Error | MutationCreateGroupAccessTokenSuccess | ZodError
+
+type MutationCreateGroupAccessTokenSuccess {
+  data: Credential!
+}
+
+union MutationCreateGroupResult = Error | MutationCreateGroupSuccess | ZodError
+
+type MutationCreateGroupSuccess {
+  data: Group!
+}
+
+union MutationCreatePasswordResetResult = Error | MutationCreatePasswordResetSuccess | ZodError
 
 type MutationCreatePasswordResetSuccess {
   data: Boolean!
+}
+
+union MutationCreatePostResult = Error | MutationCreatePostSuccess | ZodError
+
+type MutationCreatePostSuccess {
+  data: Article!
+}
+
+union MutationCreateTicketResult = Error | MutationCreateTicketSuccess | ZodError
+
+type MutationCreateTicketSuccess {
+  data: Ticket!
+}
+
+union MutationDeleteContributionResult = Error | MutationDeleteContributionSuccess | ZodError
+
+type MutationDeleteContributionSuccess {
+  data: ContributionOption!
+}
+
+union MutationDeleteEventResult = Error | MutationDeleteEventSuccess | ZodError
+
+type MutationDeleteEventSuccess {
+  data: Event!
+  """
+  Indique que l'évènement n'a pas été supprimé mais plutôt passé en privé. La valeur est un message expliquant cela, et pourquoi c'est arrivé.
+  """
+  didSoftDelete: String
+}
+
+union MutationDeleteGodchildResult = Error | MutationDeleteGodchildSuccess | ZodError
+
+type MutationDeleteGodchildSuccess {
+  data: User!
+}
+
+union MutationDeleteGodparentResult = Error | MutationDeleteGodparentSuccess | ZodError
+
+type MutationDeleteGodparentSuccess {
+  data: User!
+}
+
+union MutationDeleteLinkResult = Error | MutationDeleteLinkSuccess | ZodError
+
+type MutationDeleteLinkSuccess {
+  data: Link!
 }
 
 union MutationDeletePageResult = Error | MutationDeletePageSuccess | ZodError
@@ -1911,52 +2307,90 @@ type MutationDeletePageSuccess {
   data: Page!
 }
 
-union MutationDeleteShopItemResult = Error | MutationDeleteShopItemSuccess
+union MutationDeleteShopItemResult = Error | MutationDeleteShopItemSuccess | ZodError
 
 type MutationDeleteShopItemSuccess {
   data: Boolean!
 }
 
-union MutationFinishPaypalRegistrationPaymentResult = Error | MutationFinishPaypalRegistrationPaymentSuccess
+union MutationDeleteTicketGroupResult = Error | MutationDeleteTicketGroupSuccess | ZodError
+
+type MutationDeleteTicketGroupSuccess {
+  data: TicketGroup!
+}
+
+union MutationDeleteTicketResult = Error | MutationDeleteTicketSuccess | ZodError
+
+type MutationDeleteTicketSuccess {
+  data: Ticket!
+  """
+  Message d'explication si le billet n'a pas pu être supprimé mais qu'une autre action a été effectuée à la place
+  """
+  softDeleted: String
+}
+
+union MutationFinishPaypalRegistrationPaymentResult = Error | MutationFinishPaypalRegistrationPaymentSuccess | ZodError
 
 type MutationFinishPaypalRegistrationPaymentSuccess {
   data: Boolean!
 }
 
-union MutationLoginResult = AwaitingValidationError | Error | MutationLoginSuccess
+union MutationLoginResult = AwaitingValidationError | Error | MutationLoginSuccess | ZodError
 
 type MutationLoginSuccess {
   data: Credential!
 }
 
-union MutationMailFormAnswersResult = Error | MutationMailFormAnswersSuccess
+union MutationMailFormAnswersResult = Error | MutationMailFormAnswersSuccess | ZodError
 
 type MutationMailFormAnswersSuccess {
   data: String!
 }
 
-union MutationOpposeRegistrationResult = Error | MutationOpposeRegistrationSuccess
+union MutationMarkBookingAsPaidResult = Error | MutationMarkBookingAsPaidSuccess | ZodError
+
+type MutationMarkBookingAsPaidSuccess {
+  data: Registration!
+}
+
+union MutationMarkContributionAsPaidResult = Error | MutationMarkContributionAsPaidSuccess | ZodError
+
+type MutationMarkContributionAsPaidSuccess {
+  data: ContributionOption!
+}
+
+union MutationOpposeRegistrationResult = Error | MutationOpposeRegistrationSuccess | ZodError
 
 type MutationOpposeRegistrationSuccess {
   data: Boolean!
 }
 
-union MutationPaidRegistrationResult = Error | MutationPaidRegistrationSuccess
-
-type MutationPaidRegistrationSuccess {
-  data: String!
-}
-
-union MutationPaidShopPaymentResult = Error | MutationPaidShopPaymentSuccess
+union MutationPaidShopPaymentResult = Error | MutationPaidShopPaymentSuccess | ZodError
 
 type MutationPaidShopPaymentSuccess {
   data: ShopPayment!
 }
 
-union MutationRegisterGoogleCredentialResult = Error | MutationRegisterGoogleCredentialSuccess
+union MutationPayBookingResult = Error | MutationPayBookingSuccess | ZodError
+
+type MutationPayBookingSuccess {
+  data: Registration!
+}
+
+union MutationRegisterGoogleCredentialResult = Error | MutationRegisterGoogleCredentialSuccess | ZodError
 
 type MutationRegisterGoogleCredentialSuccess {
   data: Boolean!
+}
+
+union MutationRemoveEventManagerResult = Error | MutationRemoveEventManagerSuccess | ZodError
+
+type MutationRemoveEventManagerSuccess {
+  data: EventManager!
+  """
+  Contient un message d'explication si jamais le dernier manager a dû changer de permissions afin de conserver au moins un manager avec les permissions de gestion des managers de l'événement
+  """
+  lastManagerPowerlevelChanged: String
 }
 
 union MutationRemoveFileFromPageResult = Error | MutationRemoveFileFromPageSuccess | ZodError
@@ -1965,22 +2399,162 @@ type MutationRemoveFileFromPageSuccess {
   data: Page!
 }
 
-union MutationRequestEmailChangeResult = Error | MutationRequestEmailChangeSuccess
+union MutationRequestEmailChangeResult = Error | MutationRequestEmailChangeSuccess | ZodError
 
 type MutationRequestEmailChangeSuccess {
-  data: Boolean!
+  data: EmailChange!
 }
 
-union MutationResetPasswordResult = Error | MutationResetPasswordSuccess
+union MutationResetPasswordResult = Error | MutationResetPasswordSuccess | ZodError
 
 type MutationResetPasswordSuccess {
   data: Boolean!
 }
 
-union MutationStartRegistrationResult = Error | MutationStartRegistrationSuccess | ZodError
+union MutationSaveLydiaPhoneNumberResult = Error | MutationSaveLydiaPhoneNumberSuccess | ZodError
 
-type MutationStartRegistrationSuccess {
-  data: Boolean!
+type MutationSaveLydiaPhoneNumberSuccess {
+  data: User!
+}
+
+union MutationSelfJoinGroupResult = Error | MutationSelfJoinGroupSuccess | ZodError
+
+type MutationSelfJoinGroupSuccess {
+  data: GroupMember!
+}
+
+union MutationSetEventApplicableOffersResult = Error | MutationSetEventApplicableOffersSuccess | ZodError
+
+type MutationSetEventApplicableOffersSuccess {
+  data: Event!
+}
+
+union MutationSetEventBeneficiaryResult = Error | MutationSetEventBeneficiarySuccess | ZodError
+
+type MutationSetEventBeneficiarySuccess {
+  data: Event!
+}
+
+union MutationSetEventCoOrganizersResult = Error | MutationSetEventCoOrganizersSuccess | ZodError
+
+type MutationSetEventCoOrganizersSuccess {
+  data: Event!
+}
+
+union MutationSetEventDatesResult = Error | MutationSetEventDatesSuccess | ZodError
+
+type MutationSetEventDatesSuccess {
+  data: Event!
+}
+
+union MutationSetEventVisibilityResult = Error | MutationSetEventVisibilitySuccess | ZodError
+
+type MutationSetEventVisibilitySuccess {
+  data: Event!
+}
+
+union MutationSetGroupJoinPolicyResult = Error | MutationSetGroupJoinPolicySuccess | ZodError
+
+type MutationSetGroupJoinPolicySuccess {
+  data: Group!
+}
+
+union MutationSetGroupStudentAssociationResult = Error | MutationSetGroupStudentAssociationSuccess | ZodError
+
+type MutationSetGroupStudentAssociationSuccess {
+  data: Group!
+}
+
+union MutationSetGroupTypeResult = Error | MutationSetGroupTypeSuccess | ZodError
+
+type MutationSetGroupTypeSuccess {
+  data: Group!
+}
+
+union MutationSetParentGroupResult = Error | MutationSetParentGroupSuccess | ZodError
+
+type MutationSetParentGroupSuccess {
+  data: Group!
+}
+
+union MutationSetPictureResult = Error | MutationSetPictureSuccess | ZodError
+
+type MutationSetPictureSuccess {
+  """
+  Si l'image a déjà été supprimée, renvoie un texte expliquant que l'image a déjà été supprimée. Sinon, renvoie une chaîne vide.
+  """
+  alreadyDeleted: String!
+  data: Pictured!
+}
+
+union MutationSetTicketGroupResult = Error | MutationSetTicketGroupSuccess | ZodError
+
+type MutationSetTicketGroupSuccess {
+  data: Ticket!
+}
+
+union MutationStartSignupResult = Error | MutationStartSignupSuccess | ZodError
+
+type MutationStartSignupSuccess {
+  data: UserCandidate!
+}
+
+union MutationSubscribeToNotificationsResult = Error | MutationSubscribeToNotificationsSuccess | ZodError
+
+type MutationSubscribeToNotificationsSuccess {
+  data: NotificationSubscription!
+}
+
+union MutationUnbanFromEventResult = Error | MutationUnbanFromEventSuccess | ZodError
+
+type MutationUnbanFromEventSuccess {
+  data: Event!
+}
+
+union MutationUnsubscribeFromNotificationsResult = Error | MutationUnsubscribeFromNotificationsSuccess | ZodError
+
+type MutationUnsubscribeFromNotificationsSuccess {
+  data: NotificationSubscription!
+}
+
+union MutationUpdateEventRecurrenceResult = Error | MutationUpdateEventRecurrenceSuccess | ZodError
+
+type MutationUpdateEventRecurrenceSuccess {
+  data: Event!
+}
+
+union MutationUpdateEventResult = Error | MutationUpdateEventSuccess | ZodError
+
+type MutationUpdateEventSuccess {
+  data: Event!
+}
+
+union MutationUpdateGroupProfileResult = Error | MutationUpdateGroupProfileSuccess | ZodError
+
+type MutationUpdateGroupProfileSuccess {
+  data: Group!
+}
+
+union MutationUpdateLinkResult = Error | MutationUpdateLinkSuccess | ZodError
+
+type MutationUpdateLinkSuccess {
+  data: Link!
+}
+
+union MutationUpdateTicketConstraintsResult = Error | MutationUpdateTicketConstraintsSuccess | ZodError
+
+type MutationUpdateTicketConstraintsSuccess {
+  """
+  Les contraintes de billet n'ont pas été enregistrées tel quel mais on été simplifiées. La valeur est un message d'explication.
+  """
+  constraintsWereSimplified: String
+  data: Ticket!
+}
+
+union MutationUpdateTicketResult = Error | MutationUpdateTicketSuccess | ZodError
+
+type MutationUpdateTicketSuccess {
+  data: Ticket!
 }
 
 union MutationUpdateUserCandidateResult = Error | MutationUpdateUserCandidateSuccess | ZodError
@@ -1989,7 +2563,25 @@ type MutationUpdateUserCandidateSuccess {
   data: Boolean!
 }
 
-union MutationUpdateUserResult = Error | MutationUpdateUserSuccess
+union MutationUpdateUserCurriculumResult = Error | MutationUpdateUserCurriculumSuccess | ZodError
+
+type MutationUpdateUserCurriculumSuccess {
+  data: User!
+}
+
+union MutationUpdateUserPermissionsResult = Error | MutationUpdateUserPermissionsSuccess | ZodError
+
+type MutationUpdateUserPermissionsSuccess {
+  data: User!
+}
+
+union MutationUpdateUserProfileResult = Error | MutationUpdateUserProfileSuccess | ZodError
+
+type MutationUpdateUserProfileSuccess {
+  data: User!
+}
+
+union MutationUpdateUserResult = Error | MutationUpdateUserSuccess | ZodError
 
 type MutationUpdateUserSuccess {
   data: User!
@@ -2001,40 +2593,37 @@ type MutationUpsertAnnouncementSuccess {
   data: Announcement!
 }
 
-union MutationUpsertArticleResult = Error | MutationUpsertArticleSuccess
+union MutationUpsertArticleResult = Error | MutationUpsertArticleSuccess | ZodError
 
 type MutationUpsertArticleSuccess {
   data: Article!
 }
 
-union MutationUpsertBarWeekResult = Error | MutationUpsertBarWeekSuccess
+union MutationUpsertBarWeekResult = Error | MutationUpsertBarWeekSuccess | ZodError
 
 type MutationUpsertBarWeekSuccess {
   data: BarWeek!
 }
 
-union MutationUpsertDocumentResult = Error | MutationUpsertDocumentSuccess
+union MutationUpsertDocumentResult = Error | MutationUpsertDocumentSuccess | ZodError
 
 type MutationUpsertDocumentSuccess {
   data: Document!
 }
 
-union MutationUpsertEventResult = Error | MutationUpsertEventSuccess
+union MutationUpsertEventManagerResult = Error | MutationUpsertEventManagerSuccess | ZodError
 
-type MutationUpsertEventSuccess {
-  data: Event!
+type MutationUpsertEventManagerSuccess {
+  data: EventManager!
 }
 
 input MutationUpsertFormInput {
   closesAt: DateTime
   description: String! = ""
-
   """Identifiant de l'événement à associer au formulaire"""
   eventId: ID
-
   """UID du groupe auquel le formulaire est associé."""
   group: String
-
   """
   Identifiant du formulaire à mettre à jour. Si non fourni, un nouveau formulaire sera créé.
   """
@@ -2046,17 +2635,14 @@ input MutationUpsertFormInput {
 
 input MutationUpsertFormSectionInput {
   description: String! = ""
-
   """
   Identifiant du formulaire auquel associer la section. Il n'es pas possible de changer le formulaire auquel une section est associée, si id est fourni, ce paramètre est ignoré. L'ID peut être local
   """
   formId: String!
-
   """
   Identifiant de la section à mettre à jour. Si non fourni, une nouvelle section sera créée.
   """
   id: ID
-
   """
   Position de la section dans le formulaire. Si non spécifié, la section est ajoutée à la fin du formulaire
   """
@@ -2064,7 +2650,7 @@ input MutationUpsertFormSectionInput {
   title: String!
 }
 
-union MutationUpsertGodparentRequestResult = Error | MutationUpsertGodparentRequestSuccess
+union MutationUpsertGodparentRequestResult = Error | MutationUpsertGodparentRequestSuccess | ZodError
 
 type MutationUpsertGodparentRequestSuccess {
   data: GodparentRequest!
@@ -2087,39 +2673,31 @@ input MutationUpsertQuestionInput {
   Indique si la question doit avoir une option "Autre"
   """
   allowOptionOther: Boolean! = false
-
   """Types de fichiers autorisés pour les questions de type `FileUpload`"""
   allowedFiletypes: [String!]
-
   """Indique si les réponses à la question sont anonymes"""
   anonymous: Boolean!
-
   """
   Valeur par défaut de la question. Voir `AnswerInput.answer` pour le format.
   """
   default: [String!]! = []
   description: String! = ""
-
   """
   Identifiant du formulaire auquel associer la question. Il n'es pas possible de changer le formulaire auquel une question est associée, si id est fourni, ce paramètre est ignoré.
   """
   formId: ID
-
   """
   Identifiant de la question à mettre à jour. Si non fourni, une nouvelle question sera créée.
   """
   id: ID
-
   """Indique si la question est obligatoire"""
   mandatory: Boolean!
   options: [QuestionOptionInput!]
-
   """
   Position de la question dans la section. Si non spécifié, rajoute la question à la fin de la section.
   """
   order: Int
   scale: QuestionScaleInput
-
   """
   Identifiant de la section de formulaire à laquelle associer la question. Si non fourni, la question est rajoutée à une section à titre vide, qui est créée au besoin. Pratique pour les formulaires plus simples sans section.
   """
@@ -2128,43 +2706,55 @@ input MutationUpsertQuestionInput {
   type: QuestionKind!
 }
 
-union MutationUpsertRegistrationResult = Error | MutationUpsertRegistrationSuccess
+union MutationUpsertRegistrationResult = Error | MutationUpsertRegistrationSuccess | ZodError
 
 type MutationUpsertRegistrationSuccess {
   data: Registration!
 }
 
-union MutationUpsertServiceResult = Error | MutationUpsertServiceSuccess
+union MutationUpsertServiceResult = Error | MutationUpsertServiceSuccess | ZodError
 
 type MutationUpsertServiceSuccess {
   data: Service!
 }
 
-union MutationUpsertShopItemResult = Error | MutationUpsertShopItemSuccess
+union MutationUpsertShopItemResult = Error | MutationUpsertShopItemSuccess | ZodError
 
 type MutationUpsertShopItemSuccess {
   data: ShopItem!
 }
 
-union MutationUpsertShopPaymentResult = Error | MutationUpsertShopPaymentSuccess
+union MutationUpsertShopPaymentResult = Error | MutationUpsertShopPaymentSuccess | ZodError
 
 type MutationUpsertShopPaymentSuccess {
   data: ShopPayment!
 }
 
-union MutationUsePasswordResetResult = Error | MutationUsePasswordResetSuccess
+union MutationUpsertThemeResult = Error | MutationUpsertThemeSuccess | ZodError
+
+type MutationUpsertThemeSuccess {
+  data: Theme!
+}
+
+union MutationUpsertTicketGroupResult = Error | MutationUpsertTicketGroupSuccess | ZodError
+
+type MutationUpsertTicketGroupSuccess {
+  data: TicketGroup!
+}
+
+union MutationUsePasswordResetResult = Error | MutationUsePasswordResetSuccess | ZodError
 
 type MutationUsePasswordResetSuccess {
   data: Boolean!
 }
 
-union MutationValidateEmailResult = Error | MutationValidateEmailSuccess
+union MutationValidateEmailResult = Error | MutationValidateEmailSuccess | ZodError
 
 type MutationValidateEmailSuccess {
-  data: Boolean!
+  data: EmailChange!
 }
 
-union MutationVerifyBookingResult = Error | MutationVerifyBookingSuccess
+union MutationVerifyBookingResult = Error | MutationVerifyBookingSuccess | ZodError
 
 type MutationVerifyBookingSuccess {
   data: RegistrationVerificationResult!
@@ -2172,6 +2762,8 @@ type MutationVerifyBookingSuccess {
 
 interface Node {
   id: ID!
+  """L'identifiant local de la ressource (sans préfixe)"""
+  localID: LocalID!
 }
 
 """An error raised when a resource does not exist."""
@@ -2190,6 +2782,8 @@ type Notification implements Node {
   groupId: ID
   id: ID!
   imageFile: String!
+  """L'identifiant local de la ressource (sans préfixe)"""
+  localID: LocalID!
   subscription: NotificationSubscription!
   subscriptionId: ID!
   timestamp: DateTime
@@ -2203,6 +2797,7 @@ enum NotificationChannel {
   Comments
   GodparentRequests
   GroupBoard
+  Mandatory
   Other
   Permissions
   Shotguns
@@ -2227,65 +2822,40 @@ input NotificationSubscriptionKeysInput {
   p256dh: String!
 }
 
-type OAuth2Error {
-  code: OAuth2ErrorCode!
-  message: String!
-}
-
-"""OAuth2 error codes, see RFC 6749 § 4.1.2.1"""
-enum OAuth2ErrorCode {
-  access_denied
-  invalid_request
-  invalid_scope
-  server_error
-  temporarily_unavailable
-  unauthorized_client
-  unsupported_response_type
-}
-
 """
 Une page écrite par un·e utilisateur·rice, servant par exemple à présenter les partenariats d'une AE sur une page dédiée.
 """
 type Page {
   """Contenu de la page. Supporte la syntaxe Markdown."""
   body: String!
-
   """Contenu de la page, converti en HTML. Protégé contre les attaques XSS."""
   bodyHtml: String!
-
   """L'utilisateur·ice connecté·e peut modifier ou supprimer cette page"""
   canBeEdited: Boolean!
   createdAt: DateTime!
-
   """
   Chemin vers les fichiers inclus sur la page, par exmple des images. Voir filesURLs pour obtenir les URLs de ces fichiers.
   """
   files: [String!]!
-
   """URLs vers les fichiers inclus sur la page."""
   filesURLs: [String!]!
-
   """
   Groupe auquel appartient la page. Peut être null si la page n'appartient à aucun groupe.
   """
   group: Group
   id: ID!
-
   """
   Dernier·ère utilisateur·rice ayant modifié la page. Peut être null si la page n'a jamais été modifiée, ou que l'utilisateur·ice en question a été supprimé·e.
   """
   lastAuthor: User
-
   """
   Chemin vers la page. Doit être unique _par AE ou groupe_. L'URL finale sera donc préfixée d'une certaine manière pour éviter les collisions.
   """
   path: String!
-
   """
   Association étudiante à laquelle appartient la page. Peut être null si la page n'appartient à aucune association.
   """
   studentAssociation: StudentAssociation
-
   """Titre de la page."""
   title: String!
   updatedAt: DateTime!
@@ -2310,14 +2880,28 @@ type PagesEdge {
 }
 
 enum PaymentMethod {
+  """Carte bancaire"""
   Card
+  """Espèces"""
   Cash
+  """Chèque"""
   Check
+  """Paiement externe à Churros"""
+  External
+  """Lydia"""
   Lydia
+  """Autre"""
   Other
-  PayPal
+  """PayPal"""
+  PayPal @deprecated(reason: "Non implémenté")
+  """Virement"""
   Transfer
 }
+
+"""
+Numéro de téléphone, au format international (E.164, avec préfixes “+”), ou au format local français (10 chiffres, sans préfixe).
+"""
+scalar PhoneNumber
 
 type Picture {
   id: ID!
@@ -2327,18 +2911,36 @@ type Picture {
 
 """Une ressource qui possède une image associée"""
 interface Pictured {
+  """
+  Si la ressource supported d'avoir une image en thème sombre différente de celle en thème clair
+  """
+  hasSeparateDarkPicture: Boolean!
+  """L'identifiant global de la ressource"""
+  id: ID!
+  """Texte alternatif de l'image"""
+  pictureAltText: String!
   """Le nom du fichier de l'image"""
   pictureFile: String!
-
   """Le nom du fichier de l'image, en thème sombre"""
   pictureFileDark: String!
-
   """L'URL publique de l'image"""
   pictureURL(
     """Utiliser l'image en thème sombre"""
     dark: Boolean! = false
+    """
+    Ajouter un timestamp à la fin de l'URL pour forcer le navigateur à recharger l'image. Le timestamp correspond à la date de dernière mise à jour de la ressource (si disponible), ou à l'heure actuelle.
+    """
+    timestamp: Boolean! = true
   ): String!
 }
+
+"""Entier positif"""
+scalar PositiveInt
+
+"""
+Resource possédant un '@' (uid) et pouvant raisonnablement posséder une page de profil, avec nom, photo, bio/description...
+"""
+union Profile = Group | Major | School | StudentAssociation | User
 
 type ProfitsBreakdown {
   byPaymentMethod: ProfitsBreakdownByPaymentMethod!
@@ -2350,6 +2952,7 @@ type ProfitsBreakdownByPaymentMethod {
   Card: Float!
   Cash: Float!
   Check: Float!
+  External: Float!
   Lydia: Float!
   Other: Float!
   PayPal: Float!
@@ -2370,11 +2973,7 @@ type QRCode {
   viewbox: String!
 }
 
-"""- **Rate limit:** 1200/minute"""
-type Query {
-  """Get all OAuth2 clients. Only admins can do this."""
-  allApps: [ThirdPartyApp!]!
-
+type Query @rateLimit(limit: 1200, duration: 60) {
   """Récupère tous les formulaires. Réservé aux admins."""
   allForms(after: String, before: String, first: Int, last: Int): QueryAllFormsConnection!
   allUsers(after: String, before: String, first: Int, last: Int): QueryAllUsersConnection!
@@ -2384,12 +2983,30 @@ type Query {
   ): Announcement!
   announcements(after: String, before: String, first: Int, last: Int): QueryAnnouncementsConnection!
   announcementsNow: [Announcement!]!
-  article(group: UID!, slug: String!): Article!
+  article(id: LocalID!): Article!
+  """
+  Récupérer l'ID d'un article à partir de son groupe et de son slug. Pensé pour les redirections d'URLs anciennes.
+  """
+  articleID(group: UID!, slug: String!): LocalID @deprecated(reason: "Utilisez `article` à la place")
+  """
+  Renvoie l'utilisateur·ice connecté·e. Si l'utilisateur·ice n'est pas connecté·e, une erreur est renvoyée. Pour avoir null aulieu d'une erreur, voir `me`.
+  """
+  assertMe: User! @rateLimit(duration: 60, limit: 6000)
+  """
+  Récupérer le thème qui est actuellement choisi pour un déploiement automatique: le thème de l'utilisateur·ice doit être changé à celui-ci, si iel n'a pas explicitement demandé à ne pas utiliser ce thème
+  """
+  autodeployedTheme: Theme
   barWeek(slug: String!): BarWeek!
   barWeekNow(now: DateTime!): BarWeek
   barWeeks: [BarWeek!]!
   birthdays(activeOnly: Boolean, now: DateTime, width: Int): [User!]!
-
+  """Récupère une réservation par son code"""
+  booking(code: String!): Registration!
+  """Si la page donnée est épinglée par l'utilisateur·ice connecté·e"""
+  bookmarked(
+    """Chemin de la page"""
+    path: String!
+  ): Boolean!
   """Retourne des informations sur le build actuel de l'API"""
   buildInfo: BuildInfo!
   changelog(
@@ -2399,7 +3016,6 @@ type Query {
     version: String
   ): ChangelogRelease!
   codeContributors: QueryCodeContributorsResult!
-
   """
   A changelog for multiple versions. 
   Be careful, this range is (from, to]. I.e. **the first version is excluded, and the last is included**. 
@@ -2411,7 +3027,6 @@ type Query {
     """
     from: String
     sort: SortDirection! = Ascending
-
     """
     The version to end at, **inclusive**. Leave empty to end at the current version (dev).
     """
@@ -2420,14 +3035,13 @@ type Query {
   contributionOptions: [ContributionOption!]!
   document(slug: String!, subject: ID!): Document!
   documents(after: String, before: String, first: Int, last: Int): QueryDocumentsConnection!
-  event(group: UID!, slug: String!): Event!
-  eventManager(eventId: ID!, user: String!): EventManager!
+  event(id: LocalID!): Event!
+  eventManager(id: LocalID!): EventManager!
   events(
     after: String
     before: String
     first: Int
     future: Boolean
-
     """
     N'include seulement les évènements qui veulent être inclus dans l'affichage kiosque
     """
@@ -2438,7 +3052,6 @@ type Query {
     pastRecurring: Boolean
     upcomingShotguns: Boolean
   ): QueryEventsConnection!
-
   """
   Tout les évènements, regroupés par date (de début). Les curseurs (before, after) peuvent être des dates au format YYYY-MM-DD
   """
@@ -2446,7 +3059,6 @@ type Query {
     after: String
     before: String
     first: Int
-
     """
     N'include seulement les évènements qui veulent être inclus dans l'affichage kiosque
     """
@@ -2455,7 +3067,6 @@ type Query {
   ): QueryEventsByDayConnection!
   eventsInWeek(today: DateTime!): [Event!]!
   existsInSchoolLdap(email: String!): Boolean!
-
   """
   Récupère un formulaire. On peut utiliser une subscription pour avoir la mise à jour en temps réel des réponses au formulaire.
   """
@@ -2463,63 +3074,82 @@ type Query {
     """Identifiant local (sans le préfixe `form:`) du formulaire"""
     localId: String!
   ): Form
-
   """Récupère les formulaires visibles par l'utilisateur·ice connecté·e."""
   forms(after: String, before: String, first: Int, last: Int): QueryFormsConnection!
   godparentRequest(id: ID!): GodparentRequest!
   godparentRequests: [GodparentRequest!]!
   group(uid: String!): Group!
   groupMembersCsv(groupUid: String!): QueryGroupMembersCsvResult!
-  groups(types: [GroupType!]): [Group!]!
-
-  """- **Rate limit:** 5/seconde"""
-  healthcheck: HealthCheck!
-
+  groups(
+    types: [GroupType!]
+    """Inclures les groupes non répertoriés"""
+    unlisted: Boolean! = false
+  ): [Group!]!
+  healthcheck: HealthCheck! @rateLimit(duration: 1, limit: 5)
   """Gets the homepage articles, customized if the user is logged in."""
   homepage(after: String, before: String, first: Int, last: Int): QueryHomepageConnection!
   issue(number: Int!): Issue!
   issuesByUser: [Issue!]!
   kioskReload: Boolean!
-  logs(after: String, before: String, first: Int, last: Int): QueryLogsConnection!
+  """Vrai si l'utilisateur·ice est connecté·e"""
+  loggedIn(
+    """
+    Si renseigné, renvoie une erreur si l’utilisateur·ice n’est pas connecté·e
+    """
+    assert: String
+  ): Boolean!
+  logs(
+    after: String
+    """Filtrer par zone"""
+    area: String
+    before: String
+    first: Int
+    last: Int
+    """Filtrer dans le message de l'entrée de log"""
+    message: String
+    """Limiter les logs à ceux effectués par une certaine personne"""
+    user: UID
+  ): QueryLogsConnection!
   lydiaAccount(id: ID!): LydiaAccount!
   lydiaAccounts: [LydiaAccount!]!
-  lydiaAccountsOfGroup(uid: String!): [LydiaAccount!]!
+  lydiaAccountsOfGroup(uid: String!): [LydiaAccount!]! @deprecated(reason: "Use group.lydiaAccounts instead")
   major(uid: String!): Major!
-  majors: [Major!]!
-
-  """- **Rate limit:** 6000/minute"""
-  me: User!
+  majors(
+    """Inclure les filières anciennes n'existant plus dans les cursus actuels"""
+    discontinued: Boolean! = false
+  ): [Major!]!
+  """
+  Renvoie l’utilisateur·ice connecté·e, ou null. Pour une valeur de retour non-nullable, voir `assertMe`.
+  """
+  me: User @rateLimit(duration: 60, limit: 6000)
   minor(id: ID!): Minor!
   minors(after: String, before: String, first: Int, last: Int): QueryMinorsConnection!
-  myApps: [ThirdPartyApp!]!
   notification(id: ID!): Notification!
   notificationSubscription(endpoint: String!): NotificationSubscription!
   notificationSubscriptions: [NotificationSubscription!]!
   notifications(after: String, before: String, channels: [NotificationChannel!] = [], first: Int, groupUids: [String!] = [], last: Int, subscriptionEndpoint: ID): QueryNotificationsConnection!
-
   """
   Returns how many people will be notified if an article of the given visibility and group is created.
   """
   notificationsSendCountForArticle(group: UID!, visibility: Visibility!): Int!
-
   """
   Récupérer une page par son identifiant. Voir aussi `Group.page` et `StudentAssociation.page` pour des queries plus ergonomiques
   """
   page(id: ID!): Page!
-
   """
   Récupère toutes les pages existantes. Réservé aux administrateur·ice.s.
   """
   pages(after: String, before: String, first: Int, last: Int): QueryPagesConnection!
+  profile(uid: UID!): Profile!
+  """Récupérer des informations sur un lien d'inscription rapide"""
+  quickSignup(
+    """Identifiant de l'inscription rapide. Si null, renvoie null"""
+    id: LocalID!
+  ): QuickSignup!
   quickSignups(after: String, before: String, first: Int, last: Int): QueryQuickSignupsConnection!
   reaction(id: ID!): Reaction!
   reactions(after: String, before: String, first: Int, last: Int): QueryReactionsConnection!
   registration(id: ID!): QueryRegistrationResult!
-
-  """Returns an SVG path of the QR Code for the given registration"""
-  registrationQRCode(id: ID!): QRCode!
-  registrationsOfUser(after: String, before: String, first: Int, forUserOnly: Boolean, last: Int, userUid: String!): QueryRegistrationsOfUserConnection! @deprecated(reason: "Utilisez plutôt `user(uid: userUid) { bookings }` (champ `bookings` sur le type `User`).")
-
   """
   Rendu de markdown en HTML. Demande a être authentifié·e pour éviter tout abus.
   """
@@ -2533,29 +3163,44 @@ type Query {
   searchArticles(groupUid: String, q: String!): [ArticleSearchResultType!]!
   searchDocuments(forApprentices: Boolean!, majorUid: String!, q: String!, yearTier: Int!): [DocumentSearchResult!]!
   searchEvents(groupUid: String, q: String!): [EvenSearchResult!]!
-
   """Recherche des formulaires"""
   searchForms(
     """La recherche"""
     q: String!
     similarityCutoff: Float
   ): [FormSearchResult!]!
-  searchGroups(q: String!, similarityCutoff: Float): [GroupSearchResult!]!
-  searchUsers(q: String!, similarityCutoff: Float): [UserSearchResult!]!
-  service(id: ID!): Service!
-  services(groupUid: String, schoolUid: String, studentAssociationUid: String): [Service!]!
+  searchGroups(q: String, similarityCutoff: Float): [GroupSearchResult!]!
+  searchUsers(q: String, similarityCutoff: Float): [UserSearchResult!]!
+  service(id: LocalID!): Service!
+  services(
+    """
+    Renvoie uniquement les services intéréssant l'utilisateur·ice connecté·e
+    """
+    mine: Boolean!
+  ): [Service!]!
   shopItem(slug: String!): ShopItem!
   shopPayments(item: ID!): [ShopPayment!]!
   studentAssociation(uid: String!): StudentAssociation!
   studentAssociations(canContributeOnly: Boolean): [StudentAssociation!]!
   subject(forApprentices: Boolean!, slug: String!, yearTier: Int!): Subject!
   subjects: [Subject!]!
-  thirdPartyApp(
-    """The third party app's client_id. The 'app:' id prefix is optional."""
-    id: ID!
-  ): ThirdPartyApp!
-  ticketGroup(id: ID!): TicketGroup!
-
+  """
+  Génère un pseudo suggéré à partir des infos rentrées par l'utilisateur.ice en cours d'inscription
+  """
+  suggestedUid(
+    """Prénom"""
+    firstName: String!
+    """Nom de famille"""
+    lastName: String!
+  ): String!
+  themes(
+    """
+    Récupérer tous les thèmes auquel ont a accès, même ceux qui sont passés
+    """
+    all: Boolean
+  ): [Theme!]!
+  ticket(id: LocalID!): Ticket!
+  ticketGroup(id: LocalID!): TicketGroup!
   """Vérifie si un identifiant (un “@” dans l'interface) est disponible"""
   uidIsAvailable(uid: UID!): Boolean!
   upcomingChangelog: QueryUpcomingChangelogResult!
@@ -2564,7 +3209,7 @@ type Query {
   userCandidate(token: String!): UserCandidate!
   userCandidateByEmail(email: String!): UserCandidate!
   userCandidates(after: String, before: String, first: Int, last: Int): QueryUserCandidatesConnection!
-  userServices: [Service!]!
+  userServices: [Service!]! @deprecated(reason: "Use `services(mine: true)` instead")
 }
 
 type QueryAllFormsConnection {
@@ -2600,13 +3245,13 @@ type QueryAnnouncementsConnectionEdge {
   node: Announcement!
 }
 
-union QueryCodeContributorsResult = Error | QueryCodeContributorsSuccess
+union QueryCodeContributorsResult = Error | QueryCodeContributorsSuccess | ZodError
 
 type QueryCodeContributorsSuccess {
   data: [User!]!
 }
 
-union QueryCombinedChangelogResult = Error | QueryCombinedChangelogSuccess
+union QueryCombinedChangelogResult = Error | QueryCombinedChangelogSuccess | ZodError
 
 type QueryCombinedChangelogSuccess {
   data: [ChangelogRelease!]!
@@ -2656,7 +3301,7 @@ type QueryFormsConnectionEdge {
   node: Form!
 }
 
-union QueryGroupMembersCsvResult = Error | QueryGroupMembersCsvSuccess
+union QueryGroupMembersCsvResult = Error | QueryGroupMembersCsvSuccess | ZodError
 
 type QueryGroupMembersCsvSuccess {
   data: String!
@@ -2739,24 +3384,13 @@ type QueryReactionsConnectionEdge {
   node: Reaction!
 }
 
-union QueryRegistrationResult = Error | QueryRegistrationSuccess
+union QueryRegistrationResult = Error | QueryRegistrationSuccess | ZodError
 
 type QueryRegistrationSuccess {
   data: Registration!
 }
 
-type QueryRegistrationsOfUserConnection {
-  edges: [QueryRegistrationsOfUserConnectionEdge!]!
-  nodes: [Registration!]!
-  pageInfo: PageInfo!
-}
-
-type QueryRegistrationsOfUserConnectionEdge {
-  cursor: String!
-  node: Registration!
-}
-
-union QueryUpcomingChangelogResult = Error | QueryUpcomingChangelogSuccess
+union QueryUpcomingChangelogResult = Error | QueryUpcomingChangelogSuccess | ZodError
 
 type QueryUpcomingChangelogSuccess {
   data: ChangelogRelease!
@@ -2782,45 +3416,33 @@ interface Question {
   answers(
     after: String
     before: String
-
     """Récupérer uniquement les réponses d'un utilisateur, par son uid."""
     by: String
     first: Int
     last: Int
   ): QuestionAnswersConnection!
-
   """
   La réponse par défaut à cette question. Même si le résultat est bien de type Answer, le champ `id` est vide
   """
   defaultAnswer: Answer
-
   """Description en Markdown de la question"""
   description: String!
-
   """Description en HTML de la question"""
   descriptionHtml: String!
-
   """Préfixe d'identifiant: question:"""
   id: ID!
-
   """Indique si la question est obligatoire"""
   mandatory: Boolean!
-
   """La réponse de l'utilisateur·ice connecté·e à cette question"""
   myAnswer: Answer
-
   """Ordre de la question dans la section"""
   order: Int!
-
   """Section du formulaire dans laquelle est la question"""
   section: FormSection!
-
   """Titre de la question"""
   title: String!
-
   """Nombre total de réponses à cette question"""
   totalAnswers: Int!
-
   """Type de la question"""
   type: QuestionKind!
 }
@@ -2842,7 +3464,6 @@ type QuestionFileUpload implements Question {
   Types de fichiers autorisés pour les questions de type `File`. Null si la question n'est pas de type `File`.
   """
   allowedFileTypes: [String!]
-
   """
   Indique si la réponse à la question est anonyme. Si oui, les personnes pouvant voir les réponses ne pouront jamais savoir la réponse d'une personne à la question
   """
@@ -2850,45 +3471,33 @@ type QuestionFileUpload implements Question {
   answers(
     after: String
     before: String
-
     """Récupérer uniquement les réponses d'un utilisateur, par son uid."""
     by: String
     first: Int
     last: Int
   ): QuestionAnswersConnection!
-
   """
   La réponse par défaut à cette question. Même si le résultat est bien de type Answer, le champ `id` est vide
   """
   defaultAnswer: Answer
-
   """Description en Markdown de la question"""
   description: String!
-
   """Description en HTML de la question"""
   descriptionHtml: String!
-
   """Préfixe d'identifiant: question:"""
   id: ID!
-
   """Indique si la question est obligatoire"""
   mandatory: Boolean!
-
   """La réponse de l'utilisateur·ice connecté·e à cette question"""
   myAnswer: Answer
-
   """Ordre de la question dans la section"""
   order: Int!
-
   """Section du formulaire dans laquelle est la question"""
   section: FormSection!
-
   """Titre de la question"""
   title: String!
-
   """Nombre total de réponses à cette question"""
   totalAnswers: Int!
-
   """Type de la question"""
   type: QuestionKind!
 }
@@ -2897,28 +3506,20 @@ type QuestionFileUpload implements Question {
 enum QuestionKind {
   """La réponse est une date, sans heure associée."""
   Date
-
   """La réponse est un fichier mis en ligne par l'utilisateur·ice."""
   FileUpload
-
   """La réponse est un texte long."""
   LongText
-
   """La réponse est un nombre, potentiellement à virgule."""
   Number
-
   """La réponse est un nombre entier entre deux bornes"""
   Scale
-
   """La réponse est une ou plusieurs options parmi une liste."""
   SelectMultiple
-
   """La réponse est une des options parmi une liste."""
   SelectOne
-
   """La réponse est un texte court."""
   Text
-
   """
   La réponse est un temps  (heures, minute et seconde), sans date associée.
   """
@@ -2929,7 +3530,6 @@ enum QuestionKind {
 input QuestionOptionInput {
   """ID de la question vers laquelle sauter si ce choix est sélectionné"""
   jump: ID
-
   """Choix"""
   value: String!
 }
@@ -2943,45 +3543,33 @@ type QuestionScalar implements Question {
   answers(
     after: String
     before: String
-
     """Récupérer uniquement les réponses d'un utilisateur, par son uid."""
     by: String
     first: Int
     last: Int
   ): QuestionAnswersConnection!
-
   """
   La réponse par défaut à cette question. Même si le résultat est bien de type Answer, le champ `id` est vide
   """
   defaultAnswer: Answer
-
   """Description en Markdown de la question"""
   description: String!
-
   """Description en HTML de la question"""
   descriptionHtml: String!
-
   """Préfixe d'identifiant: question:"""
   id: ID!
-
   """Indique si la question est obligatoire"""
   mandatory: Boolean!
-
   """La réponse de l'utilisateur·ice connecté·e à cette question"""
   myAnswer: Answer
-
   """Ordre de la question dans la section"""
   order: Int!
-
   """Section du formulaire dans laquelle est la question"""
   section: FormSection!
-
   """Titre de la question"""
   title: String!
-
   """Nombre total de réponses à cette question"""
   totalAnswers: Int!
-
   """Type de la question"""
   type: QuestionKind!
 }
@@ -2992,7 +3580,6 @@ type QuestionScale implements Question {
   Indique si la réponse à la question est anonyme. Si oui, les personnes pouvant voir les réponses ne pouront jamais savoir la réponse d'une personne à la question
   """
   anonymous: Boolean!
-
   """
   Compte le nombre total de réponses pour chaque option. Retourne un `StringToIntMapping` où les clés sont les options et les valeurs sont le nombre de réponses pour l'option.
   """
@@ -3000,63 +3587,45 @@ type QuestionScale implements Question {
   answers(
     after: String
     before: String
-
     """Récupérer uniquement les réponses d'un utilisateur, par son uid."""
     by: String
     first: Int
     last: Int
   ): QuestionAnswersConnection!
-
   """
   La réponse par défaut à cette question. Même si le résultat est bien de type Answer, le champ `id` est vide
   """
   defaultAnswer: Answer
-
   """Description en Markdown de la question"""
   description: String!
-
   """Description en HTML de la question"""
   descriptionHtml: String!
-
   """Préfixe d'identifiant: question:"""
   id: ID!
-
   """Liste des labels pour les valeurs possibles"""
   labels: [String!]!
-
   """Indique si la question est obligatoire"""
   mandatory: Boolean!
-
   """Valeur maximale"""
   maximum: Int!
-
   """Label de la valeur maximale"""
   maximumLabel: String!
-
   """Valeur minimale"""
   minimum: Int!
-
   """Label de la valeur minimale"""
   minimumLabel: String!
-
   """La réponse de l'utilisateur·ice connecté·e à cette question"""
   myAnswer: Answer
-
   """Liste des valeurs possibles"""
   options: [Int!]!
-
   """Ordre de la question dans la section"""
   order: Int!
-
   """Section du formulaire dans laquelle est la question"""
   section: FormSection!
-
   """Titre de la question"""
   title: String!
-
   """Nombre total de réponses à cette question"""
   totalAnswers: Int!
-
   """Type de la question"""
   type: QuestionKind!
 }
@@ -3065,13 +3634,10 @@ type QuestionScale implements Question {
 input QuestionScaleInput {
   """Valeur maximale"""
   maximum: Int!
-
   """Label de la valeur maximale"""
   maximumLabel: String
-
   """Valeur minimale"""
   minimum: Int!
-
   """Label de la valeur minimale"""
   minimumLabel: String
 }
@@ -3082,12 +3648,10 @@ type QuestionSelectMultiple implements Question {
   Indique si la question de type `SelectOne` ou `SelectMultiple` permet une option "Autre", que l'utilisateur·ice peut remplir sans contrainte.
   """
   allowOptionsOther: Boolean!
-
   """
   Indique si la réponse à la question est anonyme. Si oui, les personnes pouvant voir les réponses ne pouront jamais savoir la réponse d'une personne à la question
   """
   anonymous: Boolean!
-
   """
   Compte le nombre total de réponses pour chaque option. Retourne un `StringToIntMapping` où les clés sont les options et les valeurs sont le nombre de réponses pour l'option.
   """
@@ -3095,50 +3659,37 @@ type QuestionSelectMultiple implements Question {
   answers(
     after: String
     before: String
-
     """Récupérer uniquement les réponses d'un utilisateur, par son uid."""
     by: String
     first: Int
     last: Int
   ): QuestionAnswersConnection!
-
   """
   La réponse par défaut à cette question. Même si le résultat est bien de type Answer, le champ `id` est vide
   """
   defaultAnswer: Answer
-
   """Description en Markdown de la question"""
   description: String!
-
   """Description en HTML de la question"""
   descriptionHtml: String!
-
   """Préfixe d'identifiant: question:"""
   id: ID!
-
   """Indique si la question est obligatoire"""
   mandatory: Boolean!
-
   """La réponse de l'utilisateur·ice connecté·e à cette question"""
   myAnswer: Answer
-
   """
   Uniquement pertinent pour les questions de type `SelectOne` ou `SelectMultiple`
   """
   options: [String!]!
-
   """Ordre de la question dans la section"""
   order: Int!
-
   """Section du formulaire dans laquelle est la question"""
   section: FormSection!
-
   """Titre de la question"""
   title: String!
-
   """Nombre total de réponses à cette question"""
   totalAnswers: Int!
-
   """Type de la question"""
   type: QuestionKind!
 }
@@ -3149,12 +3700,10 @@ type QuestionSelectOne implements Question {
   Indique si la question de type `SelectOne` ou `SelectMultiple` permet une option "Autre", que l'utilisateur·ice peut remplir sans contrainte.
   """
   allowOptionsOther: Boolean!
-
   """
   Indique si la réponse à la question est anonyme. Si oui, les personnes pouvant voir les réponses ne pouront jamais savoir la réponse d'une personne à la question
   """
   anonymous: Boolean!
-
   """
   Compte le nombre total de réponses pour chaque option. Retourne un `StringToIntMapping` où les clés sont les options et les valeurs sont le nombre de réponses pour l'option.
   """
@@ -3162,60 +3711,45 @@ type QuestionSelectOne implements Question {
   answers(
     after: String
     before: String
-
     """Récupérer uniquement les réponses d'un utilisateur, par son uid."""
     by: String
     first: Int
     last: Int
   ): QuestionAnswersConnection!
-
   """
   La réponse par défaut à cette question. Même si le résultat est bien de type Answer, le champ `id` est vide
   """
   defaultAnswer: Answer
-
   """Description en Markdown de la question"""
   description: String!
-
   """Description en HTML de la question"""
   descriptionHtml: String!
-
   """
   Dans le même ordre que `options`, contient le groupe si l'option porte exactement le nom du groupe, ou null si aucun groupe ne correspond. Pratique pour les questions où l'on demande à choisir entre plusieurs groupes (comme les votes de listes par ex.)
   """
   groups: [Group]!
-
   """Préfixe d'identifiant: question:"""
   id: ID!
-
   """
   Correspondances entre les réponses à cette question et les sections du formulaire à sauter vers. Dans le même ordre que `options`. Quand un élément est null, la section suivante n'est pas modifiée
   """
   jumps: [FormSection]!
-
   """Indique si la question est obligatoire"""
   mandatory: Boolean!
-
   """La réponse de l'utilisateur·ice connecté·e à cette question"""
   myAnswer: Answer
-
   """
   Uniquement pertinent pour les questions de type `SelectOne` ou `SelectMultiple`
   """
   options: [String!]!
-
   """Ordre de la question dans la section"""
   order: Int!
-
   """Section du formulaire dans laquelle est la question"""
   section: FormSection!
-
   """Titre de la question"""
   title: String!
-
   """Nombre total de réponses à cette question"""
   totalAnswers: Int!
-
   """Type de la question"""
   type: QuestionKind!
 }
@@ -3226,10 +3760,11 @@ Lien d'inscription rapide, qui permet de créer un compte étudiant sans adresse
 type QuickSignup implements Node {
   code: String!
   createdAt: DateTime!
-
   """Vrai si le lien est expiré"""
   expired: Boolean!
   id: ID!
+  """L'identifiant local de la ressource (sans préfixe)"""
+  localID: LocalID!
   school: School!
   schoolId: ID!
   updatedAt: DateTime!
@@ -3242,10 +3777,8 @@ Une resource pouvant recevoir des réactions (likes, etc) par les utilisateur·i
 interface Reactable {
   """L’identifiant de la resource"""
   id: ID!
-
   """Vrai si l’utilisateur·ice connecté·e a réagi avec cet emoji"""
   reacted(emoji: String!): Boolean!
-
   """Nombre total de réactions avec cet emoji"""
   reactions(emoji: String!): Int!
 }
@@ -3260,13 +3793,14 @@ type Reaction implements Node {
   documentId: ID
   emoji: String!
   id: ID!
+  """L'identifiant local de la ressource (sans préfixe)"""
+  localID: LocalID!
   updatedAt: DateTime!
 }
 
 type RedisHealthCheck {
   """Whether the Redis publisher client is ready"""
   publish: Boolean!
-
   """Whether the Redis subscriber client is ready"""
   subscribe: Boolean!
 }
@@ -3277,25 +3811,46 @@ type Registration implements Node {
   authorEmail: String!
   authorId: ID
   authorIsBeneficiary: Boolean!
-  beneficiary: String!
+  """En attente du démarrage du paiement par l'utilisateur.ice"""
+  awaitingPayment: Boolean!
+  beneficiary: String! @deprecated(reason: "Use `externalBeneficiary` instead.")
   beneficiaryUser: User
+  """
+  L'utilisateur.ice connecté.e peut marquer la réservation comme payée, la valider, etc.
+  """
+  canManage: Boolean!
   cancelled: Boolean!
   cancelledAt: DateTime
   cancelledBy: User
   code: String!
   createdAt: DateTime!
+  externalBeneficiary: String
   id: ID!
+  """L'identifiant local de la ressource (sans préfixe)"""
+  localID: LocalID!
   opposed: Boolean!
   opposedAt: DateTime
   opposedBy: User
   paid: Boolean!
   paymentMethod: PaymentMethod
+  """
+  Une demande de paiement a été effectuée mais la place n'est pas encore payée
+  """
+  pendingPayment: Boolean!
+  """Returns an SVG path of the QR Code for the given registration"""
+  qrCode(
+    """
+    URL à utiliser pour le QR Code. `[code]` sera remplacé par le code de la réservation
+    """
+    url: URL!
+  ): QRCode!
   ticket: Ticket!
   ticketId: ID!
   updatedAt: DateTime!
   verified: Boolean!
   verifiedAt: DateTime
   verifiedBy: User
+  wantsToPay: Float
 }
 
 type RegistrationSearchResult {
@@ -3307,6 +3862,7 @@ type RegistrationSearchResult {
 }
 
 type RegistrationVerificationResult {
+  message: String
   registration: Registration
   state: RegistrationVerificationState!
 }
@@ -3324,7 +3880,8 @@ type RegistrationsCounts {
   cancelled: Float!
   paid: Float!
   total: Float!
-  unpaidLydia: Float!
+  unpaid(method: PaymentMethod): Float!
+  unpaidLydia: Float! @deprecated(reason: "Use unpaid(method: Lydia)")
   verified: Float!
 }
 
@@ -3333,16 +3890,12 @@ type ReleaseChange {
   """The authors of the change"""
   authors: [String!]!
   html: String!
-
   """Issues linked to the change"""
   issues: [Int!]!
-
   """Merge requests linked to the change"""
   mergeRequests: [Int!]!
-
   """People who created the issues (gave the idea, reported the bug, etc.)"""
   reporters: [String!]!
-
   """The text of the change"""
   text: String!
 }
@@ -3351,19 +3904,14 @@ type ReleaseChange {
 type ReleaseChangesMaps {
   """New features"""
   added: [ReleaseChange!]!
-
   """What was fixed"""
   fixed: [ReleaseChange!]!
-
   """What was improved"""
   improved: [ReleaseChange!]!
-
   """Miscalleanous changes"""
   other: [ReleaseChange!]!
-
   """Security changes"""
   security: [ReleaseChange!]!
-
   """Technical changes"""
   technical: [ReleaseChange!]!
 }
@@ -3371,24 +3919,40 @@ type ReleaseChangesMaps {
 type School implements Pictured {
   address: String!
   aliasMailDomains: [String!]!
+  """L'utilisateur.ice connecté.e peut modifier les infos de l'école"""
+  canEdit: Boolean!
   color: String!
   description: String!
+  """
+  Si la ressource supported d'avoir une image en thème sombre différente de celle en thème clair
+  """
+  hasSeparateDarkPicture: Boolean!
   id: ID!
+  majors: [Major!]!
   name: String!
+  """Texte alternatif de l'image"""
+  pictureAltText: String!
   pictureFile: String!
-
   """Le nom du fichier de l'image, en thème sombre"""
   pictureFileDark: String!
-
   """L'URL publique de l'image"""
   pictureURL(
     """Utiliser l'image en thème sombre"""
     dark: Boolean! = false
+    """
+    Ajouter un timestamp à la fin de l'URL pour forcer le navigateur à recharger l'image. Le timestamp correspond à la date de dernière mise à jour de la ressource (si disponible), ou à l'heure actuelle.
+    """
+    timestamp: Boolean! = true
   ): String!
   services: [Service!]!
   slug: String!
   studentAssociations: [StudentAssociation!]!
   studentMailDomain: String!
+  """Nombre d'étudiant.e.s membres d'une filière appartenant à cette école"""
+  studentsCount(
+    """Filtrer par promotions relatives (1 = 1A, 2 = 2A...)"""
+    yearTiers: [Int!]! = []
+  ): Int!
   uid: String!
 }
 
@@ -3404,20 +3968,33 @@ input SchoolInput {
 }
 
 """A service"""
-type Service {
+type Service implements Node {
   description: String!
-  group: Group
+  group: Group @deprecated(reason: "Use `owner` instead")
   id: ID!
   importance: Int!
+  """L'identifiant local de la ressource (sans préfixe)"""
+  localID: LocalID!
   logo: String!
   logoSourceType: LogoSourceType!
   name: String!
-  school: School
-  studentAssociation: StudentAssociation
+  owner: ServiceOwner!
+  school: School @deprecated(reason: "Use `owner` instead")
+  studentAssociation: StudentAssociation @deprecated(reason: "Use `owner` instead")
   url: String!
 }
 
-type ShopItem {
+"""Responsable d'un service"""
+union ServiceOwner = Group | School | StudentAssociation
+
+"""Ressource dont le nombre de partages est compté"""
+interface Shareable {
+  id: ID!
+  """Nombre de partages"""
+  shares: Int!
+}
+
+type ShopItem implements Node {
   createdAt: DateTime!
   description: String!
   descriptionHtml: String!
@@ -3425,6 +4002,8 @@ type ShopItem {
   group: Group!
   id: ID!
   itemOptions: [ShopItemOption!]!
+  """L'identifiant local de la ressource (sans préfixe)"""
+  localID: LocalID!
   lydiaAccount: LydiaAccount
   max: Int!
   name: String!
@@ -3432,7 +4011,6 @@ type ShopItem {
   pictures: [Picture!]!
   price: Float!
   shopPayments: [ShopPayment!]!
-
   """Un nom lisible sans espaces, adaptés pour des URLs."""
   slug: String!
   startsAt: DateTime
@@ -3474,10 +4052,25 @@ type ShopPayment {
   paymentMethod: PaymentMethod!
   quantity: Int!
   shopItem: ShopItem!
-  shopItemAnswer: ShopItemAnswer!
+  shopItemAnswer: ShopItemAnswer
   totalPrice: Float!
   updatedAt: DateTime!
   user: User!
+}
+
+"""Du texte de 200 caractères maximum"""
+scalar ShortString
+
+"""Résultat d'une finalisation d'inscription"""
+type SignupCompletionResult {
+  """
+  L'inscription n'est pas encore terminée, l'équipe administrative de l'AE doit valider la demade d'inscription
+  """
+  needsManualValidation: Boolean!
+  """
+  Token utilisable pour connecter la personne immédiatement suite à l'inscription
+  """
+  token: Credential
 }
 
 enum SortDirection {
@@ -3489,13 +4082,14 @@ enum SortDirection {
 type StringToIntMapping {
   """Clé de la paire"""
   key: String!
-
   """Valeur de la paire"""
   value: Int!
 }
 
 """There is one student association per school"""
 type StudentAssociation implements Pictured {
+  """L'utilisateur.ice connecté.e peut cotiser à cette AE"""
+  canContribute: Boolean!
   """
   Si l'utilsateur·ice courant·e peut créer des groupes rattachés à cette AE
   """
@@ -3505,25 +4099,50 @@ type StudentAssociation implements Pictured {
     """
     type: GroupType
   ): Boolean!
-
+  """L'utilisateur.ice connecét.e peut modifier les infos de cette AE"""
+  canEditDetails: Boolean!
   """
   L'utilisateur·ice connecté·e peut éditer (créer ou modifier) les pages de l'AE
   """
   canEditPages: Boolean!
-
   """L'utilisateur·ice connecté·e peut lister les pages de l'AE"""
   canListPages: Boolean!
+  """L'utilisateur.ice connecté.e cotise à cette AE"""
+  contributing: Boolean!
   contributionOptions: [ContributionOption!]!
+  """
+  Nombre de cotisant.e.s à l'AE. Légalement (selon les statuts de l'AEn7), membres
+  """
+  contributorsCount(
+    """Filtrer par promotions relatives (1 = 1A, 2 = 2A...)"""
+    yearTiers: [Int!]!
+  ): Int!
   createdAt: DateTime!
   description: String!
+  descriptionHtml: HTML!
+  """Email de contact de l'AE"""
+  email: Email
   groups(after: String, before: String, first: Int, last: Int, types: [GroupType!]): StudentAssociationGroupsConnection!
-
   """Nombre de groupes reliés à cette AE"""
   groupsCount: Int!
+  """
+  Si l'utilisateur·ice connecté·e a une cotisation en attente de paiement
+  """
+  hasPendingContribution: Boolean!
+  """
+  Si la ressource supported d'avoir une image en thème sombre différente de celle en thème clair
+  """
+  hasSeparateDarkPicture: Boolean!
   id: ID!
   links: [Link!]!
   name: String!
-
+  """
+  Nombre de membres des différents bureaux de l'AE (selon les statuts de l'AEn7, membres organisateurs)
+  """
+  organizerMembersCount(
+    """Filtrer par promotions relatives (1 = 1A, 2 = 2A...)"""
+    yearTiers: [Int!]!
+  ): Int!
   """La page associée à l'AE"""
   page(
     """
@@ -3531,22 +4150,34 @@ type StudentAssociation implements Pictured {
     """
     path: String!
   ): Page
-
   """Les pages associées à l'AE"""
   pages(after: String, before: String, first: Int, last: Int): PagesConnection!
+  """Texte alternatif de l'image"""
+  pictureAltText: String!
   pictureFile: String!
-
   """Le nom du fichier de l'image, en thème sombre"""
   pictureFileDark: String!
-
   """L'URL publique de l'image"""
   pictureURL(
     """Utiliser l'image en thème sombre"""
     dark: Boolean! = false
+    """
+    Ajouter un timestamp à la fin de l'URL pour forcer le navigateur à recharger l'image. Le timestamp correspond à la date de dernière mise à jour de la ressource (si disponible), ou à l'heure actuelle.
+    """
+    timestamp: Boolean! = true
   ): String!
   school: School!
   schoolId: ID!
-  uid: String
+  """Services proposés par une AE"""
+  services(after: String, before: String, first: Int, last: Int): StudentAssociationServicesConnection!
+  """
+  Nombre d'étudiant.e.s rattachés à l'AE (cotisant.e.s ou non). Légalement (selon en particulier les statuts de l'AEn7), compte à la fois les membres et les étudiant.e.s susceptibles d'être membres temporaires durant un évènement organisé par l'AE
+  """
+  studentsCount(
+    """Filtrer par promotions relatives (1 = 1A, 2 = 2A...)"""
+    yearTiers: [Int!]! = []
+  ): Int!
+  uid: String!
   updatedAt: DateTime!
 }
 
@@ -3559,6 +4190,17 @@ type StudentAssociationGroupsConnection {
 type StudentAssociationGroupsConnectionEdge {
   cursor: String!
   node: Group!
+}
+
+type StudentAssociationServicesConnection {
+  edges: [StudentAssociationServicesConnectionEdge!]!
+  nodes: [Service!]!
+  pageInfo: PageInfo!
+}
+
+type StudentAssociationServicesConnectionEdge {
+  cursor: String!
+  node: Service!
 }
 
 type Subject {
@@ -3575,7 +4217,6 @@ type Subject {
   nextExamAt: DateTime
   semester: Int
   shortName: String!
-
   """Un nom lisible sans espaces, adaptés pour des URLs."""
   slug: String!
   uid: String! @deprecated(reason: "Use `slug` instead. This field was never universally unique.")
@@ -3595,12 +4236,18 @@ type SubjectDocumentsConnectionEdge {
   node: Document!
 }
 
-"""- **Rate limit:** 600 / 10 minutes"""
-type Subscription {
-  announcementsNow: [Announcement!]!
-  article(group: UID!, slug: String!): Article!
-  event(group: UID!, slug: String!): Event!
+"""
+Permet de faire des requêtes de données temps-réel, via des _websockets_.
+L'endpoint pour le temps réel est `ws://localhost:4000/graphql`. 
 
+Pour un client JavaScript, il y a par exemple [GraphQL-WebSocket](https://the-guild.dev/graphql/ws/get-started#use-the-client)
+"""
+type Subscription @rateLimit(limit: 600, duration: 600) {
+  announcementsNow: [Announcement!]!
+  article(id: LocalID!): Article!
+  """Récupère une réservation par son code"""
+  booking(code: String!): Registration!
+  event(id: LocalID!): Event!
   """
   Récupère un formulaire. On peut utiliser une subscription pour avoir la mise à jour en temps réel des réponses au formulaire.
   """
@@ -3608,18 +4255,13 @@ type Subscription {
     """Identifiant local (sans le préfixe `form:`) du formulaire"""
     localId: String!
   ): Form
-
   """Gets the homepage articles, customized if the user is logged in."""
   homepage(after: String, before: String, first: Int, last: Int): QueryHomepageConnection!
   kioskReload: Boolean!
   registration(id: ID!): SubscriptionRegistrationResult!
-  thirdPartyApp(
-    """The third party app's client_id. The 'app:' id prefix is optional."""
-    id: ID!
-  ): ThirdPartyApp!
 }
 
-union SubscriptionRegistrationResult = Error | SubscriptionRegistrationSuccess
+union SubscriptionRegistrationResult = Error | SubscriptionRegistrationSuccess | ZodError
 
 type SubscriptionRegistrationSuccess {
   data: Registration!
@@ -3633,79 +4275,98 @@ type TeachingUnit {
   subjects: [Subject!]!
 }
 
-"""A third-party OAuth2 client"""
-type ThirdPartyApp {
-  active: Boolean!
-  allowedRedirectUris: [String!]!
-  apiUsage(after: String, before: String, first: Int, last: Int): ThirdPartyAppApiUsageConnection!
-  clientId: String!
+type Theme implements Node {
+  author: Group
+  """
+  Si l'utilisateur·ice connecté·e peut changer la visibilité du thème à une certaine valeur
+  """
+  canChangeVisibility(to: Visibility!): Boolean!
+  """
+  Si l'utilisateur·ice connecté·e peut éditer (modifier ou supprimer) le thème
+  """
+  canEdit: Boolean!
   createdAt: DateTime!
-  description: String!
-  faviconUrl: String!
+  endsAt: DateTime!
   id: ID!
-
-  """
-  Logs de connexion de l'application tierce, utile pour débugger des problèmes. Mise à jour en temps réel disponible via une subscription sur la query `thirdPartyApp`.
-  """
-  logs(after: String, before: String, first: Int, last: Int): ThirdPartyAppLogsConnection!
+  """L'identifiant local de la ressource (sans préfixe)"""
+  localID: LocalID!
   name: String!
-  owner: Group!
-  rateLimitHits(after: String, before: String, first: Int, last: Int): ThirdPartyAppRateLimitHitsConnection!
-  secretLength: Int!
-  updatedAt: DateTime
-  users(after: String, before: String, first: Int, last: Int): ThirdPartyAppUsersConnection!
-  usersCount: Int!
-  website: String!
+  startsAt: DateTime!
+  updatedAt: DateTime!
+  values(
+    """Ne récupérer que les valeurs d'une variante du thème"""
+    variant: ThemeVariant
+  ): [ThemeValue!]!
+  visibility: Visibility!
 }
 
-type ThirdPartyAppApiUsageConnection {
-  edges: [ThirdPartyAppApiUsageConnectionEdge!]!
-  nodes: [ApiUsage!]!
-  pageInfo: PageInfo!
+"""Définit la valeur d'une variable du thème"""
+type ThemeValue implements Node {
+  id: ID!
+  """L'identifiant local de la ressource (sans préfixe)"""
+  localID: LocalID!
+  theme: Theme!
+  value: String!
+  variable: ThemeVariable!
+  variant: ThemeVariant!
 }
 
-type ThirdPartyAppApiUsageConnectionEdge {
-  cursor: String!
-  node: ApiUsage!
+"""Les différentes variables qu'un thème peut définir"""
+enum ThemeVariable {
+  """Couleur de fond"""
+  ColorBackground
+  """Couleur de fond moins intense"""
+  ColorBackground2
+  """Couleur de fond moins intense que ColorBackground2"""
+  ColorBackground3
+  """Couleur de fond moins intense que ColorBackground3"""
+  ColorBackground4
+  """Couleur des erreurs ou choses dangereuses (souvent rouge)"""
+  ColorDanger
+  """Couleur de fond pour ColorDanger"""
+  ColorDangerBackground
+  """Couleur d'avant plan"""
+  ColorForeground
+  """Couleur d'avant plan moins intense"""
+  ColorMuted
+  """Couleur principale"""
+  ColorPrimary
+  """Couleur de fond pour ColorPrimary"""
+  ColorPrimaryBackground
+  """Couleur d'avant plan moins intense que ColorMuted"""
+  ColorShy
+  """Couleur des éléments de succès (souvent vert)"""
+  ColorSuccess
+  """Couleur de fond pour ColorSuccess"""
+  ColorSuccessBackground
+  """Couleurs des avertissements"""
+  ColorWarning
+  """Couleur de fond pour ColorWarning"""
+  ColorWarningBackground
+  """Image à utiliser en fond de la barre de navigation en bas (sur mobile)"""
+  ImageBackgroundNavbarBottom
+  """
+  Image à utiliser en fond de la barre de navigation en haut (s'affiche seulement sur mobile)
+  """
+  ImageBackgroundNavbarTop
+  """
+  Image à utiliser à la place du logo dans la barre de navigation sur le côté (sur ordinateur)
+  """
+  ImageLogoNavbarSide
+  """
+  Image à utiliser à la place du logo dans la barre de navigation en haut
+  """
+  ImageLogoNavbarTop
+  """Motif à répéter en fond de l'application"""
+  PatternBackground
 }
 
-type ThirdPartyAppLogsConnection {
-  edges: [ThirdPartyAppLogsConnectionEdge!]!
-  nodes: [LogEntry!]!
-  pageInfo: PageInfo!
-}
-
-type ThirdPartyAppLogsConnectionEdge {
-  cursor: String!
-  node: LogEntry!
-}
-
-type ThirdPartyAppRateLimitHitsConnection {
-  edges: [ThirdPartyAppRateLimitHitsConnectionEdge!]!
-  nodes: [ApiRateLimitHits!]!
-  pageInfo: PageInfo!
-}
-
-type ThirdPartyAppRateLimitHitsConnectionEdge {
-  cursor: String!
-  node: ApiRateLimitHits!
-}
-
-type ThirdPartyAppRegistrationResponse {
-  client_id: String!
-  client_secret: String!
-}
-
-type ThirdPartyAppUsersConnection {
-  edges: [ThirdPartyAppUsersConnectionEdge!]!
-  nodes: [User!]!
-  pageInfo: PageInfo!
-  totalCount: Int!
-}
-
-type ThirdPartyAppUsersConnectionEdge {
-  cursor: String!
-  node: User!
+"""Différentes variantes pour un même thème"""
+enum ThemeVariant {
+  """Variante sombre"""
+  Dark
+  """Variante claire"""
+  Light
 }
 
 """
@@ -3714,44 +4375,114 @@ A ticket is a way to register for an event. May include a price and conditions.
 type Ticket implements Node {
   allowedPaymentMethods: [PaymentMethod!]!
   autojoinGroups: [Group!]!
-  basePrice: Float!
-  capacity: Int!
+  basePrice: Float! @deprecated(reason: "Use minimumPrice instead")
+  """
+  Indique si le billet peut être supprimé avec `deleteTicket(force: false)`
+  """
+  canBeSafelyDeleted: Boolean!
+  """
+  Un message d'explication sur pourquoi la personne connectée peut réserver ce billet pour quelqu'un d'autre. Null si la personne peut.
+  """
+  cannotBookReason(
+    """On souhaite réserver pour soi-même"""
+    themself: Boolean!
+  ): String
+  capacity: Int
   closesAt: DateTime
+  countingPolicy: TicketCountingPolicy!
   description: String!
   descriptionHtml: String!
   event: Event!
   eventId: ID!
-
   """Full name, including the ticket group's name if any"""
   fullName: String!
   godsonLimit: Int!
   group: TicketGroup
   id: ID!
+  """Ce billet appartient au groupe de billet donné"""
+  isInGroup(
+    """Null pour tester si le billet est dans aucun groupe"""
+    id: LocalID
+  ): Boolean!
   links: [Link!]!
+  """L'identifiant local de la ressource (sans préfixe)"""
+  localID: LocalID!
+  """Prix maximum du billet"""
+  maximumPrice: Float!
+  """Prix minimum du billet"""
+  minimumPrice(
+    """
+    Calculer le minimum en prenant en compte les promotions applicables pour l'utilisateur.ice. ATTENTION: Certaines promotions sont confidentielles, et donc le prix minimum avec promotions appliquées ne devrait donc pas être affiché sur des pages susceptibles d'être montrées à d'autres (comme une page de QR code servant à se faire scanner son billet, par exemple)
+    """
+    applyPromotions: Boolean! = true
+  ): Float!
   name: String!
   onlyManagersCanProvide: Boolean!
+  """Si le shotgun du billet est ouvert"""
+  open: Boolean!
   openToAlumni: Boolean
   openToApprentices: Boolean
   openToContributors: Boolean
   openToExternal: Boolean
   openToGroups: [Group!]!
-  openToMajors: [Major!]!
+  openToMajors(
+    """
+    Ne renvoyer que les filières qui ne consistuent pas ensemble la totalité des filières d'une école. Pratique pour l'affichage sur un billet, en combinant avec openToSchools
+    """
+    smart: Boolean! = false
+  ): [Major!]!
   openToPromotions: [Int!]!
+  """Écoles telles que toutes leur filières sont autorisées sur ce billet"""
   openToSchools: [School!]!
   opensAt: DateTime
-
   """
   Nombre de places restantes. Null si l'information n'est pas disponible. N'est jamais null quand il n'y a plus de places disponibles (0)
   """
   placesLeft: Int
-  price: Float!
+  price: Float! @deprecated(reason: "Use minimumPrice(applyPromotions: true) instead")
+  """
+  Le billet permet de payer un prix choisi par l'utilisateur.ice, entre minimumPrice et maximumPrice
+  """
+  priceIsVariable: Boolean!
   registrations: [Registration!]!
-  remainingGodsons: Int!
-
+  """Nombre de parrainages restants. Null pour illimité"""
+  remainingGodsons: Int
   """Un nom lisible sans espaces, adaptés pour des URLs."""
   slug: String!
   ticketGroupId: ID
   uid: String! @deprecated(reason: "Use `slug` instead. This field was never universally unique.")
+}
+
+"""Contraintes d'un billet"""
+input TicketConstraintsInput {
+  """Ancien·ne·s étudiant·e·s"""
+  alumni: BooleanConstraint
+  """Apprenti·e·s (FISAs)"""
+  apprentices: BooleanConstraint
+  """
+  Personnes sans compte Churros ou avec un compte exté (c'est à dire non relié à une école)
+  """
+  external: BooleanConstraint
+  """Membres d'au moins un des groupes spécifiés"""
+  groupMembers: [UID!]
+  """Étudiant·e·s de certaines filières"""
+  majors: [UID!]
+  """Réservable par les gestionnaires de l'évènement seulement"""
+  managersOnly: Boolean
+  """Étudiant·e·s de certaines promos (année)"""
+  promotions: [Int!]
+  """Cotisant·e·s de l'AE du groupe organisateur de l'évènement"""
+  studentAssociationContributors: BooleanConstraint
+}
+
+"""
+Politique de comptage des places pour un billet. Permet de décider quand est-ce que l'on compte un billet dans le calcul des places restantes
+"""
+enum TicketCountingPolicy {
+  """On compte le billet dès qu'il est réservé"""
+  OnBooked
+  """On compte le billet seulement une fois payé"""
+  OnPaid
 }
 
 """
@@ -3762,8 +4493,11 @@ type TicketGroup implements Node {
   event: Event!
   eventId: ID!
   id: ID!
+  """L'identifiant local de la ressource (sans préfixe)"""
+  localID: LocalID!
   name: String!
   tickets: [Ticket!]!
+  ticketsCount: Int!
 }
 
 input TicketGroupInput {
@@ -3772,49 +4506,28 @@ input TicketGroupInput {
   name: String!
 }
 
-input TicketInput {
-  allowedPaymentMethods: [PaymentMethod!]!
-  autojoinGroups: [String!]!
-  capacity: Int!
-  closesAt: DateTime
-  description: String!
-  godsonLimit: Int!
-  groupName: String
-  id: ID
-  links: [LinkInput!]!
-  name: String!
-  onlyManagersCanProvide: Boolean!
-  openToAlumni: Boolean
-  openToApprentices: Boolean
-  openToContributors: Boolean
-  openToExternal: Boolean
-  openToGroups: [String!]!
-  openToMajors: [String!]!
-  openToPromotions: [Int!]!
-  openToSchools: [String!]!
-  opensAt: DateTime
-  price: Float!
-}
-
-"""A field whose value matches /^[\w-]{3,255}$/."""
+"""A field whose value matches /^[\w-]{2,255}$/."""
 scalar UID
+
+"""
+Une adresse internet (URL). Les protocoles autorisés sont: http:, https:, mailto:, tel:
+"""
+scalar URL
 
 input UpsertGroupInput {
   address: String!
   color: String
   description: String!
   email: String
-  links: [LinkInput!]!
   longDescription: String!
   mailingList: String
   name: String!
   parent: UID
   related: [String!]!
-  school: UID
+  school: UID @deprecated(reason: "N'a aucun effet, les groupes ne peuvent plus être reliés à des écoles directement")
   selfJoinable: Boolean!
   studentAssociation: UID
   type: GroupType!
-
   """
   Ne sert qu'à la création du groupe. Il est impossible de modifier un uid existant
   """
@@ -3824,59 +4537,86 @@ input UpsertGroupInput {
 
 """Users are the people who use the app"""
 type User implements Node & Pictured {
-  address: String!
+  address: String
   admin: Boolean!
-
+  """
+  Les associations étudiantes dont cet utilisateur·ice est administrateur·ice
+  """
+  adminOf: [StudentAssociation!]!
   """
   Vrai si cette personne est administratrice de l'association étudiante donnée
   """
-  adminOf(
+  adminOfStudentAssociation(
     """UID de l'association étudiante"""
     studentAssociation: String!
   ): Boolean!
-  allowedApps: [ThirdPartyApp!]! @deprecated(reason: "Use `authorizedApps` instead")
-
   """Formulaires complètement répondus par l'utilisateur"""
   answeredForms(after: String, before: String, first: Int, last: Int): UserAnsweredFormsConnection!
   apprentice: Boolean!
   articles(after: String, before: String, first: Int, last: Int): UserArticlesConnection!
-
-  """Applications tierces autorisées à accéder à ce compte utilisateur"""
-  authorizedApps: [ThirdPartyApp!]!
   birthday: DateTime
-
   """Les affiliations de l'utilisateur à des groupes dont iel est au bureau"""
   boardMemberships: [GroupMember!]!
-  booking(beneficiary: String, event: ID!): Registration!
+  booking(
+    """
+    Identifiant complet (avec le préfixe) pour un bénéficiaire avec compte Churros, ou texte libre pour un bénéficiaire externe
+    """
+    beneficiary: String
+    event: ID!
+  ): Registration!
   bookings(after: String, before: String, first: Int, forUserOnly: Boolean, last: Int): UserBookingsConnection!
-
+  """Les accès rapides de l'utilisateur·rice"""
+  bookmarks: [Bookmark!]!
   """
   Vrai si cet utilisateur est un bot (i.e. ne représente pas une personne physique)
   """
   bot: Boolean!
   canAccessDocuments: Boolean!
   canBeEdited: Boolean!
-
+  """Les AEs pour lesquelles la personne peut cotiser"""
+  canContributeTo: [StudentAssociation!]!
+  """Groupes sur lesquels l'utilisateur·ice peut créer des évènements"""
+  canCreateEventsOn: [Group!]!
+  """AEs sur lesquelles l'utilisateur·ice peut créer des groupes"""
+  canCreateGroupsOn: [StudentAssociation!]!
   """Groupes sur lesquels l'utilisateur·ice peut créer des posts"""
   canCreatePostsOn: [Group!]!
-
   """Vrai si cette personne peut éditer le groupe donné"""
   canEditGroup(
     """UID du groupe"""
     uid: String!
   ): Boolean!
-
-  """Vrai si cette personne peut éditer des groupes"""
+  """Vrai si cette personne peut éditer les groupes d'au moins une AE"""
   canEditGroups: Boolean!
+  """On peut modifier les permissions de cet·te utilisateur·ice"""
+  canEditPermissions: Boolean!
+  """Peut-on modifier le profil de cet utilisateur·ice ?"""
+  canEditProfile(
+    """
+    Lève une erreur avec ce message si l’utilisateur·ice ne peut pas éditer ce profil
+    """
+    assert: String
+  ): Boolean!
+  """
+  Si cet·te utilisateur·rice peut créer, modifier ou supprimer des annonces
+  """
+  canManageAnnouncements: Boolean!
   cededImageRightsToTVn7: Boolean!
-  contributesTo: [StudentAssociation!]!
+  contributesTo: [StudentAssociation!]
   contributesWith: [ContributionOption!]!
+  """Options de cotisations que l'utilisateur·ice connecté·e peut utiliser."""
+  contributionOptions: [ContributionOption!]!
   createdAt: DateTime!
   credentials: [Credential!]!
   description: String!
-  descriptionHtml: String!
-  email: String!
-  emailChangeRequests: [EmailChange!]!
+  descriptionHtml: HTML!
+  email: Email
+  emailChangeRequests(
+    """
+    Ne renvoyer que les demandes en attente (mail envoyé mais non confirmé)
+    """
+    pending: Boolean
+  ): [EmailChange!]!
   enabledNotificationChannels: [NotificationChannel!]!
   external: Boolean!
   familyTree: FamilyTree!
@@ -3886,35 +4626,55 @@ type User implements Node & Pictured {
   godparent: User
   graduationYear: Int!
   groups: [GroupMember!]!
+  """Les groupes dont cet·te utilisateur·ice peut éditer les permissions"""
+  groupsEditorOf: [StudentAssociation!]!
+  """
+  Si la ressource supported d'avoir une image en thème sombre différente de celle en thème clair
+  """
+  hasSeparateDarkPicture: Boolean!
   id: ID!
+  """
+  Demandes de parrainage reçues par cet utilisateur·ice (donc pour devenir parrain·e)
+  """
   incomingGodparentRequests: [GodparentRequest!]!
+  """Vrai si cet utilisateur est l’utilisateur connecté"""
+  isMe: Boolean
   lastName: String!
   latestVersionSeenInChangelog: String!
   links: [Link!]!
+  """L'identifiant local de la ressource (sans préfixe)"""
+  localID: LocalID!
+  lydiaPhone: String
   major: Major
   majorId: ID
   managedEvents: [EventManager!]!
   minor: Minor
   nickname: String!
-  otherEmails: [String!]!
+  otherEmails: [Email!]
+  """
+  Demandes de parrainage faites par cet utilisateur·ice (donc pour devenir fillot·e)
+  """
   outgoingGodparentRequests: [GodparentRequest!]!
-
   """Formulaires partiellement répondus par l'utilisateur"""
   partiallyAnsweredForms(after: String, before: String, first: Int, last: Int): UserPartiallyAnsweredFormsConnection!
   pendingContributions: [ContributionOption!]!
-  phone: String!
+  phone: String
+  """Texte alternatif de l'image"""
+  pictureAltText: String!
   pictureFile: String!
-
   """Le nom du fichier de l'image, en thème sombre"""
   pictureFileDark: String!
-
   """L'URL publique de l'image"""
   pictureURL(
     """Utiliser l'image en thème sombre"""
     dark: Boolean! = false
+    """
+    Ajouter un timestamp à la fin de l'URL pour forcer le navigateur à recharger l'image. Le timestamp correspond à la date de dernière mise à jour de la ressource (si disponible), ou à l'heure actuelle.
+    """
+    timestamp: Boolean! = true
   ): String!
+  schoolEmail: Email
   schoolUid: String
-
   """
   Vrai si cette personne est administratrice d'au moins une association étudiante
   """
@@ -3958,13 +4718,11 @@ type UserBookingsConnectionEdge {
 
 """UserCandidates are users in the registration process"""
 type UserCandidate implements Node {
-  address: String!
   apprentice: Boolean!
   birthday: DateTime
   cededImageRightsToTVn7: Boolean!
   createdAt: DateTime
   email: String!
-
   """Vrai si l'email est une adresse email d'étudiant."""
   emailIsSchoolEmail: Boolean!
   emailValidated: Boolean!
@@ -3973,14 +4731,14 @@ type UserCandidate implements Node {
   graduationYear: Int!
   id: ID!
   lastName: String!
+  """L'identifiant local de la ressource (sans préfixe)"""
+  localID: LocalID!
   major: Major
   majorId: ID
-
   """
   Vrai si l'utilisateur aura besoin d'une validation manuelle à la fin de l'inscription. Null si la notion n'a pas encore de sens. Si la filière n'a pas encore été renseignée, retourne vrai seulement si l'inscription devra être validée manuellement si une filière (peut importe laquelle) est choisie. Voir `needsManualValidationForMajor` pour être plus précis
   """
   needsManualValidation: Boolean
-
   """
   Vrai si l'utilisateur aura besoin d'une validation manuelle à la fin de l'inscription si iel choisi cette filière. Null si la notion n'a pas encore de sens.
   """
@@ -3988,13 +4746,8 @@ type UserCandidate implements Node {
     """L'UID de la filière"""
     major: String!
   ): Boolean
-  phone: String!
-  schoolEmail: String
-  schoolServer: String
-  schoolUid: String
   suggestedUid: String!
   uid: String!
-
   """Vrai si l'utilisateur a été créé via un lien d'inscription rapide."""
   usingQuickSignup: Boolean!
 }
@@ -4008,6 +4761,28 @@ type UserPartiallyAnsweredFormsConnection {
 type UserPartiallyAnsweredFormsConnectionEdge {
   cursor: String!
   node: Form!
+}
+
+"""Champs constituant le profil d'un·e utilisateur·ice"""
+input UserProfileInput {
+  """Pour effacer: `""`"""
+  address: String
+  """
+  Date d'anniversaire. Pour supprimer une date existante, utiliser unsetBirthday
+  """
+  birthday: DateTime
+  description: Markdown
+  firstName: String
+  lastName: String
+  """Pour effacer: `""`"""
+  nickname: String
+  otherEmails: [Email!]
+  """Pour effacer, mettre unsetPhone à `true`"""
+  phone: PhoneNumber
+  """Supprimer une date d'anniversaire existante"""
+  unsetBirthday: Boolean
+  """Supprimer le numéro de téléphone"""
+  unsetPhone: Boolean
 }
 
 type UserSearchResult {

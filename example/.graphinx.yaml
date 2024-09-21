@@ -28,15 +28,12 @@ environment:
   PUBLIC_OAUTH_CLIENT_ID: 4xDFlLfJifhWDutqEcZiEbHY
   # No client secret, as we use PKCE. This is a static website, env vars are baked in!
 
-relay:
-  connection: ^[A-Z]\w+Connection$
-
-errors:
-  result: ^[A-Z]\w+Result$
-  success: ^[A-Z]\w+Success$
-
 modules:
-  manifest: src/modules/modules.yaml
+  fallback: global
+  mapping:
+    Announcement: announcements
+    Query.upsertAnnouncement: announcements
+    '*.*{f,F}orm*': forms
   order:
     - global
     - users
@@ -57,7 +54,6 @@ modules:
     - comments
     - reactions
     - links
-    - oauth
     - announcements
     - payments
     - gitlab

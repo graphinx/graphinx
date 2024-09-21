@@ -1,8 +1,8 @@
-import type { ProcessedConfig } from './modules.js';
+import type { ProcessedConfig } from './configuration.js';
 
-export type ModuleItem = {
+export type UncategorizedItem = {
 	name: string;
-	moduleName: string;
+	id: string;
 	contributeURL?: string;
 	sourceCodeURL?: string;
 	type: 'query' | 'mutation' | 'subscription' | 'type';
@@ -33,6 +33,8 @@ export type ModuleItem = {
 	referencedBy: string[];
 };
 
+export type ModuleItem = UncategorizedItem & { moduleName: string };
+
 export type Module = {
 	name: string;
 	displayName: string;
@@ -58,7 +60,7 @@ export type Module = {
  */
 export type BuiltData = {
 	modules: Module[];
-	index: Module;
+	index?: Module;
 	schema: string;
 	config: ProcessedConfig;
 	items: ModuleItem[];

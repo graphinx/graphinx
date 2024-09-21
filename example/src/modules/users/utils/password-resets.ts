@@ -1,1 +1,0 @@
-export const PASSWORD_RESET_EXPIRES_AFTER = 60 * 60 * 24;

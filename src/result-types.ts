@@ -4,27 +4,25 @@ import {
 	type GraphQLObjectType,
 	type GraphQLSchema,
 	type GraphQLType,
-	isInterfaceType,
 	isNamedType,
 	isObjectType,
 	isOutputType,
 	isUnionType,
 } from 'graphql';
-import type { ModuleItem } from './built-data.js';
-import type { Config } from './config.js';
+import type { ModuleItem, UncategorizedItem } from './built-data.js';
+import type { Config } from './configuration.js';
 import {
 	drillToNamedType,
 	fieldReturnType,
-	getRootResolversInSchema,
 	getTypeOfField,
 } from './schema-utils.js';
 
 export function resolveResultType(
 	schema: GraphQLSchema,
 	config: Config,
-	item: ModuleItem,
-): ModuleItem {
-	if (!config.errors) return item;
+	item: UncategorizedItem,
+): UncategorizedItem {
+	if (!config.types.errors) return item;
 	// Search for the connection type
 	if (item.type === 'type') {
 		const type = drillToNamedType(schema.getType(item.name));
@@ -44,8 +42,8 @@ export function typeIsResultType<
 	T extends GraphQLNamedOutputType,
 	// @ts-expect-error shut up ts
 >(config: Config, type: T): type is GraphQLInterfaceType {
-	if (!config.errors?.result) return false;
-	return new RegExp(config.errors.result).test(type.name);
+	if (!config.types.errors?.result) return false;
+	return new RegExp(config.types.errors.result).test(type.name);
 }
 
 export function resolveResultTypedItem<T extends GraphQLInterfaceType>(
@@ -54,7 +52,7 @@ export function resolveResultTypedItem<T extends GraphQLInterfaceType>(
 	type: T,
 	item: ModuleItem,
 ): ModuleItem {
-	if (!config.errors) return item;
+	if (!config.types.errors) return item;
 	if (!isUnionType(type)) return item;
 	// get to the success type
 	const errorTypenames: string[] = [];
@@ -68,7 +66,10 @@ export function resolveResultTypedItem<T extends GraphQLInterfaceType>(
 		}
 	}
 	if (!successType) return item;
-	const dataType = getTypeOfField(successType, config.errors.data ?? 'data');
+	const dataType = getTypeOfField(
+		successType,
+		config.types.errors.datafield ?? 'data',
+	);
 	if (!dataType) return item;
 	return {
 		...item,
@@ -86,7 +87,7 @@ export function isResultSuccessType<T extends GraphQLType>(
 	type: T,
 	// @ts-expect-error shut up ts
 ): type is GraphQLObjectType {
-	if (!config.errors?.success) return false;
+	if (!config.types.errors?.success) return false;
 	if (!isObjectType(type)) return false;
-	return new RegExp(config.errors.success).test(type.name);
+	return new RegExp(config.types.errors.success).test(type.name);
 }
