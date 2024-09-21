@@ -59,10 +59,8 @@ export function resolveRelayConnectionItem<T extends GraphQLObjectType>(
 		...item,
 		connection: {
 			nodeType: nodeType.name,
-			edgeType: getTypeOfField(
-				type,
-				config.types.relay.edges ?? 'edges',
-			)?.name,
+			edgeType: getTypeOfField(type, config.types.relay.edges ?? 'edges')
+				?.name,
 			connectionType: type.name,
 		},
 	};

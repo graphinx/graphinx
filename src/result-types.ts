@@ -9,7 +9,7 @@ import {
 	isOutputType,
 	isUnionType,
 } from 'graphql';
-import type { ModuleItem, UncategorizedItem } from './built-data.js';
+import type { UncategorizedItem } from './built-data.js';
 import type { Config } from './configuration.js';
 import {
 	drillToNamedType,

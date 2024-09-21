@@ -1,204 +1,196 @@
 {
-  "type": "object",
-  "properties": {
-    "template": {
-      "type": "string",
-      "description": "Template specifier (repository or sub-path to a template if the repo has more than one). Use #branch-or-tag at the end to specify a branch or tag. You can use owner/repo for a github repository.",
-      "default": "graphinx/templates/default"
-    },
-    "schema": {
-      "anyOf": [
-        {
-          "type": "object",
-          "properties": {
-            "static": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "static"
-          ],
-          "additionalProperties": false,
-          "description": "Path to a schema file"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "introspection": {
-              "type": "object",
-              "properties": {
-                "url": {
-                  "type": "string",
-                  "format": "uri",
-                  "description": "URL to an introspection endpoint"
-                },
-                "headers": {
-                  "type": "object",
-                  "additionalProperties": {
-                    "type": "string"
-                  },
-                  "description": "Headers to send with the introspection query"
-                }
-              },
-              "required": [
-                "url"
-              ],
-              "additionalProperties": false
-            }
-          },
-          "required": [
-            "introspection"
-          ],
-          "additionalProperties": false,
-          "description": "Get the schema from an introspection query"
-        }
-      ],
-      "description": "Ways to get the schema"
-    },
-    "branding": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "default": "My API",
-          "description": "Name of the site"
-        },
-        "logo": {
-          "type": "object",
-          "properties": {
-            "dark": {
-              "type": "string",
-              "default": "https://raw.githubusercontent.com/graphinx/graphinx/refs/heads/main/logo.png",
-              "description": "URL or path to the dark version"
-            },
-            "light": {
-              "type": "string",
-              "default": "https://raw.githubusercontent.com/graphinx/graphinx/refs/heads/main/logo.png",
-              "description": "URL or path to the light version"
-            }
-          },
-          "additionalProperties": false,
-          "default": {},
-          "description": "Logo for the site"
-        }
-      },
-      "additionalProperties": false,
-      "default": {},
-      "description": "Branding options for the generated site"
-    },
-    "types": {
-      "type": "object",
-      "properties": {
-        "relay": {
-          "anyOf": [
-            {
-              "type": "object",
-              "properties": {
-                "connection": {
-                  "type": "string",
-                  "default": "^[A-Z]\\w+Connection$",
-                  "description": "Regular expression to identify Relay connection types by name."
-                },
-                "nodes": {
-                  "type": "string",
-                  "default": "edges.node",
-                  "description": "Dotted path to the node from a connection object"
-                },
-                "edges": {
-                  "type": "string",
-                  "default": "edges",
-                  "description": "Dotted path to the list of edges from a connection object"
-                }
-              },
-              "additionalProperties": false
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": {},
-          "description": "Configuration for Relay types. Set to null to disable Relay types integration."
-        },
-        "errors": {
-          "anyOf": [
-            {
-              "type": "object",
-              "properties": {
-                "result": {
-                  "type": "string",
-                  "default": "^[A-Z]\\w+Result$",
-                  "description": "Regular expression to identify error result type unions by name."
-                },
-                "success": {
-                  "type": "string",
-                  "default": "^[A-Z]\\w+Success$",
-                  "description": "Regular expression to identify success result types by name."
-                },
-                "datafield": {
-                  "type": "string",
-                  "default": "data",
-                  "description": "Name of the field that contains the mutation's success data in the result type."
-                }
-              },
-              "additionalProperties": false
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": {},
-          "description": "Configuration for error types. Set to null to disable error types integration."
-        }
-      },
-      "additionalProperties": false,
-      "default": {},
-      "description": "Configuration to handle special types such as Relay connection types and mutation result types"
-    },
-    "environment": {
-      "type": "object",
-      "additionalProperties": {
-        "type": "string"
-      },
-      "default": {},
-      "description": "Environment variables to write to a .env file before building the site"
-    },
-    "pages": {
-      "type": "string",
-      "description": "Path to a directory of .md pages to be included in the source of the template before building the site"
-    },
-    "static": {
-      "type": "string",
-      "description": "Path to a directory of static files to be copied to the output directory as-is"
-    },
-    "modules": {
-      "type": "object",
-      "properties": {
-        "order": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "default": [],
-          "description": "Order of the modules. Module names that are not listed here will be placed first."
-        },
-        "mapping": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          },
-          "default": {},
-          "description": "Map schema items to module names. Useful if you don't want to annotate your schema with @graphinx directives. For example: `{ \"Query.version\": \"global\" }`"
-        }
-      },
-      "additionalProperties": false,
-      "default": {},
-      "description": "Modules configuration"
-    }
-  },
-  "required": [
-    "schema"
-  ],
-  "additionalProperties": false,
-  "description": "Configuration file for generating documentation sites with Graphinx.",
-  "$schema": "http://json-schema.org/draft-07/schema#"
+	"type": "object",
+	"properties": {
+		"template": {
+			"type": "string",
+			"description": "Template specifier (repository or sub-path to a template if the repo has more than one). Use #branch-or-tag at the end to specify a branch or tag. You can use owner/repo for a github repository.",
+			"default": "graphinx/templates/default"
+		},
+		"schema": {
+			"anyOf": [
+				{
+					"type": "object",
+					"properties": {
+						"static": {
+							"type": "string"
+						}
+					},
+					"required": ["static"],
+					"additionalProperties": false,
+					"description": "Path to a schema file"
+				},
+				{
+					"type": "object",
+					"properties": {
+						"introspection": {
+							"type": "object",
+							"properties": {
+								"url": {
+									"type": "string",
+									"format": "uri",
+									"description": "URL to an introspection endpoint"
+								},
+								"headers": {
+									"type": "object",
+									"additionalProperties": {
+										"type": "string"
+									},
+									"description": "Headers to send with the introspection query"
+								}
+							},
+							"required": ["url"],
+							"additionalProperties": false
+						}
+					},
+					"required": ["introspection"],
+					"additionalProperties": false,
+					"description": "Get the schema from an introspection query"
+				}
+			],
+			"description": "Ways to get the schema"
+		},
+		"branding": {
+			"type": "object",
+			"properties": {
+				"name": {
+					"type": "string",
+					"default": "My API",
+					"description": "Name of the site"
+				},
+				"logo": {
+					"type": "object",
+					"properties": {
+						"dark": {
+							"type": "string",
+							"default": "https://raw.githubusercontent.com/graphinx/graphinx/refs/heads/main/logo.png",
+							"description": "URL or path to the dark version"
+						},
+						"light": {
+							"type": "string",
+							"default": "https://raw.githubusercontent.com/graphinx/graphinx/refs/heads/main/logo.png",
+							"description": "URL or path to the light version"
+						}
+					},
+					"additionalProperties": false,
+					"default": {},
+					"description": "Logo for the site"
+				}
+			},
+			"additionalProperties": false,
+			"default": {},
+			"description": "Branding options for the generated site"
+		},
+		"types": {
+			"type": "object",
+			"properties": {
+				"relay": {
+					"anyOf": [
+						{
+							"type": "object",
+							"properties": {
+								"connection": {
+									"type": "string",
+									"default": "^[A-Z]\\w+Connection$",
+									"description": "Regular expression to identify Relay connection types by name."
+								},
+								"nodes": {
+									"type": "string",
+									"default": "edges.node",
+									"description": "Dotted path to the node from a connection object"
+								},
+								"edges": {
+									"type": "string",
+									"default": "edges",
+									"description": "Dotted path to the list of edges from a connection object"
+								}
+							},
+							"additionalProperties": false
+						},
+						{
+							"type": "null"
+						}
+					],
+					"default": {},
+					"description": "Configuration for Relay types. Set to null to disable Relay types integration."
+				},
+				"errors": {
+					"anyOf": [
+						{
+							"type": "object",
+							"properties": {
+								"result": {
+									"type": "string",
+									"default": "^[A-Z]\\w+Result$",
+									"description": "Regular expression to identify error result type unions by name."
+								},
+								"success": {
+									"type": "string",
+									"default": "^[A-Z]\\w+Success$",
+									"description": "Regular expression to identify success result types by name."
+								},
+								"datafield": {
+									"type": "string",
+									"default": "data",
+									"description": "Name of the field that contains the mutation's success data in the result type."
+								}
+							},
+							"additionalProperties": false
+						},
+						{
+							"type": "null"
+						}
+					],
+					"default": {},
+					"description": "Configuration for error types. Set to null to disable error types integration."
+				}
+			},
+			"additionalProperties": false,
+			"default": {},
+			"description": "Configuration to handle special types such as Relay connection types and mutation result types"
+		},
+		"environment": {
+			"type": "object",
+			"additionalProperties": {
+				"type": "string"
+			},
+			"default": {},
+			"description": "Environment variables to write to a .env file before building the site"
+		},
+		"pages": {
+			"type": "string",
+			"description": "Path to a directory of .md pages to be included in the source of the template before building the site"
+		},
+		"static": {
+			"type": "string",
+			"description": "Path to a directory of static files to be copied to the output directory as-is"
+		},
+		"modules": {
+			"type": "object",
+			"properties": {
+				"order": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [],
+					"description": "Order of the modules. Module names that are not listed here will be placed first."
+				},
+				"mapping": {
+					"type": "object",
+					"additionalProperties": {
+						"type": "string"
+					},
+					"default": {},
+					"description": "Map schema items to module names. Useful if you don't want to annotate your schema with @graphinx directives. For example: `{ \"Query.version\": \"global\" }`"
+				}
+			},
+			"additionalProperties": false,
+			"default": {},
+			"description": "Modules configuration"
+		}
+	},
+	"required": ["schema"],
+	"additionalProperties": false,
+	"description": "Configuration file for generating documentation sites with Graphinx.",
+	"$schema": "http://json-schema.org/draft-07/schema#"
 }

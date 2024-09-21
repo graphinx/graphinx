@@ -6,7 +6,7 @@ export type MatchInfo = {
 	static?: {
 		matcher: string;
 	};
-	fallback?: true
+	fallback?: true;
 };
 
 export type Matcher = (item: UncategorizedItem) => Promise<MatchInfo | null>;
@@ -33,7 +33,6 @@ export async function createModuleStaticMatcher(
 		return null;
 	};
 }
-
 
 // export async function createModuleFilesystemMatcher(
 // 	config: ProcessedConfig,

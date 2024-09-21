@@ -19,13 +19,14 @@ export function kebabToPascal(str: string) {
 }
 
 export function camelToKebab(str: string) {
+	let out = str;
 	for (const acronym of acronyms) {
-		str = str.replaceAll(
+		out = out.replaceAll(
 			acronym.toUpperCase(),
 			`-${acronym.toLowerCase()}`,
 		);
 	}
-	return str.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
+	return out.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
 }
 
 export function pascalToKebab(str: string) {
