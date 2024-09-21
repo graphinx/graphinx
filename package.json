@@ -19,7 +19,6 @@
 		"devinx": "bun run build && bun add -D . && bun run graphinx"
 	},
 	"dependencies": {
-		"@ast-grep/napi": "^0.25.1",
 		"@clack/prompts": "^0.7.0",
 		"chalk": "^5.3.0",
 		"cheerio": "^1.0.0-rc.12",
