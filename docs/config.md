@@ -105,7 +105,7 @@ Path to a directory of static files to be copied to the output directory as-is
 Modules configuration
   - `docs`:     Path to a .md file documenting that module. The markdown file's top-level title will become the module's display name. Use [module] to refer to the module name.
     - Optional
-  - `icons`:     Path to an image file that is the module's icon. Use [module] to refer to the module name.
+  - `icons`:     Path to a SVG file that is the module's icon. Use [module] to refer to the module name.
     - Optional
   - `order`:     Order of the modules. Module names that are not listed here will be placed first.
     - Default: []
