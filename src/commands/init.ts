@@ -13,10 +13,7 @@ type Answers = {
 	logoLocation: string;
 	apiURL: string;
 	apiWebsocketURL: string;
-	modulesFromSourceCode: boolean;
-	moduleDirnamesLocation: string;
-	modulesRegexSearchIn: string;
-	modulesRegex: string;
+	fallbackModuleName: string;
 };
 
 const INIT_CONFIG_FILE = (
@@ -34,7 +31,9 @@ schema: ${
 }
 
 branding:
-  logo: ${quoteYAMLString(ans.logoLocation)}
+  logo: 
+  	light: ${quoteYAMLString(ans.logoLocation)}
+  	dark: ${quoteYAMLString(ans.logoLocation)}
   name: ${quoteYAMLString(ans.name)}
 
 pages: pages/
@@ -45,22 +44,10 @@ environment:
   PUBLIC_API_WEBSOCKET_URL: ${quoteYAMLString(ans.apiWebsocketURL)}
 
 modules:
-  index:
-    title: Index
-    description: The entire GraphQL schema
-${
-	ans.modulesFromSourceCode
-		? `filesystem:
-    names:
-      in: ${quoteYAMLString(ans.moduleDirnamesLocation)}
-    intro: modules/%module%/README.md
-    icon: modules/%module%/icon.svg
-    items:
-      - files: ${quoteYAMLString(ans.modulesRegexSearchIn)}
-        match: ${JSON.stringify(ans.modulesRegex)}
-`
-		: 'static: # TODO list your modules here…'
-}`;
+    docs: modules/[module]/README.md
+    icons: modules/[module]/icon.svg
+	fallback: ${ans.fallbackModuleName}
+`;
 
 export async function initializeConfig(at: string) {
 	if (existsSync(at)) {
@@ -82,12 +69,15 @@ export async function initializeConfig(at: string) {
 			message: ans.introspectSchema
 				? "Where is the API's endpoint?"
 				: 'Where is the schema file?',
+			placeholder: ans.introspectSchema ? undefined : "./schema.graphql",
+			defaultValue: ans.introspectSchema ? undefined : "./schema.graphql",
 		})
 		.then(exitOnCancelled);
 
 	ans.name = await p
 		.text({
 			message: 'What is the name of your API?',
+			placeholder: titleCase(path.basename(process.cwd())),
 			defaultValue: titleCase(path.basename(process.cwd())),
 		})
 		.then(exitOnCancelled);
@@ -95,6 +85,7 @@ export async function initializeConfig(at: string) {
 	ans.apiURL = await p
 		.text({
 			message: 'What is the GraphQL API endpoint URL?',
+			placeholder: ans.introspectSchema ? ans.schemaLocation : undefined,
 			defaultValue: ans.introspectSchema ? ans.schemaLocation : undefined,
 		})
 		.then(exitOnCancelled);
@@ -107,6 +98,7 @@ export async function initializeConfig(at: string) {
 		ans.apiWebsocketURL = await p
 			.text({
 				message: 'What is the GraphQL API websocket URL?',
+				placeholder: ans.apiURL.replace(/^http/, 'ws'),
 				defaultValue: ans.apiURL.replace(/^http/, 'ws'),
 			})
 			.then(exitOnCancelled);
@@ -122,44 +114,17 @@ export async function initializeConfig(at: string) {
 		})
 		.then(exitOnCancelled);
 
-	ans.modulesFromSourceCode = await p
-		.confirm({
-			message: "How do you want to categorize your schema's items?",
-			active: 'From the source code',
-			inactive: 'Manually',
-			initialValue: true,
+	ans.fallbackModuleName = await p
+		.text({
+			message:
+				'Which module should contain items that were not categorized anywhere?',
+			placeholder: 'global',
+			defaultValue: 'global',
 		})
 		.then(exitOnCancelled);
 
-	if (ans.modulesFromSourceCode) {
-		p.note(
-			"Graphinx will categorize your schema's items based on regex patterns in your source code.\nThe process goes like this: for every module, Graphinx tries to search for matches in regex patterns in the given paths, replacing %module% with the current module being checked. When matches are found, Graphinx checks the value of the capture group (?<name>...) and categorizes the item under the module if that capture group matches the item's name.\nTo tell Graphinx what are your modules' names, you can either list them out manually, or tell Graphinx that the names are the directories' names in a given directory.",
-		);
-		ans.moduleDirnamesLocation = await p
-			.text({
-				message:
-					"In which directory are your modules located? (you can skip this and instead list out manually the modules' names)",
-				defaultValue: '',
-			})
-			.then(exitOnCancelled);
-
-		ans.modulesRegexSearchIn = await p
-			.text({
-				message:
-					"In which files should Graphinx search for patterns to match schema items against a module? Use %module% in the glob pattern to specify the module's name.\nWhen categorizing a schema item, Graphinx will try, for every module, regex patterns on every file matching that glob pattern.",
-			})
-			.then(exitOnCancelled);
-
-		ans.modulesRegex = await p
-			.text({
-				message:
-					"What regex pattern should Graphinx use to categorize schema items? The item will be categorized under the module if the regex matches and the named capture group (?<name>...) is the item's name.",
-			})
-			.then(exitOnCancelled);
-	}
-
 	writeFileSync(at, INIT_CONFIG_FILE(ans));
-	console.info(`✨ Initialized Graphinx config file at ${b(at)}`);
+	p.outro(`Initialized Graphinx config file at ${b(at)}`);
 	console.info('\n➡️  Please edit it to fit your needs, then run:');
 	const runcmd = [
 		'graphinx',
