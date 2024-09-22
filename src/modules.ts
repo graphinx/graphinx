@@ -126,7 +126,7 @@ export async function getModule(
 	if (iconPath)
 		if (existsSync(path.join(config._dir, iconPath))) {
 			module.iconSvg = await readFile(
-				path.join(config._dir, iconPath),
+				path.join(config._dir, iconPath.replace('[module]', name)),
 				'utf-8',
 			);
 		} else {
