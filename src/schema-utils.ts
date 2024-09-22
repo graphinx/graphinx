@@ -180,3 +180,35 @@ export function getDirectiveCallArgument(
 	if (arg.value.kind !== Kind.STRING) return null;
 	return arg.value.value;
 }
+
+export function getInterfaceImplementations(
+	schema: GraphQLSchema,
+	interfaceName: string,
+): GraphQLNamedType[] {
+	const implementations: GraphQLNamedType[] = [];
+	const typeMap = schema.getTypeMap();
+	for (const typeName in typeMap) {
+		const type = typeMap[typeName];
+		if (
+			isObjectType(type) &&
+			type.getInterfaces().some((itf) => itf.name === interfaceName)
+		) {
+			implementations.push(type);
+		}
+	}
+	return implementations;
+}
+
+export function getFieldsReturningType(
+	schema: GraphQLSchema,
+	type: GraphQLNamedType
+): GraphQLField<unknown, unknown>[] {
+	const fields: GraphQLField<unknown, unknown>[] = [];
+	for (const field of getRootResolversInSchema(schema)) {
+		const returnType = drillToNamedType(field.type);
+		if (returnType?.name === type.name) {
+			fields.push(field);
+		}
+	}
+	return fields;
+}

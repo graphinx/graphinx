@@ -1,5 +1,7 @@
 import * as cheerio from 'cheerio';
 import {
+	isInterfaceType,
+	isNamedType,
 	Kind,
 	type GraphQLField,
 	type GraphQLInputField,
@@ -21,6 +23,8 @@ import {
 	getAllFieldsOfType,
 	getAllTypesInSchema,
 	getDirectiveCallArgument,
+	getFieldsReturningType,
+	getInterfaceImplementations,
 	getReferencesOfType,
 	getRootResolversInSchema,
 } from './schema-utils.js';
@@ -337,7 +341,20 @@ export async function getAllItems(
 					: schemaItem.name,
 			type: 'parentType' in schemaItem ? schemaItem.parentType : 'type',
 			returnType: fieldReturnType(schema, schemaItem.name)?.name,
-			referencedBy: [] as string[],
+			referencedBy:
+				'parentType' in schemaItem
+					? []
+					: getReferencesOfType(schema, schemaItem.name).map(
+							(t) => t.name,
+						),
+			implementedBy: isInterfaceType(schemaItem)
+				? getInterfaceImplementations(schema, schemaItem.name).map(
+						(t) => t.name,
+					)
+				: [],
+			returnedBy: isNamedType(schemaItem)
+				? getFieldsReturningType(schema, schemaItem).map((f) => f.name)
+				: [],
 			deprecationReason: schemaItem.astNode
 				? getDirectiveCallArgument(
 						schemaItem.astNode,
@@ -345,30 +362,6 @@ export async function getAllItems(
 						'reason',
 					)
 				: undefined,
-			// sourceCodeURL:
-			// 	(config.modules?.static?.find((m) => m.name === moduleName)
-			// 		?.source ??
-			// 		replacePlaceholders(
-			// 			match.filesystem?.matcher.source ?? '',
-			// 			{
-			// 				module: moduleName,
-			// 				name: schemaItem.name,
-			// 				path: match.filesystem?.path ?? '',
-			// 			},
-			// 		)) ||
-			// 	undefined,
-			// contributeURL:
-			// 	(config.modules?.mapping?.find((m) => m.name === moduleName)
-			// 		?.contribution ??
-			// 		replacePlaceholders(
-			// 			match.filesystem?.matcher.contribution ?? '',
-			// 			{
-			// 				module: moduleName,
-			// 				name: schemaItem.name,
-			// 				path: match.filesystem?.path ?? '',
-			// 			},
-			// 		)) ||
-			// 	undefined,
 		} as UncategorizedItem;
 		item = resolveRelayIntegration(schema, config, item);
 		item = resolveResultType(schema, config, item);
@@ -448,17 +441,11 @@ export async function getAllItems(
 				`\x1b[F\x1b[2K\r📕 Categorized ${schemaItem.name} into ${moduleName}`,
 				// `📕 Categorized ${schemaItem.name} into ${moduleName}`,
 			);
-			const item = {
+			return {
 				...schemaItem,
 				moduleName,
 				match,
-			} satisfies ModuleItem;
-			if (item.type === 'type') {
-				item.referencedBy = getReferencesOfType(schema, item.name).map(
-					(t) => t.name,
-				);
-			}
-			return { ...item, match };
+			};
 		}),
 	);
 

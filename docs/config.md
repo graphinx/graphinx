@@ -133,7 +133,7 @@ Modules configuration
 
 ## `description`
 
-Markdown content for the site's homepage
+Markdown file to insert content on the site's homepage
   - Optional
   - String
 

@@ -1,3 +1,7 @@
+import picomatch  from 'picomatch';
+import type { ProcessedConfig } from '../configuration.js';
+import type { Matcher } from './index.js';
+
 export async function createModuleStaticMatcher(
 	config: ProcessedConfig,
 	module: string,

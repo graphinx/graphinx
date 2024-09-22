@@ -39,6 +39,10 @@ export type UncategorizedItem = {
 	 * Items that reference this item
 	 */
 	referencedBy: string[];
+	/**
+	 * Items that implement this interface
+	 */
+	implementedBy: string[];
 };
 
 export type ModuleItem = UncategorizedItem & {

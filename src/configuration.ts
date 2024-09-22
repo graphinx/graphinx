@@ -192,7 +192,7 @@ export const configSchema = z
 		description: z
 			.string()
 			.optional()
-			.describe("Markdown content for the site's homepage"),
+			.describe("Markdown file to insert content on the site's homepage"),
 		footer: z
 			.string()
 			.optional()
@@ -212,9 +212,8 @@ export async function processConfig(at: string): Promise<ProcessedConfig> {
 		process.exit(1);
 	}
 
-	const { modules, environment, ...restOfConfig } = configSchema.parse(
-		yaml.parse(readFileSync(at, 'utf-8')),
-	);
+	const { modules, environment, description, ...restOfConfig } =
+		configSchema.parse(yaml.parse(readFileSync(at, 'utf-8')));
 
 	if (environment) {
 		for (const [key, value] of Object.entries(environment)) {
@@ -222,8 +221,17 @@ export async function processConfig(at: string): Promise<ProcessedConfig> {
 		}
 	}
 
+	let descriptionContent = '';
+	if (description) {
+		descriptionContent = readFileSync(
+			path.join(path.dirname(at), description),
+			'utf-8',
+		);
+	}
+
 	return {
 		...transformStrings(restOfConfig, replacePlaceholders),
+		description: transformStrings(descriptionContent, replacePlaceholders),
 		modules,
 		environment,
 		_dir: path.dirname(at),
