@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
+### BREAKING CHANGES
 
-- static module definitions now support glob patterns in `items`
+- config file has been reworked, see documentation.  
 
 ## [0.11.0] - 2024-07-10
 

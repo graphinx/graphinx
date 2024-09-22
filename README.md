@@ -57,9 +57,17 @@
 
 Configuration is done through a `.graphinx.yaml` config file. The path to the config file can be changed with `--config`.
 
-A JSON schema is available at <https://raw.githubusercontent.com/graphinx/graphinx/main/config.schema.json>.
+You can put schema items (types and root fields) into modules by using the `@graphinx(module: "module-name")`. 
 
-See [.graphinx.yaml config file documentation](./docs/config.md)
+You can define the directive in your schema like this:
+
+```graphql
+directive @graphinx(module: String) on OBJECT | FIELD_DEFINITION | SCALAR | ENUM | UNION | INTERFACE | INPUT_OBJECT
+```
+
+Schema items can also be categorized via the configuration file, see [the .graphinx.yaml config file documentation](./docs/config.md)
+
+A JSON schema is available at <https://raw.githubusercontent.com/graphinx/graphinx/main/config.schema.json>.
 
 ## Available templates
 
