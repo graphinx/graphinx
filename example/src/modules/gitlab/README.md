@@ -1,6 +1,7 @@
 ---
 color: magenta
 ---
+
 # Gitlab
 
 Rapports utilisateurs et crédits.

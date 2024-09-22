@@ -1,6 +1,5 @@
 ---
 color: magenta
-inline_types: [QuestionScaleInput]
 ---
 
 # Formulaires

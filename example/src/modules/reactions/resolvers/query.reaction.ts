@@ -5,19 +5,19 @@ import { ReactionType } from '../index.js';
 // or remove it maybe
 
 builder.queryField('reaction', (t) =>
-	t.prismaField({
-		type: ReactionType,
-		args: {
-			id: t.arg.id(),
-		},
-		authScopes(_, {}, { user }) {
-			return Boolean(user);
-		},
-		async resolve(query, _, { id }) {
-			return prisma.reaction.findUniqueOrThrow({
-				...query,
-				where: { id },
-			});
-		},
-	}),
+  t.prismaField({
+    type: ReactionType,
+    args: {
+      id: t.arg.id(),
+    },
+    authScopes(_, {}, { user }) {
+      return Boolean(user);
+    },
+    async resolve(query, _, { id }) {
+      return prisma.reaction.findUniqueOrThrow({
+        ...query,
+        where: { id },
+      });
+    },
+  }),
 );

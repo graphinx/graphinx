@@ -12,7 +12,7 @@ import * as detectPackageManager from 'detect-package-manager';
 import { execa } from 'execa';
 import * as SemVer from 'semver';
 import { version } from '../../package.json';
-import type { ProcessedConfig } from '../modules.js';
+import type { ProcessedConfig } from '../configuration.js';
 import { b } from '../utils.js';
 import { DEFAULT_TEMPLATE } from './defaults.js';
 import { generateDatafile } from './generate.js';

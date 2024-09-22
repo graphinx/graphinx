@@ -1,10 +1,10 @@
 import { builder } from '#lib';
 
 export enum SortDirection {
-	Ascending,
-	Descending,
+  Ascending,
+  Descending,
 }
 
 export const SortDirectionEnum = builder.enumType(SortDirection, {
-	name: 'SortDirection',
+  name: 'SortDirection',
 });

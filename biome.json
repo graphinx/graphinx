@@ -8,7 +8,7 @@
 		"rules": {
 			"recommended": true
 		},
-		"ignore": ["src/config.ts", "example/src/"]
+		"ignore": ["src/config.ts", "example/src/", "src/manifests/*.ts"]
 	},
 	"vcs": {
 		"enabled": true,

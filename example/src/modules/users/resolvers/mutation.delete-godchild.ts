@@ -1,38 +1,34 @@
-import { builder, prisma } from '#lib';
+import { builder, log, prisma } from '#lib';
+import { UIDScalar } from '#modules/global';
+import { UserType } from '#modules/users/types';
 
 builder.mutationField('deleteGodchild', (t) =>
-	t.field({
-		type: 'Boolean',
-		args: {
-			parentUid: t.arg.string(),
-			godchildUid: t.arg.string(),
-		},
-		async resolve(_, { parentUid, godchildUid }) {
-			const parent = await prisma.user.findUniqueOrThrow({
-				where: { uid: parentUid },
-			});
-			const godchild = await prisma.user.findUniqueOrThrow({
-				where: { uid: godchildUid },
-			});
-			if (parent.godparentId !== godchild.id) return false;
-			await prisma.user.update({
-				where: {
-					uid: godchildUid,
-				},
-				data: {
-					godparent: { disconnect: true },
-				},
-			});
-			await prisma.logEntry.create({
-				data: {
-					area: 'godparent',
-					action: 'delete',
-					target: godchild.id,
-					message: `Deleted godchild ${godchild.uid}`,
-					user: { connect: { id: parent.id } },
-				},
-			});
-			return true;
-		},
-	}),
+  t.prismaField({
+    type: UserType,
+    errors: {},
+    args: {
+      parent: t.arg({ type: UIDScalar }),
+      child: t.arg({ type: UIDScalar }),
+    },
+    async resolve(query, _, { parent: parentUid, child: godchildUid }) {
+      const parent = await prisma.user.findUniqueOrThrow({ where: { uid: parentUid } });
+      const godchild = await prisma.user.findUniqueOrThrow({ where: { uid: godchildUid } });
+      await log(
+        'godparent',
+        'delete',
+        { message: `Deleted godchild ${godchild.uid}` },
+        godchild.id,
+        parent,
+      );
+      return prisma.user.update({
+        ...query,
+        where: {
+          uid: godchildUid,
+        },
+        data: {
+          godparent: { disconnect: true },
+        },
+      });
+    },
+  }),
 );

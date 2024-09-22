@@ -1,9 +1,11 @@
 import type {
+	FieldDefinitionNode,
 	GraphQLField,
 	GraphQLInputField,
 	GraphQLNamedType,
 	GraphQLSchema,
 	GraphQLType,
+	TypeDefinitionNode,
 } from 'graphql';
 import {
 	isEnumType,
@@ -16,6 +18,7 @@ import {
 	isOutputType,
 	isScalarType,
 	isUnionType,
+	Kind,
 } from 'graphql';
 
 export function getAllTypesInSchema(schema: GraphQLSchema): GraphQLNamedType[] {
@@ -163,4 +166,49 @@ export function getReferencesOfType(
 		}
 		return false;
 	});
+}
+
+export function getDirectiveCallArgument(
+	item: TypeDefinitionNode | FieldDefinitionNode,
+	directive: string,
+	argument: string,
+): string | null {
+	const dir = item.directives?.find((d) => d.name.value === directive);
+	if (!dir) return null;
+	const arg = dir.arguments?.find((a) => a.name.value === argument);
+	if (!arg) return null;
+	if (arg.value.kind !== Kind.STRING) return null;
+	return arg.value.value;
+}
+
+export function getInterfaceImplementations(
+	schema: GraphQLSchema,
+	interfaceName: string,
+): GraphQLNamedType[] {
+	const implementations: GraphQLNamedType[] = [];
+	const typeMap = schema.getTypeMap();
+	for (const typeName in typeMap) {
+		const type = typeMap[typeName];
+		if (
+			isObjectType(type) &&
+			type.getInterfaces().some((itf) => itf.name === interfaceName)
+		) {
+			implementations.push(type);
+		}
+	}
+	return implementations;
+}
+
+export function getFieldsReturningType(
+	schema: GraphQLSchema,
+	type: GraphQLNamedType
+): GraphQLField<unknown, unknown>[] {
+	const fields: GraphQLField<unknown, unknown>[] = [];
+	for (const field of getRootResolversInSchema(schema)) {
+		const returnType = drillToNamedType(field.type);
+		if (returnType?.name === type.name) {
+			fields.push(field);
+		}
+	}
+	return fields;
 }

@@ -10,10 +10,10 @@ import type { Major } from '@churros/db/prisma';
  * linking logic.
  */
 export const SchoolGroup = builder
-	.objectRef<{ names: string[]; majors: Major[] }>('SchoolGroup')
-	.implement({
-		fields: (t) => ({
-			names: t.exposeStringList('names'),
-			majors: t.expose('majors', { type: [MajorType] }),
-		}),
-	});
+  .objectRef<{ names: string[]; majors: Major[] }>('SchoolGroup')
+  .implement({
+    fields: (t) => ({
+      names: t.exposeStringList('names'),
+      majors: t.expose('majors', { type: [MajorType] }),
+    }),
+  });

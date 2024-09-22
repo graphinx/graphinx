@@ -1,6 +1,5 @@
 ---
 color: yellow
-inline_types_from: [ProfitsBreakdown]
 ---
 
 # Paiements

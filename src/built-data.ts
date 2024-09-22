@@ -1,11 +1,13 @@
-import type { ProcessedConfig } from './modules.js';
+import type { ProcessedConfig } from './configuration.js';
+import type { MatchInfo } from './matchers/index.js';
 
-export type ModuleItem = {
+export type UncategorizedItem = {
 	name: string;
-	moduleName: string;
+	id: string;
 	contributeURL?: string;
 	sourceCodeURL?: string;
 	type: 'query' | 'mutation' | 'subscription' | 'type';
+	deprecationReason?: string;
 	/**
 	 * Not set for types
 	 */
@@ -28,9 +30,24 @@ export type ModuleItem = {
 		errorTypes: string[];
 	};
 	/**
+	 * the type is an input type specific to a mutation
+	 */
+	inputTypeOf?: {
+		field: string;
+	};
+	/**
 	 * Items that reference this item
 	 */
 	referencedBy: string[];
+	/**
+	 * Items that implement this interface
+	 */
+	implementedBy: string[];
+};
+
+export type ModuleItem = UncategorizedItem & {
+	moduleName: string;
+	match: MatchInfo;
 };
 
 export type Module = {
@@ -58,7 +75,7 @@ export type Module = {
  */
 export type BuiltData = {
 	modules: Module[];
-	index: Module;
+	index?: Module;
 	schema: string;
 	config: ProcessedConfig;
 	items: ModuleItem[];

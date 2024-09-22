@@ -2,14 +2,10 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { printSchema } from 'graphql';
 import type { BuiltData } from '../built-data.js';
-import {
-	type ProcessedConfig,
-	getAllItems,
-	getAllModules,
-	indexModule,
-} from '../modules.js';
+import { getAllItems, getAllModules } from '../modules.js';
 import { loadSchema } from '../schema-loader.js';
 import { b } from '../utils.js';
+import type { ProcessedConfig } from '../configuration.js';
 
 /**
  * Writes the data file to inject at the given path
@@ -28,7 +24,8 @@ export async function generateDatafile(to: string, config: ProcessedConfig) {
 
 	const builtData: BuiltData = {
 		modules: await getAllModules(schema, config, items),
-		index: await indexModule(config, items),
+		// index: await indexModule(config, items),
+		index: undefined,
 		schema: printSchema(schema),
 		config: censorIntrospectionHeaders(config),
 		items,
@@ -62,13 +59,23 @@ function isTypescriptFile(to: string) {
 }
 
 function censorIntrospectionHeaders(config: ProcessedConfig): ProcessedConfig {
-	if (!config.schema.introspection?.headers) return config;
-	const censored = { ...config };
-	// biome-ignore lint/style/noNonNullAssertion: censored is a copy of config
-	censored.schema.introspection!.headers = Object.fromEntries(
-		Object.entries(config.schema.introspection.headers).map(
-			([key, value]) => [key, value === '' ? '' : '*********'],
-		),
-	);
-	return censored;
+	if (!('introspection' in config.schema)) return config;
+	if (!config.schema.introspection.headers) return config;
+	return {
+		...config,
+		schema: {
+			...config.schema,
+			introspection: {
+				...config.schema.introspection,
+				headers: Object.fromEntries(
+					Object.entries(config.schema.introspection.headers).map(
+						([key, value]) => [
+							key,
+							value === '' ? '' : '*********',
+						],
+					),
+				),
+			},
+		},
+	};
 }
