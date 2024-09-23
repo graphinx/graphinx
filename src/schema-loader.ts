@@ -6,12 +6,12 @@ import {
 	buildSchema,
 	getIntrospectionQuery,
 } from 'graphql';
-import type { ProcessedConfig } from './modules.js';
+import type { ProcessedConfig } from './configuration.js';
 
 export async function loadSchema(
 	config: ProcessedConfig,
 ): Promise<GraphQLSchema> {
-	if (config.schema.static) {
+	if ('static' in config.schema) {
 		const schemaContent = await readFile(
 			path.join(config._dir, config.schema.static),
 			'utf-8',
@@ -25,7 +25,7 @@ export async function loadSchema(
 		return buildSchema(schemaContent);
 	}
 
-	if (!config.schema.introspection) {
+	if (!('introspection' in config.schema)) {
 		throw new Error(
 			'❌ Please provide a way to load the schema using either schema.static or schema.introspection',
 		);
