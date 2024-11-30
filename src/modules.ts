@@ -252,7 +252,10 @@ export async function getAllModules(
 	)
 		.filter(
 			(m) =>
-				m.mutations.length + m.queries.length + m.subscriptions.length >
+				m.types.length +
+					m.mutations.length +
+					m.queries.length +
+					m.subscriptions.length >
 				0,
 		)
 		.sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name));
