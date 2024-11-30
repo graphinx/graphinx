@@ -1,10 +1,10 @@
 {
   "name": "graphinx",
-  "version": "0.12.1",
+  "version": "0.12.2",
   "author": {
-    "name": "Ewen Le Bihan",
+    "name": "Gwenn Le Bihan",
     "email": "graphinx@ewen.works",
-    "url": "https://ewen.works"
+    "url": "https://gwen.works"
   },
   "scripts": {
     "check": "biome check --apply .",
